@@ -199,7 +199,7 @@ class _LocationScreenState extends State<LocationScreen> {
         }
         Get.to(PropertyScreen(dateTime: widget.dateTime));
         NewHelper.hideLoader(loader);
-        showToast('Location saved');
+        showSnackBar(context,'Location saved');
       } else {
         NewHelper.hideLoader(loader);
         print('No matching document found');

@@ -46,7 +46,7 @@ class _PostEventScreenState extends State<PostEventScreen> {
         borderColor.value = Color(0xff99B2C6);
       });
     } else {
-      showToast("No image selected");
+      showSnackBar(context,"No image selected");
     }
   }
   void showAddressModal(BuildContext context) {
@@ -165,7 +165,7 @@ class _PostEventScreenState extends State<PostEventScreen> {
 
   void submitEvent() async {
     if (selectedFiles.isEmpty) {
-      showToast('Please upload at least one image');
+      showSnackBar(context,'Please upload at least one image');
       return;
     }
 
@@ -198,10 +198,10 @@ class _PostEventScreenState extends State<PostEventScreen> {
       });
 
       NewHelper.hideLoader(loader);
-      showToast('Event submitted successfully');
+      showSnackBar(context,'Event submitted successfully');
     } catch (e) {
       NewHelper.hideLoader(loader);
-      showToast('Error submitting event: $e');
+      showSnackBar(context,'Error submitting event: $e');
     }
   }
 
@@ -223,7 +223,7 @@ class _PostEventScreenState extends State<PostEventScreen> {
           padding: const EdgeInsets.only(bottom: 8.0),
           child: Column(
             children: [
-              SizedBox(height: 10,),
+              const SizedBox(height: 10,),
             CommonTextField(
               controller: eventNameController,
             hintText: 'Event Name',

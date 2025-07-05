@@ -118,7 +118,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
       'aboutCompany': aboutCompanyController.text,
       'timeOfAdd': timeOfAdd
     }).then((value) {
-      showToast('Add Jobs Successfully');
+      showSnackBar(context,'Add Jobs Successfully');
       Get.to(const JobHomePageScreen());
     });
   }

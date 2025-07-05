@@ -37,7 +37,7 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
         'formID' : formID
       });
       NewHelper.hideLoader(loader);
-      showToast('Selected');
+       showSnackBar(context,'Selected');
     } else {
       NewHelper.hideLoader(loader);
       print('No user logged in');

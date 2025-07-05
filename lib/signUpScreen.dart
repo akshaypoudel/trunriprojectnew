@@ -42,17 +42,19 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
   bool value = false;
   bool showValidation = false;
   FirebaseAuth auth = FirebaseAuth.instance;
+
   void checkEmailInFirestore() async {
+
     if (phoneController.text.isEmpty) {
-      showToast("Please enter your phone number");
+      showSnackBar(context,"Please enter your phone number");
       return;
     }
-
+    String completePhoneNum = "$code${phoneController.text.trim()}";
     final QuerySnapshot result =
-    await FirebaseFirestore.instance.collection('User').where('phoneNumber', isEqualTo: phoneController.text).get();
+    await FirebaseFirestore.instance.collection('User').where('phoneNumber', isEqualTo: completePhoneNum).get();
 
     if (result.docs.isNotEmpty) {
-      showToast("User is already registered with this phoneNumber");
+      showSnackBar(context,"User is already registered with this phoneNumber");
       return;
     }
 
@@ -60,17 +62,17 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
     Overlay.of(context).insert(loader);
 
     await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: "+$code${phoneController.text.trim()}",
+      phoneNumber: completePhoneNum,
       verificationCompleted: (PhoneAuthCredential credential) async {
         await FirebaseAuth.instance.signInWithCredential(credential);
-        showToast("Phone number verified successfully");
+        showSnackBar(context,"Phone number verified successfully");
       },
       verificationFailed: (FirebaseAuthException e) {
-        showToast("Verification failed: ${e.message}");
+        showSnackBar(context,"Verification failed: ${e.message}");
 
         log("Verification failed: ${e.message}");
         log("Verification failed: ${code.toString()}");
-        log("Verification failed: ${e.phoneNumber.toString()}");
+        log("Verification failed phone number: $completePhoneNum");
         NewHelper.hideLoader(loader);
       },
       codeSent: (String verificationId, int? resendToken) {
@@ -81,7 +83,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
           context,
           MaterialPageRoute(
             builder: (context) => NewOtpScreen(
-              phoneNumber: code + phoneController.text,
+              phoneNumber: completePhoneNum,
               verificationId: verificationId,
             ),
           ),
@@ -106,7 +108,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
       'profile': ""
     }).then((value) {
       NewHelper.hideLoader(loader);
-      showToast('OTP sent successfully');
+      showSnackBar(context,'OTP sent successfully');
     });
   }
 
@@ -153,6 +155,17 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
   final formKey1 = GlobalKey<FormState>();
 
   @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    nameController.dispose();
+    phoneController.dispose();
+    super.dispose();
+
+  }
+
+  @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
@@ -175,7 +188,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
             Image.asset(
               "assets/images/person.gif",
               height: 200.0,
-              width: Get.width,
+              width: MediaQuery.of(context).size.width,
               fit: BoxFit.fitWidth,
             ),
             const Padding(
@@ -204,7 +217,6 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
             Padding(
               padding: EdgeInsets.only(left: 25, right: 25),
               child: IntlPhoneField(
-                key: ValueKey(code),
                 flagsButtonPadding: const EdgeInsets.all(8),
                 dropdownIconPosition: IconPosition.trailing,
                 showDropdownIcon: false, // Hide the country selection dropdown
@@ -234,9 +246,9 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                     borderRadius: BorderRadius.circular(11),
                   ),
                 ),
-                initialCountryCode: "AU", // Set to Australia
-                onChanged: (phone) {
-                  code = "+61"; // Force Australian country code
+                initialCountryCode: "IN", // Set to Australia
+                onCountryChanged: (country){
+                  code = '+${country.dialCode}';
                 },
                 validator: (value) {
                   if (value == null || phoneController.text.isEmpty) {
@@ -369,7 +381,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                         if (value == true) {
                           checkEmailInFirestore();
                         } else {
-                          showToast('Please select terms & conditions');
+                          showSnackBar(context,'Please select terms & conditions');
                         }
                       }
                     },
@@ -461,7 +473,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                       const SizedBox(
                         width: 10,
                       ),
-                      socialIcon("assets/images/facebook.png"),
+                      //socialIcon("assets/images/facebook.png"),
                     ],
                   ),
                   SizedBox(height: size.height * 0.07),

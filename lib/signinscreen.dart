@@ -8,7 +8,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:get/get.dart';
 import 'package:get/route_manager.dart';
@@ -52,7 +51,7 @@ class _SignInScreenState extends State<SignInScreen> {
     String password = passwordController.text.trim();
 
     if (phone.isEmpty || password.isEmpty) {
-      showToast("Please enter both phone number and password");
+      showSnackBar(context, "Please enter both phone number and password");
       NewHelper.hideLoader(loader);
       return;
     }
@@ -66,7 +65,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
       if (phoneSnapshot.docs.isEmpty) {
         NewHelper.hideLoader(loader);
-        showToast("Phone number not found");
+        showSnackBar(context, "Phone number not found");
         return;
       }
 
@@ -79,51 +78,58 @@ class _SignInScreenState extends State<SignInScreen> {
 
       if (userSnapshot.docs.isEmpty) {
         NewHelper.hideLoader(loader);
-        showToast("Incorrect password");
+        showSnackBar(context, "Incorrect password");
         return;
       }
 
       // Successful login
-      showToast("Login successful");
-      SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-      sharedPreferences.setString("myPhone" , phoneController.text.trim());
+      showSnackBar(context, "Login successful");
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      sharedPreferences.setString("myPhone", phoneController.text.trim());
       NewHelper.hideLoader(loader);
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => MyBottomNavBar()),
+        MaterialPageRoute(builder: (context) => const MyBottomNavBar()),
       );
     } catch (e) {
       NewHelper.hideLoader(loader);
-      showToast("Error: ${e.toString()}");
+      showSnackBar(context, "Error: ${e.toString()}");
     }
   }
-
 
   Future<dynamic> signInWithGoogle(BuildContext context) async {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser?.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth?.accessToken,
         idToken: googleAuth?.idToken,
       );
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
 
       log("wewewewww${userCredential.user!.displayName.toString()}");
-      SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-      sharedPreferences.setString("google_name", userCredential.user!.displayName ?? '');
-      sharedPreferences.setString("google_email", userCredential.user!.email ?? '');
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      sharedPreferences.setString(
+          "google_name", userCredential.user!.displayName ?? '');
+      sharedPreferences.setString(
+          "google_email", userCredential.user!.email ?? '');
       Navigator.of(context).push(
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => PickUpAddressScreen(),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const PickUpAddressScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(1.0, 0.0);
             const end = Offset.zero;
             const curve = Curves.ease;
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            var tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
             var offsetAnimation = animation.drive(tween);
             return SlideTransition(
               position: offsetAnimation,
@@ -158,14 +164,14 @@ class _SignInScreenState extends State<SignInScreen> {
           const Text(
             "Wellcome back you've\nbeen missed!",
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 27, color: Color(0xff6F6B7A), height: 1.2),
+            style:
+                TextStyle(fontSize: 27, color: Color(0xff6F6B7A), height: 1.2),
           ),
           SizedBox(height: size.height * 0.04),
           // for username and password
           Padding(
-            padding: EdgeInsets.only(left: 25, right: 25),
+            padding: const EdgeInsets.only(left: 25, right: 25),
             child: IntlPhoneField(
-              key: ValueKey(code),
               flagsButtonPadding: const EdgeInsets.all(8),
               dropdownIconPosition: IconPosition.trailing,
               showDropdownIcon: false, // Hide the country selection dropdown
@@ -178,26 +184,29 @@ class _SignInScreenState extends State<SignInScreen> {
               decoration: InputDecoration(
                 fillColor: Colors.grey.shade100,
                 filled: true,
-                contentPadding: EdgeInsets.symmetric(vertical: 15),
-                hintStyle: const TextStyle(color: Colors.black45, fontSize: 19, fontWeight: FontWeight.w400),
+                contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                hintStyle: const TextStyle(
+                    color: Colors.black45,
+                    fontSize: 19,
+                    fontWeight: FontWeight.w400),
                 hintText: 'Phone Number',
-                labelStyle: TextStyle(color: AppTheme.textColor),
+                labelStyle: const TextStyle(color: AppTheme.textColor),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(11),
-                  borderSide: BorderSide(),
+                  borderSide: const BorderSide(),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                  borderSide: const BorderSide(color: Colors.white),
                   borderRadius: BorderRadius.circular(11),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                  borderSide: const BorderSide(color: Colors.white),
                   borderRadius: BorderRadius.circular(11),
                 ),
               ),
-              initialCountryCode: "AU", // Set to Australia
-              onChanged: (phone) {
-                code = "+61"; // Force Australian country code
+              initialCountryCode: "IN",
+              onCountryChanged: (country) {
+                code = '+${country.dialCode}';
               },
               validator: (value) {
                 if (value == null || phoneController.text.isEmpty) {
@@ -221,7 +230,9 @@ class _SignInScreenState extends State<SignInScreen> {
                 onPressed: () {
                   hide.value = !hide.value;
                 },
-                icon: hide.value ? const Icon(Icons.visibility_off) : const Icon(Icons.visibility),
+                icon: hide.value
+                    ? const Icon(Icons.visibility_off)
+                    : const Icon(Icons.visibility),
               ),
             );
           }),
@@ -321,21 +332,27 @@ class _SignInScreenState extends State<SignInScreen> {
                       GestureDetector(
                         onTap: () async {
                           try {
-                            final credential = await SignInWithApple.getAppleIDCredential(
+                            final credential =
+                                await SignInWithApple.getAppleIDCredential(
                               scopes: [
                                 AppleIDAuthorizationScopes.email,
                                 AppleIDAuthorizationScopes.fullName,
                               ],
                             );
-                            final OAuthProvider oAuthProvider = OAuthProvider('apple.com');
-                            final OAuthCredential oAuthCredential = oAuthProvider.credential(
+                            final OAuthProvider oAuthProvider =
+                                OAuthProvider('apple.com');
+                            final OAuthCredential oAuthCredential =
+                                oAuthProvider.credential(
                               idToken: credential.identityToken,
                               accessToken: credential.authorizationCode,
                             );
-                            await FirebaseAuth.instance.signInWithCredential(oAuthCredential);
+                            await FirebaseAuth.instance
+                                .signInWithCredential(oAuthCredential);
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => PickUpAddressScreen()),
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const PickUpAddressScreen()),
                             );
                           } catch (error) {
                             print('Error signing in with Apple: $error');
@@ -373,13 +390,18 @@ class _SignInScreenState extends State<SignInScreen> {
                               ..onTap = () {
                                 Navigator.of(context).push(
                                   PageRouteBuilder(
-                                    pageBuilder: (context, animation, secondaryAnimation) => const SignUpScreen(),
-                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                    pageBuilder: (context, animation,
+                                            secondaryAnimation) =>
+                                        const SignUpScreen(),
+                                    transitionsBuilder: (context, animation,
+                                        secondaryAnimation, child) {
                                       const begin = Offset(1.0, 0.0);
                                       const end = Offset.zero;
                                       const curve = Curves.ease;
-                                      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                                      var offsetAnimation = animation.drive(tween);
+                                      var tween = Tween(begin: begin, end: end)
+                                          .chain(CurveTween(curve: curve));
+                                      var offsetAnimation =
+                                          animation.drive(tween);
                                       return SlideTransition(
                                         position: offsetAnimation,
                                         child: child,

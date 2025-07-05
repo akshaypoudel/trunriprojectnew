@@ -69,7 +69,8 @@ class _HomeScreenState extends State<HomeScreen> {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission != LocationPermission.whileInUse && permission != LocationPermission.always) {
+      if (permission != LocationPermission.whileInUse &&
+          permission != LocationPermission.always) {
         return;
       }
     }
@@ -90,7 +91,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String defaultImageUrl = 'https://via.placeholder.com/400';
   Future<void> _launchMap(double lat, double lng) async {
-    final url = 'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving';
+    final url =
+        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving';
     if (await canLaunch(url)) {
       await launch(url);
     } else {
@@ -98,7 +100,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _fetchIndianRestaurants(double latitude, double longitude) async {
+  Future<void> _fetchIndianRestaurants(
+      double latitude, double longitude) async {
     final url =
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=4000&type=restaurant&keyword=indian&key=$apiKey';
 
@@ -159,13 +162,14 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> imageUrls = [];
   Future<List<String>> fetchImageData() async {
     try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('banners').get();
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('banners').get();
 
-      querySnapshot.docs.forEach((DocumentSnapshot document) {
+      for (var document in querySnapshot.docs) {
         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
         String imageUrl = data['imageUrl'];
         imageUrls.add(imageUrl);
-      });
+      }
     } catch (e) {
       print("Error fetching image data: $e");
     }
@@ -203,9 +207,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 10,
                     ),
                     StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                      stream: FirebaseFirestore.instance.collection('banners').snapshots(),
+                      stream: FirebaseFirestore.instance
+                          .collection('banners')
+                          .snapshots(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return const Center(
                             child: CircularProgressIndicator(
                               color: Colors.orange,
@@ -219,7 +226,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         }
 
-                        List<BannerModel> banner = snapshot.data!.docs.map((doc) {
+                        List<BannerModel> banner =
+                            snapshot.data!.docs.map((doc) {
                           return BannerModel.fromMap(doc.id, doc.data());
                         }).toList();
 
@@ -238,15 +246,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                   banner.length,
                                   (index) => Container(
                                       width: width,
-                                      margin: EdgeInsets.symmetric(horizontal: width * .01),
-                                      decoration:
-                                          BoxDecoration(borderRadius: BorderRadius.circular(15), color: Colors.grey),
+                                      margin: EdgeInsets.symmetric(
+                                          horizontal: width * .01),
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(15),
+                                          color: Colors.grey),
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(15),
                                         child: CachedNetworkImage(
                                           imageUrl: banner[index].imageUrl,
-                                          errorWidget: (_, __, ___) => const SizedBox(),
-                                          placeholder: (_, __) => const SizedBox(),
+                                          errorWidget: (_, __, ___) =>
+                                              const SizedBox(),
+                                          placeholder: (_, __) =>
+                                              const SizedBox(),
                                           fit: BoxFit.cover,
                                         ),
                                       ))),
@@ -263,9 +276,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 10,
                     ),
                     StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                      stream: FirebaseFirestore.instance.collection('categories').snapshots(),
+                      stream: FirebaseFirestore.instance
+                          .collection('categories')
+                          .snapshots(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return const Center(
                             child: CircularProgressIndicator(
                               color: Colors.orange,
@@ -279,7 +295,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         }
 
-                        List<Category> category = snapshot.data!.docs.map((doc) {
+                        List<Category> category =
+                            snapshot.data!.docs.map((doc) {
                           return Category.fromMap(doc.id, doc.data());
                         }).toList();
                         return Padding(
@@ -299,15 +316,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                       press: () {
                                         if (category[index].name == 'Temples') {
                                           Get.to(const TempleHomePageScreen());
-                                        } else if (category[index].name == 'Grocery stores') {
-                                          Get.to(const GroceryStoreListScreen());
-                                        } else if (category[index].name == 'Accommodation') {
-                                          Get.to(const LookingForAPlaceScreen());
-                                        } else if (category[index].name == 'Restaurants') {
-                                          Get.to(const ResturentItemListScreen());
-                                        } else if (category[index].name == 'Jobs') {
+                                        } else if (category[index].name ==
+                                            'Grocery stores') {
+                                          Get.to(
+                                              const GroceryStoreListScreen());
+                                        } else if (category[index].name ==
+                                            'Accommodation') {
+                                          Get.to(
+                                              const LookingForAPlaceScreen());
+                                        } else if (category[index].name ==
+                                            'Restaurants') {
+                                          Get.to(
+                                              const ResturentItemListScreen());
+                                        } else if (category[index].name ==
+                                            'Jobs') {
                                           Get.to(const JobHomePageScreen());
-                                        } else if (category[index].name == 'Events') {
+                                        } else if (category[index].name ==
+                                            'Events') {
                                           Get.to(EventDiscoveryScreen());
                                         }
                                       });
@@ -328,13 +353,20 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         StreamBuilder(
-                          stream: FirebaseFirestore.instance.collection('MakeEvent').snapshots(),
-                          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const Center(child: CircularProgressIndicator());
+                          stream: FirebaseFirestore.instance
+                              .collection('MakeEvent')
+                              .snapshots(),
+                          builder:
+                              (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
                             }
-                            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                              return const Center(child: Text("No events available"));
+                            if (!snapshot.hasData ||
+                                snapshot.data!.docs.isEmpty) {
+                              return const Center(
+                                  child: Text("No events available"));
                             }
                             var events = snapshot.data!.docs;
                             return Container(
@@ -342,7 +374,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               margin: const EdgeInsets.only(
                                 left: 20,
                               ),
-                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10)),
                               child: ListView.builder(
                                 itemCount: events.length,
                                 scrollDirection: Axis.horizontal,
@@ -369,9 +403,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                         borderRadius: BorderRadius.circular(10),
                                         child: event['photo'].isNotEmpty
                                             ? Image.network(event['photo'][0],
-                                                height: 150, width: 150, fit: BoxFit.cover)
-                                            : Image.asset("assets/images/singing.jpeg",
-                                                height: 150, width: double.infinity, fit: BoxFit.cover),
+                                                height: 150,
+                                                width: 150,
+                                                fit: BoxFit.cover)
+                                            : Image.asset(
+                                                "assets/images/singing.jpeg",
+                                                height: 150,
+                                                width: double.infinity,
+                                                fit: BoxFit.cover),
                                       ),
                                     ),
                                   );
@@ -396,7 +435,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Container(
                           height: height * .32,
-                          width: Get.width,
+                          width: MediaQuery.of(context).size.width,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(11),
                           ),
@@ -408,20 +447,30 @@ class _HomeScreenState extends State<HomeScreen> {
                               final restaurant = _restaurants[index];
                               final name = restaurant['name'];
                               final address = restaurant['vicinity'];
-                              final rating = (restaurant['rating'] as num?)?.toDouble() ?? 0.0;
+                              final rating =
+                                  (restaurant['rating'] as num?)?.toDouble() ??
+                                      0.0;
                               final reviews = restaurant['reviews'];
-                              final description = restaurant['description'] ?? 'No Description Available';
-                              final openingHours = restaurant['opening_hours'] != null
-                                  ? restaurant['opening_hours']['weekday_text']
-                                  : 'Not Available';
-                              final closingTime = restaurant['closing_time'] ?? 'Not Available';
-                              final photoReference =
-                                  restaurant['photos'] != null ? restaurant['photos'][0]['photo_reference'] : null;
+                              final description = restaurant['description'] ??
+                                  'No Description Available';
+                              final openingHours =
+                                  restaurant['opening_hours'] != null
+                                      ? restaurant['opening_hours']
+                                          ['weekday_text']
+                                      : 'Not Available';
+                              final closingTime =
+                                  restaurant['closing_time'] ?? 'Not Available';
+                              final photoReference = restaurant['photos'] !=
+                                      null
+                                  ? restaurant['photos'][0]['photo_reference']
+                                  : null;
                               final photoUrl = photoReference != null
                                   ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoReference&key=$apiKey'
                                   : null;
-                              final lat = restaurant['geometry']['location']['lat'];
-                              final lng = restaurant['geometry']['location']['lng'];
+                              final lat =
+                                  restaurant['geometry']['location']['lat'];
+                              final lng =
+                                  restaurant['geometry']['location']['lng'];
 
                               resturentLat = lat.toString();
                               resturentlong = lng.toString();
@@ -443,11 +492,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Container(
                                   height: 180,
                                   width: 200,
-                                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                                  decoration:
-                                      BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(11)),
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(11)),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(10),
@@ -460,34 +512,42 @@ class _HomeScreenState extends State<HomeScreen> {
                                               )
                                             : const SizedBox(),
                                       ),
-                                      const SizedBox(height: 10), // Add space between the image and the text
+                                      const SizedBox(
+                                          height:
+                                              10), // Add space between the image and the text
                                       Padding(
-                                        padding: const EdgeInsets.only(left: 10.0),
+                                        padding:
+                                            const EdgeInsets.only(left: 10.0),
                                         child: Text(
                                           name,
                                           textAlign: TextAlign.start,
                                           style: const TextStyle(
                                             color: Colors.black,
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 14, // Adjust the font size as needed
+                                            fontSize:
+                                                14, // Adjust the font size as needed
                                           ),
                                           // overflow: TextOverflow.ellipsis,
-                                          maxLines: 1, // Allow text to wrap to 2 lines if needed
+                                          maxLines:
+                                              1, // Allow text to wrap to 2 lines if needed
                                         ),
                                       ),
                                       const SizedBox(height: 5),
                                       Padding(
-                                        padding: const EdgeInsets.only(left: 10.0),
+                                        padding:
+                                            const EdgeInsets.only(left: 10.0),
                                         child: Text(
                                           address,
                                           textAlign: TextAlign.start,
                                           style: const TextStyle(
                                             color: Colors.black,
                                             fontWeight: FontWeight.w300,
-                                            fontSize: 14, // Adjust the font size as needed
+                                            fontSize:
+                                                14, // Adjust the font size as needed
                                           ),
                                           // overflow: TextOverflow.ellipsis,
-                                          maxLines: 1, // Allow text to wrap to 2 lines if needed
+                                          maxLines:
+                                              1, // Allow text to wrap to 2 lines if needed
                                         ),
                                       ),
                                     ],
@@ -512,8 +572,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Container(
                           height: height * .32,
-                          width: Get.width,
-                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(11)),
+                          width: MediaQuery.of(context).size.width,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(11)),
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount: _groceryStores.length,
@@ -521,19 +582,30 @@ class _HomeScreenState extends State<HomeScreen> {
                               final groceryStore = _groceryStores[index];
                               final name = groceryStore['name'];
                               final address = groceryStore['vicinity'];
-                              final rating = (groceryStore['rating'] as num?)?.toDouble() ?? 0.0;
-                              final description = groceryStore['description'] ?? 'No Description Available';
-                              final openingHours = groceryStore['opening_hours'] != null
-                                  ? groceryStore['opening_hours']['weekday_text']
-                                  : 'Not Available';
-                              final closingTime = groceryStore['closing_time'] ?? 'Not Available';
-                              final photoReference =
-                                  groceryStore['photos'] != null ? groceryStore['photos'][0]['photo_reference'] : null;
+                              final rating = (groceryStore['rating'] as num?)
+                                      ?.toDouble() ??
+                                  0.0;
+                              final description = groceryStore['description'] ??
+                                  'No Description Available';
+                              final openingHours =
+                                  groceryStore['opening_hours'] != null
+                                      ? groceryStore['opening_hours']
+                                          ['weekday_text']
+                                      : 'Not Available';
+                              final closingTime =
+                                  groceryStore['closing_time'] ??
+                                      'Not Available';
+                              final photoReference = groceryStore['photos'] !=
+                                      null
+                                  ? groceryStore['photos'][0]['photo_reference']
+                                  : null;
                               final photoUrl = photoReference != null
                                   ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoReference&key=$apiKey'
                                   : defaultImageUrl;
-                              final lat = groceryStore['geometry']['location']['lat'];
-                              final lng = groceryStore['geometry']['location']['lng'];
+                              final lat =
+                                  groceryStore['geometry']['location']['lat'];
+                              final lng =
+                                  groceryStore['geometry']['location']['lng'];
 
                               groceryStoreLat = lat.toString();
                               groceryStoreLong = lng.toString();
@@ -555,11 +627,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Container(
                                   height: 180,
                                   width: 200,
-                                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                                  decoration:
-                                      BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(11)),
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(11)),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(10),
@@ -572,34 +647,42 @@ class _HomeScreenState extends State<HomeScreen> {
                                               )
                                             : const SizedBox(),
                                       ),
-                                      const SizedBox(height: 10), // Add space between the image and the text
+                                      const SizedBox(
+                                          height:
+                                              10), // Add space between the image and the text
                                       Padding(
-                                        padding: const EdgeInsets.only(left: 10.0),
+                                        padding:
+                                            const EdgeInsets.only(left: 10.0),
                                         child: Text(
                                           name,
                                           textAlign: TextAlign.start,
                                           style: const TextStyle(
                                             color: Colors.black,
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 14, // Adjust the font size as needed
+                                            fontSize:
+                                                14, // Adjust the font size as needed
                                           ),
                                           // overflow: TextOverflow.ellipsis,
-                                          maxLines: 1, // Allow text to wrap to 2 lines if needed
+                                          maxLines:
+                                              1, // Allow text to wrap to 2 lines if needed
                                         ),
                                       ),
                                       const SizedBox(height: 5),
                                       Padding(
-                                        padding: const EdgeInsets.only(left: 10.0),
+                                        padding:
+                                            const EdgeInsets.only(left: 10.0),
                                         child: Text(
                                           address,
                                           textAlign: TextAlign.start,
                                           style: const TextStyle(
                                             color: Colors.black,
                                             fontWeight: FontWeight.w300,
-                                            fontSize: 14, // Adjust the font size as needed
+                                            fontSize:
+                                                14, // Adjust the font size as needed
                                           ),
                                           // overflow: TextOverflow.ellipsis,
-                                          maxLines: 1, // Allow text to wrap to 2 lines if needed
+                                          maxLines:
+                                              1, // Allow text to wrap to 2 lines if needed
                                         ),
                                       ),
                                     ],
@@ -622,32 +705,43 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Container(
                       height: height * .35,
-                      width: Get.width,
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(11)),
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(11)),
                       child: StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance.collection('accommodation').snapshots(),
+                        stream: FirebaseFirestore.instance
+                            .collection('accommodation')
+                            .snapshots(),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
                             return const Center(
                                 child: CircularProgressIndicator(
                               color: Colors.orange,
                             ));
                           }
-                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                            return const Center(child: Text('No accommodations found'));
+                          if (!snapshot.hasData ||
+                              snapshot.data!.docs.isEmpty) {
+                            return const Center(
+                                child: Text('No accommodations found'));
                           }
                           return ListView(
                             shrinkWrap: true,
                             scrollDirection: Axis.horizontal,
-                            children: snapshot.data!.docs.map((DocumentSnapshot doc) {
-                              Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                            children:
+                                snapshot.data!.docs.map((DocumentSnapshot doc) {
+                              Map<String, dynamic> data =
+                                  doc.data() as Map<String, dynamic>;
                               List<dynamic> images = data['images'] ?? [];
 
                               return Container(
                                 height: 180,
                                 width: 200,
-                                margin: const EdgeInsets.symmetric(horizontal: 10),
-                                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(11)),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 10),
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(11)),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -662,47 +756,58 @@ class _HomeScreenState extends State<HomeScreen> {
                                             )
                                           : const SizedBox(),
                                     ),
-                                    const SizedBox(height: 10), // Add space between the image and the text
+                                    const SizedBox(
+                                        height:
+                                            10), // Add space between the image and the text
                                     Padding(
-                                      padding: const EdgeInsets.only(left: 10.0),
+                                      padding:
+                                          const EdgeInsets.only(left: 10.0),
                                       child: Text(
                                         "City -  ${data['city'] ?? 'No Address'}",
                                         textAlign: TextAlign.start,
                                         style: const TextStyle(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 14, // Adjust the font size as needed
+                                          fontSize:
+                                              14, // Adjust the font size as needed
                                         ),
                                         // overflow: TextOverflow.ellipsis,
-                                        maxLines: 1, // Allow text to wrap to 2 lines if needed
+                                        maxLines:
+                                            1, // Allow text to wrap to 2 lines if needed
                                       ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(left: 10.0),
+                                      padding:
+                                          const EdgeInsets.only(left: 10.0),
                                       child: Text(
                                         "State -  ${data['state'] ?? 'No Address'}",
                                         textAlign: TextAlign.start,
                                         style: const TextStyle(
                                           color: Colors.black,
                                           fontWeight: FontWeight.w400,
-                                          fontSize: 14, // Adjust the font size as needed
+                                          fontSize:
+                                              14, // Adjust the font size as needed
                                         ),
                                         // overflow: TextOverflow.ellipsis,
-                                        maxLines: 1, // Allow text to wrap to 2 lines if needed
+                                        maxLines:
+                                            1, // Allow text to wrap to 2 lines if needed
                                       ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(left: 10.0),
+                                      padding:
+                                          const EdgeInsets.only(left: 10.0),
                                       child: Text(
                                         "FullAddress -  ${data['fullAddress'] ?? 'No Address'}",
                                         textAlign: TextAlign.start,
                                         style: const TextStyle(
                                           color: Colors.black,
                                           fontWeight: FontWeight.w400,
-                                          fontSize: 14, // Adjust the font size as needed
+                                          fontSize:
+                                              14, // Adjust the font size as needed
                                         ),
                                         // overflow: TextOverflow.ellipsis,
-                                        maxLines: 1, // Allow text to wrap to 2 lines if needed
+                                        maxLines:
+                                            1, // Allow text to wrap to 2 lines if needed
                                       ),
                                     ),
                                   ],
@@ -724,31 +829,39 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Container(
                       height: height * .16,
-                      width: Get.width,
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(11)),
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(11)),
                       child: StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance.collection('jobs').snapshots(),
+                        stream: FirebaseFirestore.instance
+                            .collection('jobs')
+                            .snapshots(),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
                             return const Center(
                                 child: CircularProgressIndicator(
                               color: Colors.orange,
                             ));
                           }
-                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          if (!snapshot.hasData ||
+                              snapshot.data!.docs.isEmpty) {
                             return const Center(child: Text('No jobs found'));
                           }
                           return ListView(
                             shrinkWrap: true,
                             scrollDirection: Axis.horizontal,
-                            children: snapshot.data!.docs.map((DocumentSnapshot doc) {
-                              Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                            children:
+                                snapshot.data!.docs.map((DocumentSnapshot doc) {
+                              Map<String, dynamic> data =
+                                  doc.data() as Map<String, dynamic>;
                               List<dynamic> images = data['images'] ?? [];
 
                               return Container(
                                 height: 180,
                                 width: 200,
-                                margin: const EdgeInsets.only(right: 10, left: 10),
+                                margin:
+                                    const EdgeInsets.only(right: 10, left: 10),
                                 decoration: BoxDecoration(
                                     border: Border.all(color: Colors.grey),
                                     color: Colors.white,
@@ -759,8 +872,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(10),
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const SizedBox(
                                             height: 10,
@@ -770,10 +885,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                             textAlign: TextAlign.center,
                                             style: const TextStyle(
                                               color: Colors.black,
-                                              fontSize: 12, // Adjust the font size as needed
+                                              fontSize:
+                                                  12, // Adjust the font size as needed
                                             ),
                                             overflow: TextOverflow.ellipsis,
-                                            maxLines: 2, // Allow text to wrap to 2 lines if needed
+                                            maxLines:
+                                                2, // Allow text to wrap to 2 lines if needed
                                           ),
                                           const SizedBox(
                                             height: 10,
@@ -783,10 +900,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                             textAlign: TextAlign.center,
                                             style: const TextStyle(
                                               color: Colors.black,
-                                              fontSize: 12, // Adjust the font size as needed
+                                              fontSize:
+                                                  12, // Adjust the font size as needed
                                             ),
                                             overflow: TextOverflow.ellipsis,
-                                            maxLines: 2, // Allow text to wrap to 2 lines if needed
+                                            maxLines:
+                                                2, // Allow text to wrap to 2 lines if needed
                                           ),
                                           const SizedBox(
                                             height: 10,
@@ -796,10 +915,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                             textAlign: TextAlign.center,
                                             style: const TextStyle(
                                               color: Colors.black,
-                                              fontSize: 12, // Adjust the font size as needed
+                                              fontSize:
+                                                  12, // Adjust the font size as needed
                                             ),
                                             overflow: TextOverflow.ellipsis,
-                                            maxLines: 2, // Allow text to wrap to 2 lines if needed
+                                            maxLines:
+                                                2, // Allow text to wrap to 2 lines if needed
                                           ),
                                           const SizedBox(
                                             height: 10,
@@ -809,10 +930,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                             textAlign: TextAlign.center,
                                             style: const TextStyle(
                                               color: Colors.black,
-                                              fontSize: 12, // Adjust the font size as needed
+                                              fontSize:
+                                                  12, // Adjust the font size as needed
                                             ),
                                             overflow: TextOverflow.ellipsis,
-                                            maxLines: 2, // Allow text to wrap to 2 lines if needed
+                                            maxLines:
+                                                2, // Allow text to wrap to 2 lines if needed
                                           ),
                                         ],
                                       ),
@@ -839,8 +962,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Container(
                           height: height * .32,
-                          width: Get.width,
-                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(11)),
+                          width: MediaQuery.of(context).size.width,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(11)),
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount: _temples.length,
@@ -848,20 +972,28 @@ class _HomeScreenState extends State<HomeScreen> {
                               final temples = _temples[index];
                               final name = temples['name'];
                               final address = temples['vicinity'];
-                              final rating = (temples['rating'] as num?)?.toDouble() ?? 0.0;
+                              final rating =
+                                  (temples['rating'] as num?)?.toDouble() ??
+                                      0.0;
                               final reviews = temples['reviews'];
-                              final description = temples['description'] ?? 'No Description Available';
-                              final openingHours = temples['opening_hours'] != null
-                                  ? temples['opening_hours']['weekday_text']
-                                  : 'Not Available';
-                              final closingTime = temples['closing_time'] ?? 'Not Available';
-                              final photoReference =
-                                  temples['photos'] != null ? temples['photos'][0]['photo_reference'] : null;
+                              final description = temples['description'] ??
+                                  'No Description Available';
+                              final openingHours =
+                                  temples['opening_hours'] != null
+                                      ? temples['opening_hours']['weekday_text']
+                                      : 'Not Available';
+                              final closingTime =
+                                  temples['closing_time'] ?? 'Not Available';
+                              final photoReference = temples['photos'] != null
+                                  ? temples['photos'][0]['photo_reference']
+                                  : null;
                               final photoUrl = photoReference != null
                                   ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=35000&photoreference=$photoReference&key=$apiKey'
                                   : null;
-                              final lat = temples['geometry']['location']['lat'];
-                              final lng = temples['geometry']['location']['lng'];
+                              final lat =
+                                  temples['geometry']['location']['lat'];
+                              final lng =
+                                  temples['geometry']['location']['lng'];
 
                               resturentLat = lat.toString();
                               resturentlong = lng.toString();
@@ -883,11 +1015,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Container(
                                   height: 180,
                                   width: 200,
-                                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                                  decoration:
-                                      BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(11)),
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(11)),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(10),
@@ -900,34 +1035,42 @@ class _HomeScreenState extends State<HomeScreen> {
                                               )
                                             : const SizedBox(),
                                       ),
-                                      const SizedBox(height: 10), // Add space between the image and the text
+                                      const SizedBox(
+                                          height:
+                                              10), // Add space between the image and the text
                                       Padding(
-                                        padding: const EdgeInsets.only(left: 10.0),
+                                        padding:
+                                            const EdgeInsets.only(left: 10.0),
                                         child: Text(
                                           name,
                                           textAlign: TextAlign.start,
                                           style: const TextStyle(
                                             color: Colors.black,
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 14, // Adjust the font size as needed
+                                            fontSize:
+                                                14, // Adjust the font size as needed
                                           ),
                                           // overflow: TextOverflow.ellipsis,
-                                          maxLines: 1, // Allow text to wrap to 2 lines if needed
+                                          maxLines:
+                                              1, // Allow text to wrap to 2 lines if needed
                                         ),
                                       ),
                                       const SizedBox(height: 5),
                                       Padding(
-                                        padding: const EdgeInsets.only(left: 10.0),
+                                        padding:
+                                            const EdgeInsets.only(left: 10.0),
                                         child: Text(
                                           address,
                                           textAlign: TextAlign.start,
                                           style: const TextStyle(
                                             color: Colors.black,
                                             fontWeight: FontWeight.w300,
-                                            fontSize: 14, // Adjust the font size as needed
+                                            fontSize:
+                                                14, // Adjust the font size as needed
                                           ),
                                           // overflow: TextOverflow.ellipsis,
-                                          maxLines: 1, // Allow text to wrap to 2 lines if needed
+                                          maxLines:
+                                              1, // Allow text to wrap to 2 lines if needed
                                         ),
                                       ),
                                     ],
@@ -943,7 +1086,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            SearchField()
+            const SearchField()
           ],
         ),
       ),
@@ -953,11 +1096,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class CategoryCard extends StatelessWidget {
   const CategoryCard({
-    Key? key,
+    super.key,
     required this.icon,
     required this.text,
     required this.press,
-  }) : super(key: key);
+  });
 
   final String icon, text;
   final GestureTapCallback press;
@@ -987,7 +1130,7 @@ class CategoryCard extends StatelessWidget {
             margin: const EdgeInsets.only(right: 10),
             width: 56, // Adjust width if needed
             child: Text(
-              text.capitalize!,
+              text.toString().capitalize ?? '',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.black,
@@ -1005,12 +1148,12 @@ class CategoryCard extends StatelessWidget {
 
 class SpecialOfferCard extends StatelessWidget {
   const SpecialOfferCard({
-    Key? key,
+    super.key,
     required this.category,
     required this.image,
     required this.numOfBrands,
     required this.press,
-  }) : super(key: key);
+  });
 
   final String category, image;
   final int numOfBrands;

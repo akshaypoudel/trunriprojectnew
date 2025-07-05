@@ -49,7 +49,7 @@ class _UploadResumeScreenState extends State<UploadResumeScreen> {
         'resume_file': fileUrl,
       }).then((value) {
         NewHelper.hideLoader(loader);
-        showToast('Thanks for applying for this job');
+        showSnackBar(context,'Thanks for applying for this job');
         Get.to(const JobHomePageScreen());
       });
     }

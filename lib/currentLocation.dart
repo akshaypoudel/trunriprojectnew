@@ -141,7 +141,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
     //   }).
       then((value)  {
         Get.to(const VisaTypeScreen());
-        showToast('Current Location Save Successfully');
+        showSnackBar(context,'Current Location Save Successfully');
         NewHelper.hideLoader(loader);
       });
 
@@ -346,7 +346,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
                               Expanded(
                                 child: GestureDetector(
                                   onTap: () {
-                                    showToast('Your Location save Successfully');
+                                    showSnackBar(context,'Your Location save Successfully');
                                   },
                                   child: Text(
                                     'Save Location',

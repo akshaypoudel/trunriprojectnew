@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/signUpScreen.dart';
 import 'package:trunriproject/signinscreen.dart';
+import 'package:trunriproject/widgets/helper.dart';
 
 import 'home/bottom_bar.dart';
 import 'home/firestore_service.dart';
@@ -28,13 +29,13 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   checkLogin() async {
-    await Future.delayed(Duration(milliseconds: 500)); // short delay
     User? currentUser = FirebaseAuth.instance.currentUser;
     log("qwerty${currentUser.toString()}");
 
     if (currentUser != null) {
       bool userExists = await FirebaseFireStoreService().checkUserProfile();
       if (userExists) {
+        showSnackBar(context, 'User Exists');
         Get.offAll(() => const MyBottomNavBar());
       } else {
         Get.offAll(() => const SignInScreen());
@@ -42,11 +43,15 @@ class _SplashScreenState extends State<SplashScreen> {
     }
   }
 
-
   @override
   void initState() {
     super.initState();
-    next();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      next();
+    });
+
+    //next();
+    //checkLogin();
   }
 
   @override
@@ -89,8 +94,11 @@ class _SplashScreenState extends State<SplashScreen> {
                     const Text(
                       "Namaste! Unite, Flourish\nTogether, Celebrate!",
                       textAlign: TextAlign.center,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 30, color: Color(0xff353047), height: 1.2),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 30,
+                          color: Color(0xff353047),
+                          height: 1.2),
                     ),
                     const SizedBox(height: 25),
                     const Text(
@@ -132,13 +140,19 @@ class _SplashScreenState extends State<SplashScreen> {
                                 onTap: () {
                                   Navigator.of(context).push(
                                     PageRouteBuilder(
-                                      pageBuilder: (context, animation, secondaryAnimation) => const SignUpScreen(),
-                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                      pageBuilder: (context, animation,
+                                              secondaryAnimation) =>
+                                          const SignUpScreen(),
+                                      transitionsBuilder: (context, animation,
+                                          secondaryAnimation, child) {
                                         const begin = Offset(1.0, 0.0);
                                         const end = Offset.zero;
                                         const curve = Curves.ease;
-                                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                                        var offsetAnimation = animation.drive(tween);
+                                        var tween = Tween(
+                                                begin: begin, end: end)
+                                            .chain(CurveTween(curve: curve));
+                                        var offsetAnimation =
+                                            animation.drive(tween);
                                         return SlideTransition(
                                           position: offsetAnimation,
                                           child: child,
@@ -171,13 +185,19 @@ class _SplashScreenState extends State<SplashScreen> {
                                 onTap: () {
                                   Navigator.of(context).push(
                                     PageRouteBuilder(
-                                      pageBuilder: (context, animation, secondaryAnimation) => const SignInScreen(),
-                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                      pageBuilder: (context, animation,
+                                              secondaryAnimation) =>
+                                          const SignInScreen(),
+                                      transitionsBuilder: (context, animation,
+                                          secondaryAnimation, child) {
                                         const begin = Offset(1.0, 0.0);
                                         const end = Offset.zero;
                                         const curve = Curves.ease;
-                                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                                        var offsetAnimation = animation.drive(tween);
+                                        var tween = Tween(
+                                                begin: begin, end: end)
+                                            .chain(CurveTween(curve: curve));
+                                        var offsetAnimation =
+                                            animation.drive(tween);
                                         return SlideTransition(
                                           position: offsetAnimation,
                                           child: child,

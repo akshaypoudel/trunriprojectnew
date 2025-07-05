@@ -14,9 +14,9 @@ import 'package:trunriproject/widgets/helper.dart';
 import 'currentLocation.dart';
 
 class PickUpAddressScreen extends StatefulWidget {
-  PickUpAddressScreen({
-    Key? key,
-  }) : super(key: key);
+  const PickUpAddressScreen({
+    super.key,
+  });
 
   @override
   State<PickUpAddressScreen> createState() => _PickUpAddressScreenState();
@@ -29,40 +29,50 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
   final TextEditingController countryController = TextEditingController();
   final TextEditingController zipcodeController = TextEditingController();
   final TextEditingController townController = TextEditingController();
-  final TextEditingController specialInstructionController = TextEditingController();
+  final TextEditingController specialInstructionController =
+      TextEditingController();
   RxBool hide = true.obs;
   RxBool hide1 = true.obs;
   bool showValidation = false;
   final formKey1 = GlobalKey<FormState>();
 
-  void addNativeAddress(){
+  void addNativeAddress() {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
-    FirebaseFirestore.instance.collection('nativeAddress').doc(FirebaseAuth.instance.currentUser!.uid).set({
-      'Street' : streetController.text.trim(),
+    FirebaseFirestore.instance
+        .collection('nativeAddress')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .set({
+      'Street': streetController.text.trim(),
       'city': cityController.text.trim(),
-      'state' : stateController.text.trim(),
-      'country':'India',
-      'zipcode':zipcodeController.text.trim(),
-      'town':townController.text.trim(),
-      'userId':FirebaseAuth.instance.currentUser!.uid,
-      'specialInstruction':specialInstructionController.text.trim()
+      'state': stateController.text.trim(),
+      'country': 'India',
+      'zipcode': zipcodeController.text.trim(),
+      'town': townController.text.trim(),
+      'userId': FirebaseAuth.instance.currentUser!.uid,
+      'specialInstruction': specialInstructionController.text.trim()
     }).then((value) {
-       if(formKey1.currentState!.validate()){
-         Get.to(CurrentAddress());
-         log("qwerty${FirebaseAuth.instance.currentUser!.uid}");
-         showToast('Native Address saved Successfully');
-         NewHelper.hideLoader(loader);
-       }else{
-         NewHelper.hideLoader(loader);
-       }
+      if (formKey1.currentState!.validate()) {
+        Get.to(CurrentAddress());
+        log("qwerty${FirebaseAuth.instance.currentUser!.uid}");
+        showSnackBar(context, 'Native Address saved Successfully');
+        NewHelper.hideLoader(loader);
+      } else {
+        NewHelper.hideLoader(loader);
+      }
     });
   }
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
+  void dispose() {
+    streetController.dispose();
+    cityController.dispose();
+    stateController.dispose();
+    countryController.dispose();
+    zipcodeController.dispose();
+    townController.dispose();
+    specialInstructionController.dispose();
+    super.dispose();
   }
 
   @override
@@ -82,7 +92,10 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
               padding: const EdgeInsets.only(left: 25),
               child: Text(
                 'Native Address'.tr,
-                style: GoogleFonts.poppins(color: Color(0xff292F45), fontWeight: FontWeight.w600, fontSize: 20),
+                style: GoogleFonts.poppins(
+                    color: const Color(0xff292F45),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20),
               ),
             ),
             // Image.asset(
@@ -107,7 +120,10 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
                 padding: const EdgeInsets.only(left: 25),
                 child: Text(
                   "Can you tell us where you're from?".tr,
-                  style: GoogleFonts.poppins(color: Color(0xff292F45), fontWeight: FontWeight.w600, fontSize: 16),
+                  style: GoogleFonts.poppins(
+                      color: const Color(0xff292F45),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16),
                 ),
               ),
               SizedBox(
@@ -117,12 +133,14 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
                 padding: const EdgeInsets.only(left: 25),
                 child: Text(
                   'Street'.tr,
-                  style:
-                      GoogleFonts.poppins(color: const Color(0xff1F1F1F), fontWeight: FontWeight.w400, fontSize: 14),
+                  style: GoogleFonts.poppins(
+                      color: const Color(0xff1F1F1F),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 14),
                 ),
               ),
               CommonTextField(
-                hintText: 'Ex: shivaji road',
+                hintText: 'Ex: Shivaji Road',
                 controller: streetController,
                 validator: MultiValidator([
                   RequiredValidator(errorText: 'Street is required'),
@@ -132,12 +150,14 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
                 padding: const EdgeInsets.only(left: 25),
                 child: Text(
                   'City'.tr,
-                  style:
-                      GoogleFonts.poppins(color: const Color(0xff1F1F1F), fontWeight: FontWeight.w400, fontSize: 14),
+                  style: GoogleFonts.poppins(
+                      color: const Color(0xff1F1F1F),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 14),
                 ),
               ),
               CommonTextField(
-                hintText: 'Ex: Mubai,Delhi, Chennai',
+                hintText: 'Ex: Mumbai,Delhi,Chennai',
                 controller: cityController,
                 validator: MultiValidator([
                   RequiredValidator(errorText: 'City is required'),
@@ -147,8 +167,10 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
                 padding: const EdgeInsets.only(left: 25),
                 child: Text(
                   'Town'.tr,
-                  style:
-                      GoogleFonts.poppins(color: const Color(0xff1F1F1F), fontWeight: FontWeight.w400, fontSize: 14),
+                  style: GoogleFonts.poppins(
+                      color: const Color(0xff1F1F1F),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 14),
                 ),
               ),
               CommonTextField(
@@ -162,8 +184,10 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
                 padding: const EdgeInsets.only(left: 25),
                 child: Text(
                   'State'.tr,
-                  style:
-                      GoogleFonts.poppins(color: const Color(0xff1F1F1F), fontWeight: FontWeight.w400, fontSize: 14),
+                  style: GoogleFonts.poppins(
+                      color: const Color(0xff1F1F1F),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 14),
                 ),
               ),
               CommonTextField(
@@ -177,25 +201,33 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
                 padding: const EdgeInsets.only(left: 25),
                 child: Text(
                   'Country'.tr,
-                  style:
-                      GoogleFonts.poppins(color: const Color(0xff1F1F1F), fontWeight: FontWeight.w400, fontSize: 14),
+                  style: GoogleFonts.poppins(
+                      color: const Color(0xff1F1F1F),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 14),
                 ),
               ),
               CommonTextField(
                 hintText: 'India',
                 controller: countryController,
                 readOnly: true,
-                prefix: Padding(
-                  padding: const EdgeInsets.only(left: 5,right: 5),
-                  child: Image.asset('assets/images/flag.gif',height: 10,),
+                prefixicon: Padding(
+                  padding: const EdgeInsets.only(left: 5, right: 5),
+                  child: Image.asset(
+                    'assets/images/flag1png.png',
+                    height: 15,
+                    width: 15,
+                  ),
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 25),
                 child: Text(
                   'Special Instruction'.tr,
-                  style:
-                      GoogleFonts.poppins(color: const Color(0xff1F1F1F), fontWeight: FontWeight.w400, fontSize: 14),
+                  style: GoogleFonts.poppins(
+                      color: const Color(0xff1F1F1F),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 14),
                 ),
               ),
               CommonTextField(
@@ -210,7 +242,7 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
                   addNativeAddress();
                 },
                 child: Container(
-                  margin: EdgeInsets.only(left: 25, right: 25),
+                  margin: const EdgeInsets.only(left: 25, right: 25),
                   width: size.width,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
@@ -239,4 +271,3 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
     );
   }
 }
-

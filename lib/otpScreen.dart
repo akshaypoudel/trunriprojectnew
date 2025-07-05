@@ -21,7 +21,8 @@ class NewOtpScreen extends StatefulWidget {
   final String phoneNumber;
   final String verificationId;
 
-  NewOtpScreen({required this.phoneNumber, required this.verificationId});
+  const NewOtpScreen(
+      {super.key, required this.phoneNumber, required this.verificationId});
 
   @override
   State<NewOtpScreen> createState() => _NewOtpScreenState();
@@ -44,33 +45,34 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
     });
   }
 
-
-
   void verifyOTP() async {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
-    if(otpController.text.trim().isEmpty){
-      showToast("Please enter OTP");
-    }else{
+    if (otpController.text.trim().isEmpty) {
+      showSnackBar(context, "Please enter OTP");
+    } else {
       try {
-
         PhoneAuthCredential credential = PhoneAuthProvider.credential(
           verificationId: widget.verificationId,
           smsCode: otpController.text.trim(),
         );
 
         await FirebaseAuth.instance.signInWithCredential(credential);
-        showToast("User registered successfully");
-        SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-        sharedPreferences.setString("myPhone" , widget.phoneNumber);
+        showSnackBar(context, "User registered successfully");
+        SharedPreferences sharedPreferences =
+            await SharedPreferences.getInstance();
+        sharedPreferences.setString("myPhone", widget.phoneNumber);
         Navigator.of(context).push(
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => PickUpAddressScreen(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const PickUpAddressScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
               const begin = Offset(1.0, 0.0);
               const end = Offset.zero;
               const curve = Curves.ease;
-              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
               var offsetAnimation = animation.drive(tween);
               return SlideTransition(
                 position: offsetAnimation,
@@ -80,13 +82,13 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
           ),
         );
       } catch (e) {
-        showToast("Invalid OTP");
+        showSnackBar(context, "Invalid OTP");
       }
     }
 
-
     NewHelper.hideLoader(loader);
   }
+
   final defaultPinTheme = PinTheme(
       width: 56,
       height: 56,
@@ -108,12 +110,18 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
   }
 
   @override
+  void dispose() {
+    otpController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Color(0xffFF730A),
+        backgroundColor: const Color(0xffFF730A),
         leading: GestureDetector(
           onTap: () {
             Get.back();
@@ -134,23 +142,29 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
                 height: size.height,
                 width: size.width,
                 decoration: const BoxDecoration(color: Color(0xffFF730A)),
-                padding: EdgeInsets.symmetric(horizontal: size.width * .02, vertical: size.height * .06),
+                padding: EdgeInsets.symmetric(
+                    horizontal: size.width * .02, vertical: size.height * .06),
                 child: Column(
                   children: [
-                    Image.asset(height: size.height * .15, 'assets/images/otplogo.png'),
+                    Image.asset(
+                        height: size.height * .15, 'assets/images/otplogo.png'),
                     const SizedBox(
                       height: 13,
                     ),
                     Text(
                       'OTP Verification',
-                      style: GoogleFonts.poppins(fontSize: 23, fontWeight: FontWeight.w700, color: Colors.white),
+                      style: GoogleFonts.poppins(
+                          fontSize: 23,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white),
                     ),
                     const SizedBox(
                       height: 8,
                     ),
                     Text(
                       'Enter the OTP Send to Your Email',
-                      style: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
+                      style: GoogleFonts.poppins(
+                          fontSize: 16, color: Colors.white),
                     )
                   ],
                 ),
@@ -166,7 +180,8 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
                       // borderRadius: BorderRadius.only(topLeft: Radius.circular(100))
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 60, left: 10, right: 10),
+                      padding:
+                          const EdgeInsets.only(top: 60, left: 10, right: 10),
                       child: Column(
                         children: [
                           Pinput(
@@ -181,7 +196,8 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
                           ),
                           Text(
                             'Did not receive the OTP ?',
-                            style: GoogleFonts.poppins(color: const Color(0xff3D4260), fontSize: 17),
+                            style: GoogleFonts.poppins(
+                                color: const Color(0xff3D4260), fontSize: 17),
                           ),
                           SizedBox(
                             height: size.height * .03,
@@ -194,7 +210,9 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
                                 '${timerInt.value > 0 ? "In ${timerInt.value > 9 ? timerInt.value : "0${timerInt.value}"}" : ""}',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w600, color: const Color(0xff578AE8), fontSize: 16),
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xff578AE8),
+                                    fontSize: 16),
                               );
                             }),
                           ),
@@ -213,8 +231,9 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
           padding: const EdgeInsets.all(15.0).copyWith(bottom: 10),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xffFF730A),
-                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(2))),
+                backgroundColor: const Color(0xffFF730A),
+                shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(2))),
                 textStyle: GoogleFonts.poppins(
                   fontWeight: FontWeight.bold,
                 )),
@@ -225,7 +244,10 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Text(
                 'Verify OTP'.tr,
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
               ),
             ),
           ),

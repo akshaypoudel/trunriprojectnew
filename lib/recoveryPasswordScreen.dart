@@ -38,7 +38,7 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
 
       });
     } else {
-      showToast("User is not registered with this email");
+      showSnackBar(context,"User is not registered with this email");
     }
 
     NewHelper.hideLoader(loader);
@@ -63,15 +63,15 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
             .update({"password": passwordController.text.trim()});
 
         NewHelper.hideLoader(loader);
-        showToast("Password changed successfully");
+        showSnackBar(context,"Password changed successfully");
         Get.to(const SignInScreen());
       } else {
         NewHelper.hideLoader(loader);
-        showToast("User is not registered with this email");
+        showSnackBar(context,"User is not registered with this email");
       }
     } catch (e) {
       NewHelper.hideLoader(loader);
-      showToast("Error: ${e.toString()}");
+      showSnackBar(context,"Error: ${e.toString()}");
     }
   }
 

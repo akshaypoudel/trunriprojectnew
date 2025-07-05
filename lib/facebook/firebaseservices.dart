@@ -7,7 +7,7 @@ Future<UserCredential> signInWithFacebook() async {
 
     if (loginResult.status == LoginStatus.success) {
       final AccessToken accessToken = loginResult.accessToken!;
-      final OAuthCredential credential = FacebookAuthProvider.credential(accessToken.token);
+      final OAuthCredential credential = FacebookAuthProvider.credential(accessToken.tokenString);
       return await FirebaseAuth.instance.signInWithCredential(credential);
     } else {
       throw FirebaseAuthException(

@@ -50,12 +50,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Get.offAll(const MyBottomNavBar());
             }
           } else {
-            showToast("Failed to update profile");
+            showSnackBar(context,"Failed to update profile");
           }
         },
       );
     } catch (e) {
-      showToast("Error updating profile: $e");
+      showSnackBar(context,"Error updating profile: $e");
       print("Error updating profile: $e");
     }
   }
@@ -106,13 +106,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           log("Phone Login - name: $name, email: $email");
         } else {
-          showToast("User data not found for phone number");
+          showSnackBar(context,"User data not found for phone number");
         }
       } catch (e) {
-        showToast("Error fetching user data: ${e.toString()}");
+        showSnackBar(context,"Error fetching user data: ${e.toString()}");
       }
     } else {
-      showToast("No login data found");
+      showSnackBar(context,"No login data found");
     }
   }
 
@@ -398,7 +398,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () {
                             FirebaseAuth.instance.signOut().then((value) {
                               Get.offAll(const SignInScreen());
-                              showToast("Logged Out Successfully");
+                              showSnackBar(context,"Logged Out Successfully");
                             });
                           },
                           child: ListTile(
@@ -420,7 +420,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () async {
                             User? user = FirebaseAuth.instance.currentUser;
                             await user!.delete();
-                            showToast("Your account has been deleted");
+                            showSnackBar(context,"Your account has been deleted");
                             Get.to(const SignUpScreen());
                           },
                           child: ListTile(

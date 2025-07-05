@@ -71,12 +71,10 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
 
       Get.to(MyBottomNavBar());
       NewHelper.hideLoader(loader);
-      showToast('Accommodation added successfully!');
+      showSnackBar(context,'Accommodation added successfully!');
 
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          showToast("Error: $e")
-      );
+          showSnackBar(context,"Error: $e");
     }
   }
 

@@ -8,7 +8,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -145,18 +144,58 @@ class NewHelper {
     );
   }
 }
+//
+// showToast(message, {ToastGravity? gravity, bool? center}) {
+//   Fluttertoast.cancel();
+//   Fluttertoast.showToast(
+//       msg: message.toString(),
+//       toastLength: Toast.LENGTH_LONG,
+//       gravity: center == true ? ToastGravity.CENTER :  gravity ?? ToastGravity.CENTER,
+//       timeInSecForIosWeb: 4,
+//       backgroundColor: Color(0xff0FF730A),
+//       textColor: const Color(0xffffffff),
+//       fontSize: 15);
+// }
 
-showToast(message, {ToastGravity? gravity, bool? center}) {
-  Fluttertoast.cancel();
-  Fluttertoast.showToast(
-      msg: message.toString(),
-      toastLength: Toast.LENGTH_LONG,
-      gravity: center == true ? ToastGravity.CENTER :  gravity ?? ToastGravity.CENTER,
-      timeInSecForIosWeb: 4,
-      backgroundColor: Color(0xff0FF730A),
-      textColor: const Color(0xffffffff),
-      fontSize: 15);
+
+void showSnackBar(
+    BuildContext context,
+    dynamic message, {
+      SnackBarBehavior? behavior,
+      bool? center,
+    }) {
+  // Remove any existing SnackBar
+  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+  // Determine SnackBar position and behavior
+  final isCenter = center == true;
+  final snackBarBehavior = behavior ?? (isCenter ? SnackBarBehavior.floating : SnackBarBehavior.fixed);
+
+  final snackBar = SnackBar(
+    content: Text(
+      message.toString(),
+      textAlign: isCenter ? TextAlign.center : TextAlign.left,
+      style: const TextStyle(
+        color: Color(0xffffffff),
+        fontSize: 15,
+      ),
+    ),
+    duration: const Duration(seconds: 4),
+    backgroundColor: const Color(0xff0FF730A),
+    behavior: snackBarBehavior,
+    margin: isCenter
+        ? const EdgeInsets.symmetric(horizontal: 40, vertical: 20)
+        : null, // Margin only for floating (centered) SnackBar
+    shape: isCenter
+        ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+        : null,
+  );
+
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
+
+
+
 extension ConvertToNum on String {
   num? get convertToNum {
     return num.tryParse(this);

@@ -28,10 +28,10 @@ class _VisaTypeScreenState extends State<VisaTypeScreen> {
     }).then((value) {
       if(selectedVisaType != null){
         Get.to(const MyBottomNavBar());
-        showToast('Visa Type Added Successfully');
+        showSnackBar(context,'Visa Type Added Successfully');
         NewHelper.hideLoader(loader);
       }else{
-        showToast('please select visa Type');
+        showSnackBar(context,'please select visa Type');
         NewHelper.hideLoader(loader);
       }
     });

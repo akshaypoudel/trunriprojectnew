@@ -70,7 +70,7 @@ class FirebaseFireStoreService {
         "address": address,
         "profile": profileUrl,
       }).then((value) {
-        showToast("Profile updated");
+        showSnackBar(context,"Profile updated");
         updated(true);
         NewHelper.hideLoader(loader);
         return true;

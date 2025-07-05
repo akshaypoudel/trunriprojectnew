@@ -138,7 +138,7 @@ class _PropertyScreenState extends State<PropertyScreen> {
         }
         Get.to(AvailabilityAndPriceScreen(dateTime: widget.dateTime));
         NewHelper.hideLoader(loader);
-        showToast('Property saved');
+        showSnackBar(context,'Property saved');
       } else {
         NewHelper.hideLoader(loader);
         print('No matching document found');
@@ -486,7 +486,7 @@ class _PropertyScreenState extends State<PropertyScreen> {
                       if (isFormComplete()) {
                         savePropertyData();
                       } else {
-                        showToast('Please fill all the fields');
+                        showSnackBar(context,'Please fill all the fields');
                       }
                     },
                   ),
