@@ -69,6 +69,10 @@ class _SignInScreenState extends State<SignInScreen> {
         return;
       }
 
+// UserCredential userCredential = await FirebaseAuth.instance
+//         .signInWithEmailAndPassword(email: syntheticEmail, password: password);
+//         //FirebaseAuth.instance.signinWith
+
       // Now check if password matches for that phone number
       QuerySnapshot userSnapshot = await FirebaseFirestore.instance
           .collection("User")

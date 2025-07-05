@@ -28,181 +28,177 @@ class _ExplorScreenState extends State<ExplorScreen> {
         title: const Text('Discover Items'),
         automaticallyImplyLeading: false,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              margin: EdgeInsets.all(10),
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
+      body: SafeArea(
+        bottom: false,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  onTap: () {
+                    Get.to(const ResturentItemListScreen());
+                  },
+                  leading: Image.asset(
+                    'assets/icons/rasturent.png',
                   ),
-                ],
-              ),
-              child:  ListTile(
-                onTap: () {
-                  Get.to(const ResturentItemListScreen());
-                },
-                leading: Image.asset('assets/icons/rasturent.png',),
-                title: const Text('Restaurant'),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  size: 15,
+                  title: const Text('Restaurant'),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_outlined,
+                    size: 15,
+                  ),
                 ),
               ),
-            ),
-
-
-            Container(
-              margin: EdgeInsets.all(10),
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
+              Container(
+                margin: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  onTap: () {
+                    Get.to(const GroceryStoreListScreen());
+                  },
+                  leading: Image.asset('assets/icons/grocery.png'),
+                  title: const Text('Grocery Stores'),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_outlined,
+                    size: 15,
                   ),
-                ],
-              ),
-              child: ListTile(
-                onTap: (){
-                  Get.to(GroceryStoreListScreen());
-                },
-                leading: Image.asset('assets/icons/grocery.png'),
-                title: const Text('Grocery Stores'),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  size: 15,
                 ),
               ),
-            ),
-
-            Container(
-              margin: EdgeInsets.all(10),
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
+              Container(
+                margin: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  leading: Image.asset('assets/icons/accommodation.png'),
+                  title: const Text('Accommodation'),
+                  onTap: () {
+                    Get.to(const Accommodationoptionscreen());
+                  },
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_outlined,
+                    size: 15,
                   ),
-                ],
-              ),
-              child: ListTile(
-                leading: Image.asset('assets/icons/accommodation.png'),
-                title: const Text('Accommodation'),
-                onTap: (){
-                  Get.to(const Accommodationoptionscreen());
-                },
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  size: 15,
                 ),
               ),
-            ),
-
-            Container(
-              margin: EdgeInsets.all(10),
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
+              Container(
+                margin: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  onTap: () {
+                    Get.to(const JobHomePageScreen());
+                  },
+                  leading: Image.asset('assets/icons/jobs.png'),
+                  title: const Text('Jobs'),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_outlined,
+                    size: 15,
                   ),
-                ],
-              ),
-              child:  ListTile(
-                onTap: (){
-                  Get.to(const JobHomePageScreen());
-                },
-                leading: Image.asset('assets/icons/jobs.png'),
-                title: const Text('Jobs'),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  size: 15,
                 ),
               ),
-            ),
-
-
-            Container(
-              margin: EdgeInsets.all(10),
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
+              Container(
+                margin: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  onTap: () {
+                    Get.to(const TempleHomePageScreen());
+                  },
+                  leading: Image.asset('assets/icons/templs.png'),
+                  title: const Text('Temple'),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_outlined,
+                    size: 15,
                   ),
-                ],
-              ),
-              child:   ListTile(
-                onTap: (){
-                  Get.to(const TempleHomePageScreen());
-                },
-                leading: Image.asset('assets/icons/templs.png'),
-                title: const Text('Temple'),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  size: 15,
                 ),
               ),
-            ),
-            Container(
-              margin: EdgeInsets.all(10),
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
+              Container(
+                margin: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  onTap: () {
+                    Get.to(EventDiscoveryScreen());
+                  },
+                  leading: Image.asset('assets/icons/events.png'),
+                  title: const Text('Event'),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_outlined,
+                    size: 15,
                   ),
-                ],
-              ),
-              child:   ListTile(
-                onTap: (){
-                  Get.to(EventDiscoveryScreen());
-                },
-                leading: Image.asset('assets/icons/events.png'),
-                title: const Text('Event'),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                  size: 15,
                 ),
               ),
-            ),
-
-
-
-          ],
+            ],
+          ),
         ),
       ),
     );

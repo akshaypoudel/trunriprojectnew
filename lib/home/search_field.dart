@@ -14,7 +14,7 @@ import '../widgets/appTheme.dart';
 import 'icon_btn_with_counter.dart';
 
 class SearchField extends StatefulWidget {
-  const SearchField({Key? key}) : super(key: key);
+  const SearchField({super.key});
 
   @override
   _SearchFieldState createState() => _SearchFieldState();
@@ -34,8 +34,10 @@ class _SearchFieldState extends State<SearchField> {
 
   Future<void> _fetchItems() async {
     try {
-      final querySnapshot = await FirebaseFirestore.instance.collection('search').get();
-      final items = querySnapshot.docs.map((doc) => doc['name'] as String).toList();
+      final querySnapshot =
+          await FirebaseFirestore.instance.collection('search').get();
+      final items =
+          querySnapshot.docs.map((doc) => doc['name'] as String).toList();
       setState(() {
         _allItems = items;
       });
@@ -45,7 +47,9 @@ class _SearchFieldState extends State<SearchField> {
   }
 
   void _filterItems(String query) {
-    final filtered = _allItems.where((item) => item.toLowerCase().contains(query.toLowerCase())).toList();
+    final filtered = _allItems
+        .where((item) => item.toLowerCase().contains(query.toLowerCase()))
+        .toList();
     setState(() {
       _filteredItems = filtered;
     });
@@ -78,142 +82,145 @@ class _SearchFieldState extends State<SearchField> {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      top: 0,
-      right: 0,
-      left: 0,
-      child: Column(
-        children: [
-          const SizedBox(
-            height: 10,
-          ),
-          Row(
-            children: [
-              const SizedBox(
-                width: 10,
-              ),
-              Expanded(
-                child: Form(
-                  child: TextFormField(
-                    controller: _controller,
-                    onChanged: (value) {
-                      if (value.isNotEmpty) {
-                        _filterItems(value);
-                        showSuggestions.value = true;
-                        setState(() {});
-                      } else {
-                        showSuggestions.value = false;
-                      }
-                    },
-                    decoration: InputDecoration(
-                      floatingLabelBehavior:FloatingLabelBehavior.always,
-                      counterStyle: GoogleFonts.roboto(
-                          color: AppTheme.secondaryColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400),
-                      counter: const Offstage(),
-                      errorMaxLines: 2,
-                      hintText: "Search product",
-                      labelStyle: GoogleFonts.roboto(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500),
-                      prefixIcon:   Icon(Icons.search,color: Colors.orange,),
-                      suffixIcon: GestureDetector(
-                        onTap: (){
+    return Column(
+      children: [
+        const SizedBox(
+          height: 10,
+        ),
+        Row(
+          children: [
+            const SizedBox(
+              width: 10,
+            ),
+            Expanded(
+              child: Form(
+                child: TextFormField(
+                  controller: _controller,
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      _filterItems(value);
+                      showSuggestions.value = true;
+                      setState(() {});
+                    } else {
+                      showSuggestions.value = false;
+                    }
+                  },
+                  decoration: InputDecoration(
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
+                    counterStyle: GoogleFonts.roboto(
+                        color: AppTheme.secondaryColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400),
+                    counter: const Offstage(),
+                    errorMaxLines: 2,
+                    hintText: "Search product",
+                    labelStyle: GoogleFonts.roboto(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: Colors.orange,
+                    ),
+                    suffixIcon: GestureDetector(
+                        onTap: () {
                           Get.to(const Notificatioonscreen());
                         },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.notifications,color: Colors.orange,),
-                              SizedBox(width: 10,),
-                              Icon(Icons.location_on,color: Colors.orange,),
-                              SizedBox(width: 10,)
-                            ],
-                          )),
-                      hintStyle: GoogleFonts.urbanist(
-                          color: Color(0xFF86888A),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400),
-                      contentPadding:
-                      const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
-                      disabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                            color: Colors.orange.shade300, width: 0.5),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                            color: Colors.orange.shade300, width: 0.5),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                            color: Colors.orange.shade300, width: 0.5),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                              color: Colors.orange.shade300, width: 0.5),
-                          borderRadius: BorderRadius.circular(10)),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.notifications,
+                              color: Colors.orange,
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            // Icon(
+                            //   Icons.location_on,
+                            //   color: Colors.orange,
+                            // ),
+                            // SizedBox(
+                            //   width: 10,
+                            // )
+                          ],
+                        )),
+                    hintStyle: GoogleFonts.urbanist(
+                        color: const Color(0xFF86888A),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16, horizontal: 14),
+                    disabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.orange, width: 1),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.orange, width: 1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.orange, width: 1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    border: OutlineInputBorder(
+                        borderSide:
+                            const BorderSide(color: Colors.orange, width: 1),
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ),
-              const SizedBox(
-                width: 10,
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          if (_filteredItems.isNotEmpty)
-            Obx(() {
-              return showSuggestions.value
-                  ? ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: _filteredItems.length,
-                      itemBuilder: (context, index) {
-                        return Column(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(left: 15, right: 15),
-                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-                              child: ListTile(
-                                leading: const Icon(Icons.search),
-                                title: Text(_filteredItems[index]),
-                                onTap: () {
-                                  FocusScope.of(context).unfocus();
-                                  String selectedItem = _filteredItems[index];
-                                  _controller.text = selectedItem;
-                                  setState(() {
-                                    _filteredItems.clear();
-                                  });
-                                  _navigateToScreen(selectedItem);
-                                  _controller.clear();
-                                },
-                              ),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+          ],
+        ),
+        if (_filteredItems.isNotEmpty)
+          Obx(() {
+            return showSuggestions.value
+                ? ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _filteredItems.length,
+                    itemBuilder: (context, index) {
+                      return Column(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(left: 15, right: 15),
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10)),
+                            child: ListTile(
+                              leading: const Icon(Icons.search),
+                              title: Text(_filteredItems[index]),
+                              onTap: () {
+                                FocusScope.of(context).unfocus();
+                                String selectedItem = _filteredItems[index];
+                                _controller.text = selectedItem;
+                                setState(() {
+                                  _filteredItems.clear();
+                                });
+                                _navigateToScreen(selectedItem);
+                                _controller.clear();
+                              },
                             ),
-                            SizedBox(
-                              height: 2,
-                            )
-                          ],
-                        );
-                      },
-                    )
-                  : const SizedBox.shrink();
-            }),
-        ],
-      ),
+                          ),
+                        ],
+                      );
+                    },
+                  )
+                : const SizedBox.shrink();
+          }),
+      ],
     );
   }
 }
 
 const searchOutlineInputBorder = OutlineInputBorder(
-  borderRadius: BorderRadius.all(Radius.circular(12)),
+  borderRadius: BorderRadius.all(Radius.circular(1)),
   borderSide: BorderSide.none,
 );

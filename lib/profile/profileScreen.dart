@@ -50,12 +50,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Get.offAll(const MyBottomNavBar());
             }
           } else {
-            showSnackBar(context,"Failed to update profile");
+            showSnackBar(context, "Failed to update profile");
           }
         },
       );
     } catch (e) {
-      showSnackBar(context,"Error updating profile: $e");
+      showSnackBar(context, "Error updating profile: $e");
       print("Error updating profile: $e");
     }
   }
@@ -74,7 +74,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String? googleName = sharedPreferences.getString("google_name");
     String? googleEmail = sharedPreferences.getString("google_email");
 
-    if (googleName != null && googleEmail != null && googleName.isNotEmpty && googleEmail.isNotEmpty) {
+    if (googleName != null &&
+        googleEmail != null &&
+        googleName.isNotEmpty &&
+        googleEmail.isNotEmpty) {
       // 🔹 Google login - use stored name and email
       nameController.text = googleName;
       emailController.text = googleEmail;
@@ -96,7 +99,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         if (querySnapshot.docs.isNotEmpty) {
           DocumentSnapshot userDoc = querySnapshot.docs.first;
-          Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+          Map<String, dynamic> userData =
+              userDoc.data() as Map<String, dynamic>;
 
           nameController.text = userData['name'] ?? '';
           emailController.text = userData['email'] ?? '';
@@ -106,16 +110,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           log("Phone Login - name: $name, email: $email");
         } else {
-          showSnackBar(context,"User data not found for phone number");
+          showSnackBar(context, "User data not found for phone number");
         }
       } catch (e) {
-        showSnackBar(context,"Error fetching user data: ${e.toString()}");
+        showSnackBar(context, "Error fetching user data: ${e.toString()}");
       }
     } else {
-      showSnackBar(context,"No login data found");
+      showSnackBar(context, "No login data found");
     }
   }
-
 
   @override
   void initState() {
@@ -127,6 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      extendBody: true,
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: const Text('Profile'),
@@ -190,7 +194,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     width: 130,
                                     height: 130,
                                     decoration: BoxDecoration(
-                                      border: Border.all(width: 4, color: Colors.white),
+                                      border: Border.all(
+                                          width: 4, color: Colors.white),
                                       boxShadow: [
                                         BoxShadow(
                                           spreadRadius: 2,
@@ -201,11 +206,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       shape: BoxShape.circle,
                                     ),
                                     child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(10000),
+                                      borderRadius:
+                                          BorderRadius.circular(10000),
                                       child: Image.file(
                                         image,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => Image.network(
+                                        errorBuilder: (_, __, ___) =>
+                                            Image.network(
                                           image.path,
                                           fit: BoxFit.cover,
                                           errorBuilder: (_, __, ___) => Icon(
@@ -252,8 +259,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                     readOnly: !isEditing,
                                     controller: nameController,
-                                    style:
-                                        const TextStyle(fontWeight: FontWeight.w600, fontSize: 20, color: Colors.black),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 20,
+                                        color: Colors.black),
                                   ),
                                   TextFormField(
                                     decoration: InputDecoration(
@@ -262,8 +271,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                     readOnly: !isEditing,
                                     controller: emailController,
-                                    style:
-                                        const TextStyle(fontWeight: FontWeight.w400, fontSize: 14, color: Colors.black),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 14,
+                                        color: Colors.black),
                                   ),
                                   // TextFormField(
                                   //   decoration: const InputDecoration(
@@ -398,7 +409,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () {
                             FirebaseAuth.instance.signOut().then((value) {
                               Get.offAll(const SignInScreen());
-                              showSnackBar(context,"Logged Out Successfully");
+                              showSnackBar(context, "Logged Out Successfully");
                             });
                           },
                           child: ListTile(
@@ -420,7 +431,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () async {
                             User? user = FirebaseAuth.instance.currentUser;
                             await user!.delete();
-                            showSnackBar(context,"Your account has been deleted");
+                            showSnackBar(
+                                context, "Your account has been deleted");
                             Get.to(const SignUpScreen());
                           },
                           child: ListTile(

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -29,13 +30,13 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   checkLogin() async {
+    await Future.delayed(const Duration(milliseconds: 500)); // short delay
     User? currentUser = FirebaseAuth.instance.currentUser;
-    log("qwerty${currentUser.toString()}");
+    log("Firebase user in Splash = ${currentUser.toString()}");
 
     if (currentUser != null) {
       bool userExists = await FirebaseFireStoreService().checkUserProfile();
       if (userExists) {
-        //showSnackBar(context, 'User Exists');
         Get.offAll(() => const MyBottomNavBar());
       } else {
         Get.offAll(() => const SignInScreen());
