@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (currentUser != null) {
       bool userExists = await FirebaseFireStoreService().checkUserProfile();
       if (userExists) {
-        showSnackBar(context, 'User Exists');
+        //showSnackBar(context, 'User Exists');
         Get.offAll(() => const MyBottomNavBar());
       } else {
         Get.offAll(() => const SignInScreen());
