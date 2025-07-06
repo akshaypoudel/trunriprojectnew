@@ -31,6 +31,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool isobscurepassword = true;
   File image = File("");
   bool isEditing = false;
+  bool imagePicked = false;
+  bool dataLoaded = true;
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController address = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+  String name = '';
+  String email = '';
 
   updateProfile() async {
     if (!formKey.currentState!.validate()) return;
@@ -60,14 +68,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  bool imagePicked = false;
-  bool dataLoaded = true;
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController address = TextEditingController();
-  final formKey = GlobalKey<FormState>();
-  String name = '';
-  String email = '';
   void fetchUserData() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? phone = sharedPreferences.getString("myPhone");
@@ -88,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       log("Google Login - name: $name, email: $email");
     } else if (phone != null && phone.isNotEmpty) {
       // 🔹 Phone login - fetch from Firestore
-      phone = phone.replaceFirst("+61", "");
+      phone = phone.replaceFirst("+91", "");
       log("Phone Login - phone: $phone");
 
       try {

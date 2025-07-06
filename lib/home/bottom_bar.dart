@@ -13,7 +13,7 @@ class MyBottomNavBar extends StatefulWidget {
 
 class _MyBottomNavBarState extends State<MyBottomNavBar> {
   int myCurrentIndex = 0;
-  List pages = [
+  List<Widget> pages = [
     const HomeScreen(),
     const ExplorScreen(),
     const ChatScreen(),
@@ -25,7 +25,12 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
     return Scaffold(
       backgroundColor: Colors.white,
       extendBody: true,
+      body: IndexedStack(
+        index: myCurrentIndex,
+        children: pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.blueGrey,
         currentIndex: myCurrentIndex,
@@ -69,7 +74,7 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
           ),
         ],
       ),
-      body: pages[myCurrentIndex],
+      // body: pages[myCurrentIndex],
     );
   }
 }
