@@ -57,7 +57,6 @@ class _SignInScreenState extends State<SignInScreen> {
     }
 
     try {
-      // First check if the phone number exists
       QuerySnapshot phoneSnapshot = await FirebaseFirestore.instance
           .collection("User")
           .where("phoneNumber", isEqualTo: phone)
@@ -69,11 +68,6 @@ class _SignInScreenState extends State<SignInScreen> {
         return;
       }
 
-// UserCredential userCredential = await FirebaseAuth.instance
-//         .signInWithEmailAndPassword(email: syntheticEmail, password: password);
-//         //FirebaseAuth.instance.signinWith
-
-      // Now check if password matches for that phone number
       QuerySnapshot userSnapshot = await FirebaseFirestore.instance
           .collection("User")
           .where("phoneNumber", isEqualTo: phone)
@@ -86,7 +80,6 @@ class _SignInScreenState extends State<SignInScreen> {
         return;
       }
 
-      // Successful login
       showSnackBar(context, "Login successful");
       SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
@@ -101,6 +94,54 @@ class _SignInScreenState extends State<SignInScreen> {
       NewHelper.hideLoader(loader);
       showSnackBar(context, "Error: ${e.toString()}");
     }
+  }
+
+  Future<bool> doesPhoneExist(String phone) async {
+    final query = await FirebaseFirestore.instance
+        .collection('User')
+        .where('phoneNumber', isEqualTo: phone)
+        .limit(1)
+        .get();
+
+    return query.docs.isNotEmpty;
+  }
+
+  void requestForOtp() async {
+    String completePhoneNum = '$code${phoneController.text.trim()}';
+
+    OverlayEntry loader = NewHelper.overlayLoader(context);
+    Overlay.of(context).insert(loader);
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: completePhoneNum,
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await FirebaseAuth.instance.signInWithCredential(credential);
+        showSnackBar(context, "User Logged In Successfully");
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        showSnackBar(context, "Verification failed: ${e.message}");
+        NewHelper.hideLoader(loader);
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        SignUpScreen.verificationOTP = verificationId;
+        NewHelper.hideLoader(loader);
+        showSnackBar(context, 'OTP sent successfully');
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => NewOtpScreen(
+              isSignInScreen: true,
+              verificationId: verificationId,
+              phoneNumber: completePhoneNum,
+            ),
+          ),
+        );
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+        SignUpScreen.verificationOTP = verificationId;
+      },
+    );
   }
 
   Future<dynamic> signInWithGoogle(BuildContext context) async {
@@ -171,7 +212,7 @@ class _SignInScreenState extends State<SignInScreen> {
             style:
                 TextStyle(fontSize: 27, color: Color(0xff6F6B7A), height: 1.2),
           ),
-          SizedBox(height: size.height * 0.04),
+          SizedBox(height: size.height * 0.08),
           // for username and password
           Padding(
             padding: const EdgeInsets.only(left: 25, right: 25),
@@ -221,57 +262,64 @@ class _SignInScreenState extends State<SignInScreen> {
             ),
           ),
 
-          Obx(() {
-            return CommonTextField(
-              hintText: 'Password',
-              controller: passwordController,
-              keyboardType: TextInputType.text,
-              validator: MultiValidator([
-                RequiredValidator(errorText: 'Password is required'),
-              ]).call,
-              obSecure: !hide.value,
-              suffixIcon: IconButton(
-                onPressed: () {
-                  hide.value = !hide.value;
-                },
-                icon: hide.value
-                    ? const Icon(Icons.visibility_off)
-                    : const Icon(Icons.visibility),
-              ),
-            );
-          }),
-          const SizedBox(height: 10),
-          Align(
-            alignment: Alignment.centerRight,
-            child: GestureDetector(
-              onTap: () {
-                Get.to(const RecoveryPasswordScreen());
-              },
-              child: const Padding(
-                padding: EdgeInsets.only(right: 10),
-                child: Text(
-                  "Recovery Password",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Color(0xff6F6B7A),
-                  ),
-                ),
-              ),
-            ),
-          ),
+          // Obx(() {
+          //   return CommonTextField(
+          //     hintText: 'Password',
+          //     controller: passwordController,
+          //     keyboardType: TextInputType.text,
+          //     validator: MultiValidator([
+          //       RequiredValidator(errorText: 'Password is required'),
+          //     ]).call,
+          //     obSecure: !hide.value,
+          //     suffixIcon: IconButton(
+          //       onPressed: () {
+          //         hide.value = !hide.value;
+          //       },
+          //       icon: hide.value
+          //           ? const Icon(Icons.visibility_off)
+          //           : const Icon(Icons.visibility),
+          //     ),
+          //   );
+          // }),
+
+          //const SizedBox(height: 10),
+          // Align(
+          //   alignment: Alignment.centerRight,
+          //   child: GestureDetector(
+          //     onTap: () {
+          //       Get.to(const RecoveryPasswordScreen());
+          //     },
+          //     child: const Padding(
+          //       padding: EdgeInsets.only(right: 10),
+          //       child: Text(
+          //         "Recovery Password",
+          //         textAlign: TextAlign.center,
+          //         style: TextStyle(
+          //           fontWeight: FontWeight.bold,
+          //           fontSize: 16,
+          //           color: Color(0xff6F6B7A),
+          //         ),
+          //       ),
+          //     ),
+          //   ),
+          // ),
+
           SizedBox(height: size.height * 0.04),
 
-          SizedBox(height: size.height * 0.01),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 25),
             child: Column(
               children: [
-                // for sign in button
                 GestureDetector(
-                  onTap: () {
-                    loginUser();
+                  onTap: () async {
+                    bool exist =
+                        await doesPhoneExist(phoneController.text.trim());
+                    if (exist) {
+                      // showSnackBar(context, "User Exists");
+                      requestForOtp();
+                    } else {
+                      showSnackBar(context, "User Doesn't Exists");
+                    }
                   },
                   child: Container(
                     width: size.width,
@@ -282,7 +330,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     child: const Center(
                       child: Text(
-                        "Sign In",
+                        "Request OTP",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -292,7 +340,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: size.height * 0.06),
+                SizedBox(height: size.height * 0.1),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

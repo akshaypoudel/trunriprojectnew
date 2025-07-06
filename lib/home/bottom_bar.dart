@@ -1,8 +1,7 @@
-import 'package:crystal_navigation_bar/crystal_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:trunriproject/chat_module/chat_screen.dart';
 import 'package:trunriproject/profile/profileScreen.dart';
 import 'explorScreen.dart';
-import 'favoriteRestaurantsScreen.dart';
 import 'home_screen.dart';
 
 class MyBottomNavBar extends StatefulWidget {
@@ -16,9 +15,9 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
   int myCurrentIndex = 0;
   List pages = [
     const HomeScreen(),
-    const FavoriteRestaurantsScreen(),
     const ExplorScreen(),
-    const ProfileScreen(),
+    const ChatScreen(),
+    const ProfileScreen()
   ];
 
   @override
@@ -26,28 +25,48 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
     return Scaffold(
       backgroundColor: Colors.white,
       extendBody: true,
-      bottomNavigationBar: CrystalNavigationBar(
+      bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.blueGrey,
         currentIndex: myCurrentIndex,
         onTap: (index) {
           setState(() {
             myCurrentIndex = index;
           });
         },
-        indicatorColor: Colors.orange,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.orange,
-        backgroundColor: Colors.white.withValues(alpha: 0.2),
-        outlineBorderColor: Colors.black.withValues(alpha: 0.3),
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInExpo,
-        splashColor: Colors.orange[100],
-        // outlineBorderColor: Colors.white,
-        borderWidth: 2,
-        items: [
-          CrystalNavigationBarItem(icon: Icons.home),
-          CrystalNavigationBarItem(icon: Icons.favorite),
-          CrystalNavigationBarItem(icon: Icons.explore),
-          CrystalNavigationBarItem(icon: Icons.person_2_rounded),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(
+              Icons.home,
+              size: 30,
+            ),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search',
+            activeIcon: Icon(
+              Icons.search,
+              size: 30,
+            ),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.message_outlined),
+            activeIcon: Icon(
+              Icons.message_rounded,
+              size: 30,
+            ),
+            label: 'Messages',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_3_outlined),
+            activeIcon: Icon(
+              Icons.person_3,
+              size: 30,
+            ),
+            label: 'Profile',
+          ),
         ],
       ),
       body: pages[myCurrentIndex],

@@ -8,7 +8,6 @@ import 'package:trunriproject/widgets/helper.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EventDetailsScreen extends StatefulWidget {
-
   String? photo;
   String? eventName;
   String? eventDate;
@@ -16,14 +15,20 @@ class EventDetailsScreen extends StatefulWidget {
   String? location;
   String? Price;
 
-   EventDetailsScreen({super.key,this.eventDate,this.eventName,this.eventTime,this.location,this.photo,this.Price});
+  EventDetailsScreen(
+      {super.key,
+      this.eventDate,
+      this.eventName,
+      this.eventTime,
+      this.location,
+      this.photo,
+      this.Price});
 
   @override
   State<EventDetailsScreen> createState() => _EventDetailsScreenState();
 }
 
 class _EventDetailsScreenState extends State<EventDetailsScreen> {
-
   bool issaved = false;
   bool isFavorite = false;
 
@@ -62,86 +67,106 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        child:Column(
+        child: Column(
           children: [
-          Card(
-          color: Colors.white,
-          margin: EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              widget.photo!.isNotEmpty ?
-              Image.network( widget.photo.toString(),fit: BoxFit.fill,width: double.infinity,)
-                  : Image.asset("assets/images/singing.jpeg", height: 150, width: double.infinity, fit: BoxFit.cover),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.eventName!, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 5),
-                    Text("${widget.eventDate!} at ${widget.eventTime!}"),
-                    Text(widget.location!, style: TextStyle(color: Colors.blue)),
-                    Text('Price: ${widget.Price!}', style: TextStyle(fontWeight: FontWeight.bold)),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Card(
+              color: Colors.white,
+              margin: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  widget.photo!.isNotEmpty
+                      ? Image.network(
+                          widget.photo.toString(),
+                          fit: BoxFit.fill,
+                          width: double.infinity,
+                        )
+                      : Image.asset("assets/images/singing.jpeg",
+                          height: 150,
+                          width: double.infinity,
+                          fit: BoxFit.cover),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        GestureDetector(
-                          onTap: (){},
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Colors.transparent,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.favorite,
-                              color: isFavorite ? Colors.red : Colors.grey,
-                              size: 30,
-                            ),
-                          ),
-                        ),
-                        IconButton(icon: Icon(Icons.share), onPressed: () {
-                        Share.share("${widget.eventName} at ${widget.eventTime}${widget.eventDate}");
-                        }),
-                        IconButton(icon: Icon(Icons.map), onPressed: () async {
-                          final Uri uri = Uri.parse(widget.location.toString());
-
-                          if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
-                          } else {
-                          throw 'Could not open the map.';
-                          }
-                        }),
-                        GestureDetector(
-                          onTap: () {},
-                          child: Container(
-                            width: 100,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xffFF730A),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                "Buy Ticket",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  fontSize: 12,
+                        Text(widget.eventName!,
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 5),
+                        Text("${widget.eventDate!} at ${widget.eventTime!}"),
+                        Text(widget.location!,
+                            style: const TextStyle(color: Colors.blue)),
+                        Text('Price: ${widget.Price!}',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            GestureDetector(
+                              onTap: () {},
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: const BoxDecoration(
+                                  color: Colors.transparent,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.favorite,
+                                  color: isFavorite ? Colors.red : Colors.grey,
+                                  size: 30,
                                 ),
                               ),
                             ),
-                          ),
+                            IconButton(
+                                icon: const Icon(Icons.share),
+                                onPressed: () {
+                                  Share.share(
+                                      "${widget.eventName} at ${widget.eventTime}${widget.eventDate}");
+                                }),
+                            IconButton(
+                                icon: const Icon(Icons.map),
+                                onPressed: () async {
+                                  final Uri uri =
+                                      Uri.parse(widget.location.toString());
+
+                                  if (await canLaunchUrl(uri)) {
+                                    await launchUrl(uri,
+                                        mode: LaunchMode.externalApplication);
+                                  } else {
+                                    throw 'Could not open the map.';
+                                  }
+                                }),
+                            GestureDetector(
+                              onTap: () {},
+                              child: Container(
+                                width: 100,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xffFF730A),
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    "Buy Ticket",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        )
+            )
           ],
         ),
       ),

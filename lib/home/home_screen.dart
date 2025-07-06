@@ -10,10 +10,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:trunriproject/home/product.dart';
 import 'package:trunriproject/home/product_cart.dart';
 import 'package:trunriproject/home/resturentDetailsScreen.dart';
 import 'package:trunriproject/home/resturentItemListScreen.dart';
+import 'package:trunriproject/notificatioonScreen.dart';
 import 'package:trunriproject/widgets/appTheme.dart';
 import 'package:trunriproject/widgets/helper.dart';
 import 'package:url_launcher/url_launcher.dart'; // Import url_launcher
@@ -108,7 +110,9 @@ class _HomeScreenState extends State<HomeScreen> {
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=4000&type=restaurant&keyword=indian&key=$apiKey';
 
     final response = await http.get(Uri.parse(url));
+
     if (response.statusCode == 200) {
+      log('restaraunt url = $url');
       final data = json.decode(response.body);
       setState(() {
         _restaurants = data['results'];
@@ -186,16 +190,51 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
+    int bannerLength = 0;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       extendBody: true,
+      appBar: AppBar(
+        title: Text(
+          'TruNri',
+          style: GoogleFonts.caveat(
+              color: AppTheme.blackColor,
+              fontSize: 50,
+              fontWeight: FontWeight.w600),
+        ),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.white,
+        actions: [
+          const Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: Icon(
+              Icons.location_on_outlined,
+              // color: Colors.orange,
+              size: 30,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: IconButton(
+              icon: const Icon(
+                Icons.notifications_none_outlined,
+                size: 30,
+              ),
+              // color: Colors.orange,
+              onPressed: () {
+                Get.to(const Notificatioonscreen());
+              },
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: Colors.white,
       body: SafeArea(
         bottom: false,
         child: Stack(
           children: [
             Positioned.fill(
-              top: 70,
+              top: 10,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Column(
@@ -229,11 +268,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Text('Error fetching products'),
                           );
                         }
-
                         List<BannerModel> banner =
                             snapshot.data!.docs.map((doc) {
                           return BannerModel.fromMap(doc.id, doc.data());
                         }).toList();
+                        bannerLength = banner.length;
 
                         return Column(
                           children: [
@@ -247,7 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   autoPlayCurve: Curves.ease,
                                   height: height * .20),
                               items: List.generate(
-                                  banner.length,
+                                  bannerLength,
                                   (index) => Container(
                                       width: width,
                                       margin: EdgeInsets.symmetric(
@@ -272,10 +311,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                     ),
-                    DotsIndicator(
-                      dotsCount: 3,
-                      position: currentIndex.round(),
-                    ),
+                    Obx(() => DotsIndicator(
+                          dotsCount: 3,
+                          position: sliderIndex.value.toInt(),
+                          decorator: DotsDecorator(
+                            activeColor: Colors.orange,
+                            size: const Size.square(8.0),
+                            activeSize: const Size(18.0, 8.0),
+                            activeShape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                          ),
+                        )),
                     const SizedBox(
                       height: 10,
                     ),
@@ -307,40 +354,40 @@ class _HomeScreenState extends State<HomeScreen> {
                           padding: const EdgeInsets.only(left: 20),
                           child: SizedBox(
                             height: 100,
-                            child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                shrinkWrap: true,
-                                // padEnds: false,
-                                // controller: PageController(viewportFraction: .2),
-                                itemCount: category.length,
-                                itemBuilder: (context, index) {
-                                  return CategoryCard(
-                                      icon: category[index].imageUrl,
-                                      text: category[index].name,
-                                      press: () {
-                                        if (category[index].name == 'Temples') {
-                                          Get.to(const TempleHomePageScreen());
-                                        } else if (category[index].name ==
-                                            'Grocery stores') {
-                                          Get.to(
-                                              const GroceryStoreListScreen());
-                                        } else if (category[index].name ==
-                                            'Accommodation') {
-                                          Get.to(
-                                              const LookingForAPlaceScreen());
-                                        } else if (category[index].name ==
-                                            'Restaurants') {
-                                          Get.to(
-                                              const ResturentItemListScreen());
-                                        } else if (category[index].name ==
-                                            'Jobs') {
-                                          Get.to(const JobHomePageScreen());
-                                        } else if (category[index].name ==
-                                            'Events') {
-                                          Get.to(EventDiscoveryScreen());
-                                        }
-                                      });
-                                }),
+                            child: CarouselSlider.builder(
+                              itemCount: category.length,
+                              itemBuilder: (context, index, realIndex) {
+                                return CategoryCard(
+                                    icon: category[index].imageUrl,
+                                    text: category[index].name,
+                                    press: () {
+                                      if (category[index].name == 'Temples') {
+                                        Get.to(const TempleHomePageScreen());
+                                      } else if (category[index].name ==
+                                          'Grocery stores') {
+                                        Get.to(const GroceryStoreListScreen());
+                                      } else if (category[index].name ==
+                                          'Accommodation') {
+                                        Get.to(const LookingForAPlaceScreen());
+                                      } else if (category[index].name ==
+                                          'Restaurants') {
+                                        Get.to(const ResturentItemListScreen());
+                                      } else if (category[index].name ==
+                                          'Jobs') {
+                                        Get.to(const JobHomePageScreen());
+                                      } else if (category[index].name ==
+                                          'Events') {
+                                        Get.to(const EventDiscoveryScreen());
+                                      }
+                                    });
+                              },
+                              options: CarouselOptions(
+                                height: 200,
+                                viewportFraction: 0.2,
+                                enableInfiniteScroll: true,
+                                enlargeCenterPage: true,
+                              ),
+                            ),
                           ),
                         );
                       },
@@ -352,7 +399,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: SectionTitle(
                             title: "Upcoming Events",
                             press: () {
-                              Get.to(EventDiscoveryScreen());
+                              Get.to(const EventDiscoveryScreen());
                             },
                           ),
                         ),
@@ -381,22 +428,22 @@ class _HomeScreenState extends State<HomeScreen> {
                               decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(10)),
-                              child: ListView.builder(
+                              child: CarouselSlider.builder(
                                 itemCount: events.length,
-                                scrollDirection: Axis.horizontal,
-                                shrinkWrap: true,
-                                itemBuilder: (context, index) {
+                                itemBuilder: (context, index, realIndex) {
                                   var event = events[index];
                                   return GestureDetector(
                                     onTap: () {
-                                      Get.to(EventDetailsScreen(
-                                        eventDate: event['eventDate'],
-                                        eventName: event['eventName'],
-                                        eventTime: event['eventTime'],
-                                        location: event['location'],
-                                        photo: event['photo'][0],
-                                        Price: event['ticketPrice'],
-                                      ));
+                                      Get.to(
+                                        EventDetailsScreen(
+                                          eventDate: event['eventDate'],
+                                          eventName: event['eventName'],
+                                          eventTime: event['eventTime'],
+                                          location: event['location'],
+                                          photo: event['photo'][0],
+                                          Price: event['ticketPrice'],
+                                        ),
+                                      );
                                     },
                                     child: Container(
                                       width: 242,
@@ -406,10 +453,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(10),
                                         child: event['photo'].isNotEmpty
-                                            ? Image.network(event['photo'][0],
+                                            ? Image.network(
+                                                event['photo'][0],
                                                 height: 150,
                                                 width: 150,
-                                                fit: BoxFit.cover)
+                                                fit: BoxFit.cover,
+                                              )
                                             : Image.asset(
                                                 "assets/images/singing.jpeg",
                                                 height: 150,
@@ -419,6 +468,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   );
                                 },
+                                options: CarouselOptions(
+                                  height: 450,
+                                  viewportFraction: 0.55,
+                                  enlargeCenterPage: true,
+                                  autoPlay: true,
+                                  autoPlayCurve: Curves.easeInOutCirc,
+                                ),
                               ),
                             );
                           },
@@ -443,7 +499,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(11),
                           ),
-                          // constraints: BoxConstraints( minWidth: 0,  maxWidth: width * .8,),
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount: _restaurants.length,
@@ -1090,7 +1145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            const SearchField()
+            //const SearchField()
           ],
         ),
       ),

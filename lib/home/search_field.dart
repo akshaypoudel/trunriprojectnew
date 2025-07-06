@@ -113,42 +113,14 @@ class _SearchFieldState extends State<SearchField> {
                         fontWeight: FontWeight.w400),
                     counter: const Offstage(),
                     errorMaxLines: 2,
-                    hintText: "Search product",
-                    labelStyle: GoogleFonts.roboto(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500),
+                    hintText: "Search Places/Jobs",
                     prefixIcon: const Icon(
                       Icons.search,
                       color: Colors.orange,
                     ),
-                    suffixIcon: GestureDetector(
-                        onTap: () {
-                          Get.to(const Notificatioonscreen());
-                        },
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.notifications,
-                              color: Colors.orange,
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            // Icon(
-                            //   Icons.location_on,
-                            //   color: Colors.orange,
-                            // ),
-                            // SizedBox(
-                            //   width: 10,
-                            // )
-                          ],
-                        )),
                     hintStyle: GoogleFonts.urbanist(
                         color: const Color(0xFF86888A),
-                        fontSize: 13,
+                        fontSize: 17,
                         fontWeight: FontWeight.w400),
                     contentPadding: const EdgeInsets.symmetric(
                         vertical: 16, horizontal: 14),

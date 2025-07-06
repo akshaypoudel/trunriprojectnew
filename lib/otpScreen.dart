@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,9 +21,20 @@ class NewOtpScreen extends StatefulWidget {
 
   final String phoneNumber;
   final String verificationId;
+  String? name;
+  String? email;
+  String? password;
+  bool? isSignInScreen;
 
-  const NewOtpScreen(
-      {super.key, required this.phoneNumber, required this.verificationId});
+  NewOtpScreen({
+    super.key,
+    required this.phoneNumber,
+    required this.verificationId,
+    this.name,
+    this.email,
+    this.password,
+    this.isSignInScreen,
+  });
 
   @override
   State<NewOtpScreen> createState() => _NewOtpScreenState();
@@ -45,6 +57,23 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
     });
   }
 
+  void register(
+      String completePhoneNum, String name, String email, String password) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    OverlayEntry loader = NewHelper.overlayLoader(context);
+    Overlay.of(context).insert(loader);
+    FirebaseFirestore.instance.collection('User').doc(uid).set({
+      'name': name,
+      'email': email,
+      'phoneNumber': completePhoneNum,
+      'password': password,
+      'address': "",
+      'profile': ""
+    }).then((value) {
+      NewHelper.hideLoader(loader);
+    });
+  }
+
   void verifyOTP() async {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
@@ -59,9 +88,18 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
 
         await FirebaseAuth.instance.signInWithCredential(credential);
         showSnackBar(context, "User registered successfully");
+
         SharedPreferences sharedPreferences =
             await SharedPreferences.getInstance();
         sharedPreferences.setString("myPhone", widget.phoneNumber);
+
+        register(
+          widget.phoneNumber,
+          widget.name!,
+          widget.email!,
+          widget.password!,
+        );
+
         Navigator.of(context).push(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
@@ -83,6 +121,51 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
         );
       } catch (e) {
         showSnackBar(context, "Invalid OTP");
+      }
+    }
+
+    NewHelper.hideLoader(loader);
+  }
+
+  void verifyOTPForSignInScreen() async {
+    OverlayEntry loader = NewHelper.overlayLoader(context);
+    Overlay.of(context).insert(loader);
+    if (otpController.text.trim().isEmpty) {
+      showSnackBar(context, "Please enter OTP");
+    } else {
+      try {
+        PhoneAuthCredential credential = PhoneAuthProvider.credential(
+          verificationId: widget.verificationId,
+          smsCode: otpController.text.trim(),
+        );
+
+        await FirebaseAuth.instance.signInWithCredential(credential);
+
+        SharedPreferences sharedPreferences =
+            await SharedPreferences.getInstance();
+        sharedPreferences.setString("myPhone", widget.phoneNumber);
+
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const MyBottomNavBar(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              var tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var offsetAnimation = animation.drive(tween);
+              return SlideTransition(
+                position: offsetAnimation,
+                child: child,
+              );
+            },
+          ),
+        );
+      } catch (e) {
+        showSnackBar(context, "Invalid OTP Error : ${e.toString()}");
       }
     }
 
@@ -162,7 +245,7 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
                       height: 8,
                     ),
                     Text(
-                      'Enter the OTP Send to Your Email',
+                      'Enter the OTP Send to Your Phone',
                       style: GoogleFonts.poppins(
                           fontSize: 16, color: Colors.white),
                     )
@@ -238,7 +321,11 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
                   fontWeight: FontWeight.bold,
                 )),
             onPressed: () async {
-              verifyOTP();
+              if (widget.isSignInScreen == false) {
+                verifyOTP();
+              } else {
+                verifyOTPForSignInScreen();
+              }
             },
             child: Padding(
               padding: const EdgeInsets.all(16.0),

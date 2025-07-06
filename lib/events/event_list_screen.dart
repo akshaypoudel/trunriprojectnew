@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'eventModel.dart';
 import 'eventRepository.dart';
 
-
-
-
 class EventListScreen extends StatelessWidget {
   final EventService eventService = EventService();
+
+  EventListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,19 +14,22 @@ class EventListScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text("Organizations"),
+        title: const Text("Organizations"),
       ),
       body: FutureBuilder<EventsModel?>(
         future: eventService.fetchEvents(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator(color: Colors.orange,));
+            return const Center(
+                child: CircularProgressIndicator(
+              color: Colors.orange,
+            ));
           } else if (snapshot.hasError) {
             return Center(child: Text("Error: ${snapshot.error}"));
           } else if (snapshot.hasData) {
             final organizations = snapshot.data?.organizations;
             if (organizations == null || organizations.isEmpty) {
-              return Center(child: Text("No organizations found."));
+              return const Center(child: Text("No organizations found."));
             } else {
               return ListView.builder(
                 itemCount: organizations.length,
@@ -41,7 +43,7 @@ class EventListScreen extends StatelessWidget {
               );
             }
           } else {
-            return Center(child: Text("No data available"));
+            return const Center(child: Text("No data available"));
           }
         },
       ),

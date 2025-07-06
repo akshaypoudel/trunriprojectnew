@@ -25,7 +25,8 @@ class FirebaseFireStoreService {
   String get phoneNumber => auth.currentUser!.phoneNumber!;
 
   Future<bool> checkUserProfile() async {
-    final response = await fireStore.collection(profileCollection).doc(userId).get();
+    final response =
+        await fireStore.collection(profileCollection).doc(userId).get();
     if (response.exists) {
       return true;
     }
@@ -33,7 +34,8 @@ class FirebaseFireStoreService {
   }
 
   Future<ModelProfileData?> getProfileDetails() async {
-    final response = await fireStore.collection(profileCollection).doc(userId).get();
+    final response =
+        await fireStore.collection(profileCollection).doc(userId).get();
     if (response.exists) {
       log("Api Repsponse.....    ${jsonEncode(response.data())}");
       if (response.data() == null) return null;
@@ -61,8 +63,6 @@ class FirebaseFireStoreService {
 
         UploadTask task6 = userProfileImageRef.putFile(profileImage);
         profileUrl = await (await task6).ref.getDownloadURL();
-
-
       }
       await fireStore.collection(profileCollection).doc(userId).set({
         "email": email,
@@ -70,7 +70,7 @@ class FirebaseFireStoreService {
         "address": address,
         "profile": profileUrl,
       }).then((value) {
-        showSnackBar(context,"Profile updated");
+        showSnackBar(context, "Profile updated");
         updated(true);
         NewHelper.hideLoader(loader);
         return true;

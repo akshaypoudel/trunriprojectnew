@@ -135,7 +135,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: Colors.white,
         title: const Text('Profile'),
         automaticallyImplyLeading: false,
-        // leading: Icon(Icons.arrow_back_ios),
         actions: [
           GestureDetector(
             onTap: () {
