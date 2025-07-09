@@ -24,7 +24,7 @@ class NewOtpScreen extends StatefulWidget {
   String? name;
   String? email;
   String? password;
-  bool? isSignInScreen;
+  final bool isSignInScreen;
 
   NewOtpScreen({
     super.key,
@@ -33,7 +33,7 @@ class NewOtpScreen extends StatefulWidget {
     this.name,
     this.email,
     this.password,
-    this.isSignInScreen,
+    required this.isSignInScreen,
   });
 
   @override
@@ -60,6 +60,7 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
   void register(
       String completePhoneNum, String name, String email, String password) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
+    log('uid in register method in otp screen: $uid');
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
     FirebaseFirestore.instance.collection('User').doc(uid).set({
@@ -100,7 +101,7 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
           widget.password!,
         );
 
-        Navigator.of(context).push(
+        Navigator.of(context).pushAndRemoveUntil(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 const PickUpAddressScreen(),
@@ -118,6 +119,7 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
               );
             },
           ),
+          (Route<dynamic> route) => false,
         );
       } catch (e) {
         showSnackBar(context, "Invalid OTP");
@@ -145,7 +147,7 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
             await SharedPreferences.getInstance();
         sharedPreferences.setString("myPhone", widget.phoneNumber);
 
-        Navigator.of(context).push(
+        Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 const MyBottomNavBar(),
@@ -187,7 +189,6 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
       ))));
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setTimer();
   }

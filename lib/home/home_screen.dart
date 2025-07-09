@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:trunriproject/home/product.dart';
 import 'package:trunriproject/home/product_cart.dart';
 import 'package:trunriproject/home/resturentDetailsScreen.dart';
@@ -59,24 +60,32 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    log('firebase user = ${FirebaseAuth.instance.currentUser?.uid ?? 'firebase user null homescreen'}');
     _getCurrentLocation();
     fetchImageData();
   }
 
   Future<void> _getCurrentLocation() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return;
+    bool isServiceEnabled;
+    LocationPermission permission;
+
+    isServiceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!isServiceEnabled) {
+      showSnackBar(context, 'Location Service Not Enabled');
     }
 
-    LocationPermission permission = await Geolocator.checkPermission();
+    permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission != LocationPermission.whileInUse &&
-          permission != LocationPermission.always) {
-        return;
+      if (permission == LocationPermission.denied) {
+        showSnackBar(context, 'Location Permission Not Given.');
       }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      showSnackBar(
+        context,
+        'Location Permission is Denied Forever. Can\'t Access Location',
+      );
     }
 
     Position position = await Geolocator.getCurrentPosition();
@@ -112,7 +121,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
-      log('restaraunt url = $url');
       final data = json.decode(response.body);
       setState(() {
         _restaurants = data['results'];
@@ -154,6 +162,10 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() {
           _temples = data['results'];
+          _temples = _temples.where((temple) {
+            return temple['photos'] != null &&
+                temple['photos'][0]['photo_reference'] != null;
+          }).toList();
           _isLoading = false; // Set _isLoading to false after data is fetched
         });
       }
@@ -791,7 +803,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 snapshot.data!.docs.map((DocumentSnapshot doc) {
                               Map<String, dynamic> data =
                                   doc.data() as Map<String, dynamic>;
-                              List<dynamic> images = data['images'] ?? [];
+                              List<dynamic> images;
+                              if (data['images'] != null) {
+                                images = data['images'];
+                              } else {
+                                images = [];
+                              }
 
                               return Container(
                                 height: 180,
@@ -1045,7 +1062,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   temples['closing_time'] ?? 'Not Available';
                               final photoReference = temples['photos'] != null
                                   ? temples['photos'][0]['photo_reference']
-                                  : null;
+                                  : temples['photos'][1]['photo_reference'];
                               final photoUrl = photoReference != null
                                   ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=35000&photoreference=$photoReference&key=$apiKey'
                                   : null;
@@ -1141,6 +1158,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         )
                       ],
                     ),
+                    const SizedBox(height: 60),
                   ],
                 ),
               ),

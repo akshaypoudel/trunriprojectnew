@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/route_manager.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
@@ -41,7 +42,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String email = '';
 
   updateProfile() async {
-    if (!formKey.currentState!.validate()) return;
+    if (!formKey.currentState!.validate()) {
+      showSnackBar(context, "Returning From Method");
+      return;
+    }
     try {
       await fireStoreService.updateProfile(
         address: address.text.trim(),
@@ -56,6 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Get.back();
             } else {
               Get.offAll(const MyBottomNavBar());
+              fetchUserData();
             }
           } else {
             showSnackBar(context, "Failed to update profile");
@@ -69,56 +74,105 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void fetchUserData() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? phone = sharedPreferences.getString("myPhone");
-    String? googleName = sharedPreferences.getString("google_name");
-    String? googleEmail = sharedPreferences.getString("google_email");
+    FirebaseAuth auth = FirebaseAuth.instance;
 
-    if (googleName != null &&
-        googleEmail != null &&
-        googleName.isNotEmpty &&
-        googleEmail.isNotEmpty) {
-      // 🔹 Google login - use stored name and email
-      nameController.text = googleName;
-      emailController.text = googleEmail;
+    String? phone = auth.currentUser!.phoneNumber;
+    String newEmail = auth.currentUser!.email!;
 
-      name = googleName;
-      email = googleEmail;
-
-      log("Google Login - name: $name, email: $email");
-    } else if (phone != null && phone.isNotEmpty) {
-      // 🔹 Phone login - fetch from Firestore
-      phone = phone.replaceFirst("+91", "");
-      log("Phone Login - phone: $phone");
-
-      try {
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection('User')
-            .where('phoneNumber', isEqualTo: phone)
-            .get();
-
-        if (querySnapshot.docs.isNotEmpty) {
-          DocumentSnapshot userDoc = querySnapshot.docs.first;
-          Map<String, dynamic> userData =
-              userDoc.data() as Map<String, dynamic>;
-
-          nameController.text = userData['name'] ?? '';
-          emailController.text = userData['email'] ?? '';
-
-          name = userData['name'] ?? '';
-          email = userData['email'] ?? '';
-
-          log("Phone Login - name: $name, email: $email");
-        } else {
-          showSnackBar(context, "User data not found for phone number");
-        }
-      } catch (e) {
-        showSnackBar(context, "Error fetching user data: ${e.toString()}");
-      }
+    dynamic querySnapshot;
+    if (phone != null && phone.isNotEmpty) {
+      querySnapshot = await FirebaseFirestore.instance
+          .collection('User')
+          .where('phoneNumber', isEqualTo: phone)
+          .get();
     } else {
-      showSnackBar(context, "No login data found");
+      querySnapshot = await FirebaseFirestore.instance
+          .collection('User')
+          .where('email', isEqualTo: newEmail)
+          .get();
+    }
+    try {
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot userDoc = querySnapshot.docs.first;
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
+        nameController.text = userData['name'] ?? '';
+        emailController.text = userData['email'] ?? '';
+
+        name = userData['name'] ?? '';
+        email = userData['email'] ?? '';
+      } else {
+        showSnackBar(context, "User data not found for phone number");
+      }
+    } catch (e) {
+      showSnackBar(context, "Error fetching user data: ${e.toString()}");
     }
   }
+
+  // void fetchUserData1() async {
+  //   // SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+  //   // String? googleName = sharedPreferences.getString("google_name");
+  //   // String? googleEmail = sharedPreferences.getString("google_email");
+  //   FirebaseAuth auth = FirebaseAuth.instance;
+  //   String? phone = auth.currentUser!.phoneNumber;
+  //   // if (googleName != null &&
+  //   //     googleEmail != null &&
+  //   //     googleName.isNotEmpty &&
+  //   //     googleEmail.isNotEmpty) {
+  //   //   // 🔹 Google login - use stored name and email
+  //   //   nameController.text = googleName;
+  //   //   emailController.text = googleEmail;
+  //   //   name = googleName;
+  //   //   email = googleEmail;
+  //   //   log("Google Login - name: $name, email: $email");
+  //   // } else
+  //   if (phone != null && phone.isNotEmpty) {
+  //     try {
+  //       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+  //           .collection('User')
+  //           .where('phoneNumber', isEqualTo: phone)
+  //           .get();
+  //       if (querySnapshot.docs.isNotEmpty) {
+  //         DocumentSnapshot userDoc = querySnapshot.docs.first;
+  //         Map<String, dynamic> userData =
+  //             userDoc.data() as Map<String, dynamic>;
+  //         nameController.text = userData['name'] ?? '';
+  //         emailController.text = userData['email'] ?? '';
+  //         name = userData['name'] ?? '';
+  //         email = userData['email'] ?? '';
+  //         log("Phone Login - name: $name, email: $email");
+  //       } else {
+  //         showSnackBar(context, "User data not found for phone number");
+  //       }
+  //     } catch (e) {
+  //       showSnackBar(context, "Error fetching user data: ${e.toString()}");
+  //     }
+  //   } else if (phone == null || phone.isEmpty) {
+  //     try {
+  //       String newEmail = auth.currentUser!.email!;
+  //       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+  //           .collection('User')
+  //           .where('email', isEqualTo: newEmail)
+  //           .get();
+  //       if (querySnapshot.docs.isNotEmpty) {
+  //         DocumentSnapshot userDoc = querySnapshot.docs.first;
+  //         Map<String, dynamic> userData =
+  //             userDoc.data() as Map<String, dynamic>;
+  //         nameController.text = userData['name'] ?? '';
+  //         emailController.text = userData['email'] ?? '';
+  //         name = userData['name'] ?? '';
+  //         email = userData['email'] ?? '';
+  //         log("Phone Login - name: $name, email: $email");
+  //       } else {
+  //         showSnackBar(context, "User data not found for Email");
+  //       }
+  //     } catch (e) {
+  //       showSnackBar(context, "Error fetching user data: ${e.toString()}");
+  //     }
+  //   } else {
+  //     showSnackBar(context, "No login data found");
+  //   }
+  // }
 
   @override
   void initState() {
@@ -406,6 +460,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         GestureDetector(
                           onTap: () {
+                            GoogleSignIn().signOut();
                             FirebaseAuth.instance.signOut().then((value) {
                               Get.offAll(const SignInScreen());
                               showSnackBar(context, "Logged Out Successfully");
@@ -430,6 +485,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () async {
                             User? user = FirebaseAuth.instance.currentUser;
                             await user!.delete();
+                            GoogleSignIn().signOut();
                             showSnackBar(
                                 context, "Your account has been deleted");
                             Get.to(const SignUpScreen());
@@ -455,8 +511,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             )
           : const Center(
               child: CircularProgressIndicator(
-              color: Colors.orange,
-            )),
+                color: Colors.orange,
+              ),
+            ),
     );
   }
 }

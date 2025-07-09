@@ -27,6 +27,7 @@ class FirebaseFireStoreService {
   Future<bool> checkUserProfile() async {
     final response =
         await fireStore.collection(profileCollection).doc(userId).get();
+    log('user current uid ppp : $userId');
     if (response.exists) {
       return true;
     }
@@ -69,17 +70,15 @@ class FirebaseFireStoreService {
         "name": name,
         "address": address,
         "profile": profileUrl,
-      }).then((value) {
-        showSnackBar(context, "Profile updated");
-        updated(true);
-        NewHelper.hideLoader(loader);
-        return true;
-      });
+      }, SetOptions(merge: true));
+      showSnackBar(context, "Profile updated");
+      updated(true);
+      NewHelper.hideLoader(loader);
+      return true;
+    } catch (e) {
+      showSnackBar(context, 'Error: ${e.toString()}');
       NewHelper.hideLoader(loader);
       return false;
-    } catch (e) {
-      NewHelper.hideLoader(loader);
-      throw Exception(e);
     } finally {
       NewHelper.hideLoader(loader);
     }

@@ -49,15 +49,18 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
       List<String> imageUrls = [];
       for (File file in selectedFiles) {
         String fileName = path.basename(file.path);
-        Reference storageReference = _storage.ref().child('accommodations/${user.uid}/$fileName');
+        Reference storageReference =
+            _storage.ref().child('accommodations/${user.uid}/$fileName');
         UploadTask uploadTask = storageReference.putFile(file);
         TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
         String downloadUrl = await snapshot.ref.getDownloadURL();
         imageUrls.add(downloadUrl);
       }
 
-      QuerySnapshot querySnapshot =
-      await _firestore.collection('accommodation').where('formID', isEqualTo: widget.dateTime).get();
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('accommodation')
+          .where('formID', isEqualTo: widget.dateTime)
+          .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         for (var doc in querySnapshot.docs) {
@@ -85,9 +88,17 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
     scaffold.showSnackBar(
       SnackBar(
         content: Text(message),
-        action: SnackBarAction(label: 'OK', onPressed: scaffold.hideCurrentSnackBar),
+        action: SnackBarAction(
+            label: 'OK', onPressed: scaffold.hideCurrentSnackBar),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    descriptionController.dispose();
+    super.dispose();
   }
 
   @override
@@ -109,14 +120,17 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
       ),
       body: SingleChildScrollView(
         child: Container(
-          margin: EdgeInsets.only(left: 15, right: 15),
+          margin: const EdgeInsets.only(left: 15, right: 15),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
                 'Add some photos',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 25, right: 25),
@@ -139,13 +153,17 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
               const SizedBox(height: 20),
               const Text(
                 'Give your listing a title',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               TextFormField(
                 controller: titleController,
                 decoration: const InputDecoration(
                   hintText: 'No deposit room in Tooley Street',
-                  hintStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+                  hintStyle:
+                      TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
                 ),
               ),
               if (titleController.text.trim().isEmpty)
@@ -156,13 +174,17 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
               const SizedBox(height: 20),
               const Text(
                 'Add a description',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               TextFormField(
                 controller: descriptionController,
                 decoration: const InputDecoration(
                   hintText: 'No deposit room in Tooley Street',
-                  hintStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+                  hintStyle:
+                      TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
                 ),
               ),
               if (descriptionController.text.trim().isEmpty)

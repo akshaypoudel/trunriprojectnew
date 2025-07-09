@@ -4,27 +4,16 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:form_field_validator/form_field_validator.dart';
 import 'package:get/get.dart';
-import 'package:get/route_manager.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:trunriproject/recoveryPasswordScreen.dart';
+import 'package:trunriproject/google_signin/google_signin.dart';
 import 'package:trunriproject/signUpScreen.dart';
 import 'package:trunriproject/widgets/appTheme.dart';
-import 'package:trunriproject/widgets/customTextFormField.dart';
 import 'package:trunriproject/widgets/helper.dart';
 
-import 'facebook/firebaseservices.dart';
-import 'home/bottom_bar.dart';
-import 'home/home_screen.dart';
 import 'nativAddressScreen.dart';
 import 'otpScreen.dart';
 
@@ -38,63 +27,58 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   TextEditingController phoneController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  CustomGoogleSignin googleSignin = CustomGoogleSignin();
   RxBool hide = true.obs;
   RxBool hide1 = true.obs;
   EmailOTP myauth = EmailOTP();
   bool showOtpField = false;
 
   String code = "+91";
-  void loginUser() async {
-    OverlayEntry loader = NewHelper.overlayLoader(context);
-    Overlay.of(context).insert(loader);
-    String phone = phoneController.text.trim();
-    String password = passwordController.text.trim();
 
-    if (phone.isEmpty || password.isEmpty) {
-      showSnackBar(context, "Please enter both phone number and password");
-      NewHelper.hideLoader(loader);
-      return;
-    }
-
-    try {
-      QuerySnapshot phoneSnapshot = await FirebaseFirestore.instance
-          .collection("User")
-          .where("phoneNumber", isEqualTo: phone)
-          .get();
-
-      if (phoneSnapshot.docs.isEmpty) {
-        NewHelper.hideLoader(loader);
-        showSnackBar(context, "Phone number not found");
-        return;
-      }
-
-      QuerySnapshot userSnapshot = await FirebaseFirestore.instance
-          .collection("User")
-          .where("phoneNumber", isEqualTo: phone)
-          .where("password", isEqualTo: password)
-          .get();
-
-      if (userSnapshot.docs.isEmpty) {
-        NewHelper.hideLoader(loader);
-        showSnackBar(context, "Incorrect password");
-        return;
-      }
-
-      showSnackBar(context, "Login successful");
-      SharedPreferences sharedPreferences =
-          await SharedPreferences.getInstance();
-      sharedPreferences.setString("myPhone", phoneController.text.trim());
-      NewHelper.hideLoader(loader);
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MyBottomNavBar()),
-      );
-    } catch (e) {
-      NewHelper.hideLoader(loader);
-      showSnackBar(context, "Error: ${e.toString()}");
-    }
-  }
+  // void loginUser() async {
+  //   OverlayEntry loader = NewHelper.overlayLoader(context);
+  //   Overlay.of(context).insert(loader);
+  //   String phone = phoneController.text.trim();
+  //   String password = passwordController.text.trim();
+  //   if (phone.isEmpty || password.isEmpty) {
+  //     showSnackBar(context, "Please enter both phone number and password");
+  //     NewHelper.hideLoader(loader);
+  //     return;
+  //   }
+  //   try {
+  //     QuerySnapshot phoneSnapshot = await FirebaseFirestore.instance
+  //         .collection("User")
+  //         .where("phoneNumber", isEqualTo: phone)
+  //         .get();
+  //     if (phoneSnapshot.docs.isEmpty) {
+  //       NewHelper.hideLoader(loader);
+  //       showSnackBar(context, "Phone number not found");
+  //       return;
+  //     }
+  //     QuerySnapshot userSnapshot = await FirebaseFirestore.instance
+  //         .collection("User")
+  //         .where("phoneNumber", isEqualTo: phone)
+  //         .where("password", isEqualTo: password)
+  //         .get();
+  //     if (userSnapshot.docs.isEmpty) {
+  //       NewHelper.hideLoader(loader);
+  //       showSnackBar(context, "Incorrect password");
+  //       return;
+  //     }
+  //     showSnackBar(context, "Login successful");
+  //     SharedPreferences sharedPreferences =
+  //         await SharedPreferences.getInstance();
+  //     sharedPreferences.setString("myPhone", phoneController.text.trim());
+  //     NewHelper.hideLoader(loader);
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => const MyBottomNavBar()),
+  //     );
+  //   } catch (e) {
+  //     NewHelper.hideLoader(loader);
+  //     showSnackBar(context, "Error: ${e.toString()}");
+  //   }
+  // }
 
   Future<bool> doesPhoneExist(String phone) async {
     final query = await FirebaseFirestore.instance
@@ -127,7 +111,7 @@ class _SignInScreenState extends State<SignInScreen> {
         NewHelper.hideLoader(loader);
         showSnackBar(context, 'OTP sent successfully');
 
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => NewOtpScreen(
@@ -144,54 +128,49 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Future<dynamic> signInWithGoogle(BuildContext context) async {
-    OverlayEntry loader = NewHelper.overlayLoader(context);
-    Overlay.of(context).insert(loader);
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser?.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
-      );
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
-
-      log("wewewewww${userCredential.user!.displayName.toString()}");
-      SharedPreferences sharedPreferences =
-          await SharedPreferences.getInstance();
-      sharedPreferences.setString(
-          "google_name", userCredential.user!.displayName ?? '');
-      sharedPreferences.setString(
-          "google_email", userCredential.user!.email ?? '');
-      Navigator.of(context).push(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const PickUpAddressScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-            var tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            var offsetAnimation = animation.drive(tween);
-            return SlideTransition(
-              position: offsetAnimation,
-              child: child,
-            );
-          },
-        ),
-      );
-
-      return userCredential;
-    } on Exception catch (e) {
-      print('exception->$e');
-    } finally {
-      // Ensure the loader is always removed, even if an error occurs
-      NewHelper.hideLoader(loader);
-    }
-  }
+  // Future<dynamic> signInWithGoogle(BuildContext context) async {
+  //   OverlayEntry loader = NewHelper.overlayLoader(context);
+  //   Overlay.of(context).insert(loader);
+  //   try {
+  //     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+  //     final GoogleSignInAuthentication? googleAuth =
+  //         await googleUser?.authentication;
+  //     final credential = GoogleAuthProvider.credential(
+  //       accessToken: googleAuth?.accessToken,
+  //       idToken: googleAuth?.idToken,
+  //     );
+  //     UserCredential userCredential =
+  //         await FirebaseAuth.instance.signInWithCredential(credential);
+  //     Navigator.of(context).push(
+  //       PageRouteBuilder(
+  //         pageBuilder: (context, animation, secondaryAnimation) =>
+  //             const MyBottomNavBar(),
+  //         transitionsBuilder: (context, animation, secondaryAnimation, child) {
+  //           const begin = Offset(1.0, 0.0);
+  //           const end = Offset.zero;
+  //           const curve = Curves.ease;
+  //           var tween =
+  //               Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+  //           var offsetAnimation = animation.drive(tween);
+  //           return SlideTransition(
+  //             position: offsetAnimation,
+  //             child: child,
+  //           );
+  //         },
+  //       ),
+  //     );
+  //     if (user != null) {
+  //       showSnackBar(context, "User Log In Successfull");
+  //     } else {
+  //       showSnackBar(context, "User Registered Successfully");
+  //     }
+  //     return userCredential;
+  //   } on Exception catch (e) {
+  //     log('exception->$e');
+  //   } finally {
+  //     NewHelper.hideLoader(loader);
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +192,6 @@ class _SignInScreenState extends State<SignInScreen> {
                 TextStyle(fontSize: 27, color: Color(0xff6F6B7A), height: 1.2),
           ),
           SizedBox(height: size.height * 0.08),
-          // for username and password
           Padding(
             padding: const EdgeInsets.only(left: 25, right: 25),
             child: IntlPhoneField(
@@ -261,51 +239,7 @@ class _SignInScreenState extends State<SignInScreen> {
               },
             ),
           ),
-
-          // Obx(() {
-          //   return CommonTextField(
-          //     hintText: 'Password',
-          //     controller: passwordController,
-          //     keyboardType: TextInputType.text,
-          //     validator: MultiValidator([
-          //       RequiredValidator(errorText: 'Password is required'),
-          //     ]).call,
-          //     obSecure: !hide.value,
-          //     suffixIcon: IconButton(
-          //       onPressed: () {
-          //         hide.value = !hide.value;
-          //       },
-          //       icon: hide.value
-          //           ? const Icon(Icons.visibility_off)
-          //           : const Icon(Icons.visibility),
-          //     ),
-          //   );
-          // }),
-
-          //const SizedBox(height: 10),
-          // Align(
-          //   alignment: Alignment.centerRight,
-          //   child: GestureDetector(
-          //     onTap: () {
-          //       Get.to(const RecoveryPasswordScreen());
-          //     },
-          //     child: const Padding(
-          //       padding: EdgeInsets.only(right: 10),
-          //       child: Text(
-          //         "Recovery Password",
-          //         textAlign: TextAlign.center,
-          //         style: TextStyle(
-          //           fontWeight: FontWeight.bold,
-          //           fontSize: 16,
-          //           color: Color(0xff6F6B7A),
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // ),
-
           SizedBox(height: size.height * 0.04),
-
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 25),
             child: Column(
@@ -315,7 +249,6 @@ class _SignInScreenState extends State<SignInScreen> {
                     bool exist =
                         await doesPhoneExist(phoneController.text.trim());
                     if (exist) {
-                      // showSnackBar(context, "User Exists");
                       requestForOtp();
                     } else {
                       showSnackBar(context, "User Doesn't Exists");
@@ -370,7 +303,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        signInWithGoogle(context);
+                        googleSignin.signInWithGoogle(context);
                       },
                       child: socialIcon(
                         "assets/images/google.png",
@@ -415,11 +348,6 @@ class _SignInScreenState extends State<SignInScreen> {
                     const SizedBox(
                       width: 10,
                     ),
-                    GestureDetector(
-                        onTap: () async {
-                          signInWithFacebook();
-                        },
-                        child: socialIcon("assets/images/facebook.png")),
                   ],
                 ),
                 SizedBox(height: size.height * 0.03),

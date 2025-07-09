@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trunriproject/chat_module/chat_list_screen.dart';
 import 'package:trunriproject/chat_module/chat_screen.dart';
 import 'package:trunriproject/profile/profileScreen.dart';
 import 'explorScreen.dart';
@@ -16,7 +17,7 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
   List<Widget> pages = [
     const HomeScreen(),
     const ExplorScreen(),
-    const ChatScreen(),
+    ChatListScreen(),
     const ProfileScreen()
   ];
 

@@ -14,7 +14,10 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:trunriproject/google_signin/google_signin.dart';
+import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:trunriproject/otpScreen.dart';
 import 'package:trunriproject/signinscreen.dart';
 import 'package:trunriproject/widgets/appTheme.dart';
@@ -37,6 +40,7 @@ class _SignUpScreenState extends State<SignUpScreen>
   TextEditingController confirmPasswordController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
+  CustomGoogleSignin googleSignin = CustomGoogleSignin();
   RxBool hide = true.obs;
   RxBool hide1 = true.obs;
   String code = "+91";
@@ -88,6 +92,7 @@ class _SignUpScreenState extends State<SignUpScreen>
           context,
           MaterialPageRoute(
             builder: (context) => NewOtpScreen(
+              isSignInScreen: false,
               phoneNumber: completePhoneNum,
               verificationId: verificationId,
               name: nameController.text.trim(),
@@ -103,49 +108,58 @@ class _SignUpScreenState extends State<SignUpScreen>
     );
   }
 
-  Future<dynamic> signInWithGoogle(BuildContext context) async {
-    OverlayEntry loader = NewHelper.overlayLoader(context);
-    Overlay.of(context).insert(loader);
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser?.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
-      );
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
-      Navigator.of(context).push(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const PickUpAddressScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-            var tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            var offsetAnimation = animation.drive(tween);
-            return SlideTransition(
-              position: offsetAnimation,
-              child: child,
-            );
-          },
-        ),
-      );
-
-      return userCredential;
-    } on Exception catch (e) {
-      // Handle the exception
-      print('exception->$e');
-    } finally {
-      // Ensure the loader is always removed, even if an error occurs
-      NewHelper.hideLoader(loader);
-    }
-  }
+  // Future<void> signInWithGoogle(BuildContext context) async {
+  //   User? user = FirebaseAuth.instance.currentUser;
+  //   OverlayEntry loader = NewHelper.overlayLoader(context);
+  //   Overlay.of(context).insert(loader);
+  //   try {
+  //     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+  //     final GoogleSignInAuthentication googleAuth =
+  //         await googleUser!.authentication;
+  //     final credential = GoogleAuthProvider.credential(
+  //       accessToken: googleAuth.accessToken,
+  //       idToken: googleAuth.idToken,
+  //     );
+  //     UserCredential userCredential =
+  //         await FirebaseAuth.instance.signInWithCredential(credential);
+  //     Navigator.of(context).push(
+  //       PageRouteBuilder(
+  //         pageBuilder: (context, animation, secondaryAnimation) =>
+  //             (user != null)
+  //                 ? const MyBottomNavBar()
+  //                 : const PickUpAddressScreen(),
+  //         transitionsBuilder: (context, animation, secondaryAnimation, child) {
+  //           const begin = Offset(1.0, 0.0);
+  //           const end = Offset.zero;
+  //           const curve = Curves.ease;
+  //           var tween =
+  //               Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+  //           var offsetAnimation = animation.drive(tween);
+  //           return SlideTransition(
+  //             position: offsetAnimation,
+  //             child: child,
+  //           );
+  //         },
+  //       ),
+  //     );
+  //     if (user != null) {
+  //       showSnackBar(context, "User Log In Successfull");
+  //     } else {
+  //       showSnackBar(context, "User Registered Successfully");
+  //     }
+  //     registerWithGoogle(
+  //       userCredential.user!.displayName!,
+  //       userCredential.user?.email,
+  //     );
+  //   } on Exception catch (e) {
+  //     // Handle the exception
+  //     log('exception-> in google signin = $e');
+  //   } finally {
+  //     // Ensure the loader is always removed, even if an error occurs
+  //     NewHelper.hideLoader(loader);
+  //   }
+  //   return;
+  // }
 
   final formKey1 = GlobalKey<FormState>();
 
@@ -195,7 +209,6 @@ class _SignUpScreenState extends State<SignUpScreen>
               ),
             ),
             SizedBox(height: size.height * 0.04),
-            // for username and password
             CommonTextField(
                 hintText: 'Full Name',
                 controller: nameController,
@@ -256,7 +269,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                 },
               ),
             ),
-
             Obx(() {
               return CommonTextField(
                 hintText: 'Password',
@@ -454,7 +466,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                     children: [
                       GestureDetector(
                         onTap: () {
-                          signInWithGoogle(context);
+                          googleSignin.signInWithGoogle(context);
                         },
                         child: socialIcon(
                           "assets/images/google.png",
@@ -487,11 +499,15 @@ class _SignUpScreenState extends State<SignUpScreen>
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        const PickUpAddressScreen()),
+                                  builder: (context) =>
+                                      const PickUpAddressScreen(),
+                                ),
                               );
                             } catch (error) {
-                              print('Error signing in with Apple: $error');
+                              showSnackBar(
+                                context,
+                                'Error signing in with Apple: $error',
+                              );
                             }
                           },
                           child: socialIcon("assets/images/apple.png"),
@@ -499,7 +515,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                       const SizedBox(
                         width: 10,
                       ),
-                      //socialIcon("assets/images/facebook.png"),
                     ],
                   ),
                   SizedBox(height: size.height * 0.07),
