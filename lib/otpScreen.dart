@@ -60,7 +60,6 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
   void register(
       String completePhoneNum, String name, String email, String password) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    log('uid in register method in otp screen: $uid');
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
     FirebaseFirestore.instance.collection('User').doc(uid).set({

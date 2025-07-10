@@ -48,7 +48,7 @@ class ChatListScreen extends StatelessWidget {
     Map<String, dynamic> userData,
     BuildContext context,
   ) {
-    if (userData['phoneNum'] != _authServices.getCurrentUser()!.phoneNumber) {
+    if (userData['email'] != _authServices.getCurrentUser()!.email) {
       return UserTiles(
         text: userData['name'] ?? "Unknown",
         onTap: () {

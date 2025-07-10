@@ -41,7 +41,6 @@ class _CurrentAddressState extends State<CurrentAddress> {
   String? street, city, state, country, zipcode, town;
 
   String googleApikey = "AIzaSyAP9njE_z7lH2tii68WLoQGju0DF8KryXA";
-  GoogleMapController? mapController1;
   CameraPosition? cameraPosition;
   String location = "Enter Your Address Here";
   final Set<Marker> markers = {};
@@ -205,7 +204,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
   @override
   void dispose() {
     mapController!.dispose();
-    mapController1!.dispose();
+
     super.dispose();
   }
 

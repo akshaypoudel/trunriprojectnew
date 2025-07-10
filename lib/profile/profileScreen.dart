@@ -76,11 +76,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void fetchUserData() async {
     FirebaseAuth auth = FirebaseAuth.instance;
 
-    String? phone = auth.currentUser!.phoneNumber;
-    String newEmail = auth.currentUser!.email!;
+    String phone = '';
+    String newEmail = '';
+
+    dynamic snapshot = await FirebaseFirestore.instance
+        .collection('User')
+        .doc(auth.currentUser!.uid)
+        .get();
+
+    if (snapshot.exists) {
+      newEmail = snapshot.get('email') ?? '';
+      phone = snapshot.get('phoneNumber') ?? '';
+    }
 
     dynamic querySnapshot;
-    if (phone != null && phone.isNotEmpty) {
+    if (phone.isNotEmpty) {
       querySnapshot = await FirebaseFirestore.instance
           .collection('User')
           .where('phoneNumber', isEqualTo: phone)
@@ -108,71 +118,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       showSnackBar(context, "Error fetching user data: ${e.toString()}");
     }
   }
-
-  // void fetchUserData1() async {
-  //   // SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-  //   // String? googleName = sharedPreferences.getString("google_name");
-  //   // String? googleEmail = sharedPreferences.getString("google_email");
-  //   FirebaseAuth auth = FirebaseAuth.instance;
-  //   String? phone = auth.currentUser!.phoneNumber;
-  //   // if (googleName != null &&
-  //   //     googleEmail != null &&
-  //   //     googleName.isNotEmpty &&
-  //   //     googleEmail.isNotEmpty) {
-  //   //   // 🔹 Google login - use stored name and email
-  //   //   nameController.text = googleName;
-  //   //   emailController.text = googleEmail;
-  //   //   name = googleName;
-  //   //   email = googleEmail;
-  //   //   log("Google Login - name: $name, email: $email");
-  //   // } else
-  //   if (phone != null && phone.isNotEmpty) {
-  //     try {
-  //       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-  //           .collection('User')
-  //           .where('phoneNumber', isEqualTo: phone)
-  //           .get();
-  //       if (querySnapshot.docs.isNotEmpty) {
-  //         DocumentSnapshot userDoc = querySnapshot.docs.first;
-  //         Map<String, dynamic> userData =
-  //             userDoc.data() as Map<String, dynamic>;
-  //         nameController.text = userData['name'] ?? '';
-  //         emailController.text = userData['email'] ?? '';
-  //         name = userData['name'] ?? '';
-  //         email = userData['email'] ?? '';
-  //         log("Phone Login - name: $name, email: $email");
-  //       } else {
-  //         showSnackBar(context, "User data not found for phone number");
-  //       }
-  //     } catch (e) {
-  //       showSnackBar(context, "Error fetching user data: ${e.toString()}");
-  //     }
-  //   } else if (phone == null || phone.isEmpty) {
-  //     try {
-  //       String newEmail = auth.currentUser!.email!;
-  //       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-  //           .collection('User')
-  //           .where('email', isEqualTo: newEmail)
-  //           .get();
-  //       if (querySnapshot.docs.isNotEmpty) {
-  //         DocumentSnapshot userDoc = querySnapshot.docs.first;
-  //         Map<String, dynamic> userData =
-  //             userDoc.data() as Map<String, dynamic>;
-  //         nameController.text = userData['name'] ?? '';
-  //         emailController.text = userData['email'] ?? '';
-  //         name = userData['name'] ?? '';
-  //         email = userData['email'] ?? '';
-  //         log("Phone Login - name: $name, email: $email");
-  //       } else {
-  //         showSnackBar(context, "User data not found for Email");
-  //       }
-  //     } catch (e) {
-  //       showSnackBar(context, "Error fetching user data: ${e.toString()}");
-  //     }
-  //   } else {
-  //     showSnackBar(context, "No login data found");
-  //   }
-  // }
 
   @override
   void initState() {
