@@ -25,7 +25,7 @@ class CustomGoogleSignin {
 
       bool isNewUser = userCredential.additionalUserInfo!.isNewUser;
 
-      Navigator.of(context).push(
+      Navigator.of(context).pushAndRemoveUntil(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => (!isNewUser)
               ? const MyBottomNavBar()
@@ -43,6 +43,7 @@ class CustomGoogleSignin {
             );
           },
         ),
+        (Route<dynamic> route) => false,
       );
 
       if (isNewUser) {

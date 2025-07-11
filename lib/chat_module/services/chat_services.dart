@@ -57,7 +57,6 @@ class ChatServices {
     List<String> ids = [receiverID, senderID];
     ids.sort();
     String chatRoomId = ids.join('_');
-    log("chat room id ppppppppppppppppppp = $chatRoomId");
 
     return _firestore
         .collection("chat_rooms")

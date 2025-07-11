@@ -19,20 +19,31 @@ class UserTiles extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.secondaryContainer,
+            color: Colors.transparent,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.orange.withValues(alpha: 0.04),
+                blurRadius: 5,
+                offset: const Offset(0, 3),
+              ),
+            ],
             borderRadius: BorderRadius.circular(12),
+            border: const Border.symmetric(
+              vertical: BorderSide(color: Colors.black),
+              horizontal: BorderSide(color: Colors.black),
+            ),
           ),
           child: Row(
             children: [
               const CircleAvatar(
                 radius: 23,
-                backgroundColor: Colors.grey,
+                backgroundColor: Color.fromARGB(222, 177, 177, 177),
                 foregroundColor: Colors.white,
                 child: Icon(
                   Icons.person,
-                  size: 40,
+                  size: 41,
                 ),
               ),
               const SizedBox(width: 20),

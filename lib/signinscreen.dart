@@ -111,7 +111,7 @@ class _SignInScreenState extends State<SignInScreen> {
         NewHelper.hideLoader(loader);
         showSnackBar(context, 'OTP sent successfully');
 
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => NewOtpScreen(
@@ -127,50 +127,6 @@ class _SignInScreenState extends State<SignInScreen> {
       },
     );
   }
-
-  // Future<dynamic> signInWithGoogle(BuildContext context) async {
-  //   OverlayEntry loader = NewHelper.overlayLoader(context);
-  //   Overlay.of(context).insert(loader);
-  //   try {
-  //     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-  //     final GoogleSignInAuthentication? googleAuth =
-  //         await googleUser?.authentication;
-  //     final credential = GoogleAuthProvider.credential(
-  //       accessToken: googleAuth?.accessToken,
-  //       idToken: googleAuth?.idToken,
-  //     );
-  //     UserCredential userCredential =
-  //         await FirebaseAuth.instance.signInWithCredential(credential);
-  //     Navigator.of(context).push(
-  //       PageRouteBuilder(
-  //         pageBuilder: (context, animation, secondaryAnimation) =>
-  //             const MyBottomNavBar(),
-  //         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-  //           const begin = Offset(1.0, 0.0);
-  //           const end = Offset.zero;
-  //           const curve = Curves.ease;
-  //           var tween =
-  //               Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-  //           var offsetAnimation = animation.drive(tween);
-  //           return SlideTransition(
-  //             position: offsetAnimation,
-  //             child: child,
-  //           );
-  //         },
-  //       ),
-  //     );
-  //     if (user != null) {
-  //       showSnackBar(context, "User Log In Successfull");
-  //     } else {
-  //       showSnackBar(context, "User Registered Successfully");
-  //     }
-  //     return userCredential;
-  //   } on Exception catch (e) {
-  //     log('exception->$e');
-  //   } finally {
-  //     NewHelper.hideLoader(loader);
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
