@@ -28,10 +28,8 @@ class _SplashScreenState extends State<SplashScreen> {
   checkLogin() async {
     await Future.delayed(const Duration(seconds: 2)); // short delay
     User? currentUser = FirebaseAuth.instance.currentUser;
-    log('user in splash screen : $currentUser');
     if (currentUser != null) {
       bool userExists = await FirebaseFireStoreService().checkUserProfile();
-      log('user exists profiele : $userExists');
 
       if (userExists) {
         Get.offAll(() => const MyBottomNavBar());

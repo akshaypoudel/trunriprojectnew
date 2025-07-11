@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:trunriproject/chat_module/models/message.dart';
@@ -16,20 +18,31 @@ class ChatServices {
   }
 
   Future<void> sendMessage(String receiverID, message) async {
-    final String currentUserId = _auth.currentUser!.uid;
-    final String phoneNumber = _auth.currentUser!.phoneNumber!;
-    final String userName = _auth.currentUser!.displayName!;
-    final Timestamp timeStamp = Timestamp.now();
+    String currentUserEmail = _auth.currentUser!.email ?? '';
+    String userName = _auth.currentUser!.displayName ?? 'Unknown user';
+    Timestamp timeStamp = Timestamp.now();
+
+    dynamic snapshot = await FirebaseFirestore.instance
+        .collection('User')
+        .doc(_auth.currentUser!.uid)
+        .get();
+
+    if (snapshot.exists) {
+      userName = snapshot.get('name') ?? '';
+      currentUserEmail = snapshot.get('email') ?? '';
+    } else {
+      userName = 'Unknown User';
+    }
 
     Message newMessage = Message(
-      senderID: currentUserId,
+      senderID: currentUserEmail,
       senderName: userName,
       message: message,
       timestamp: timeStamp,
       receiverID: receiverID,
     );
 
-    List<String> ids = [currentUserId, receiverID];
+    List<String> ids = [currentUserEmail, receiverID];
     ids.sort();
     String chatRoomId = ids.join('_');
     await _firestore
@@ -39,13 +52,16 @@ class ChatServices {
         .add(newMessage.toMap());
   }
 
-  Stream<QuerySnapshot> getMessages(String userID, otherUserID) {
-    List<String> ids = [userID, otherUserID];
+  Stream<QuerySnapshot<Object?>> getMessages(
+      String senderID, String receiverID) {
+    List<String> ids = [receiverID, senderID];
     ids.sort();
-    String chatRoomID = ids.join('_');
+    String chatRoomId = ids.join('_');
+    log("chat room id ppppppppppppppppppp = $chatRoomId");
+
     return _firestore
         .collection("chat_rooms")
-        .doc(chatRoomID)
+        .doc(chatRoomId)
         .collection("messages")
         .orderBy("timestamp", descending: false)
         .snapshots();
