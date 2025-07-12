@@ -20,10 +20,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
   final ChatServices _chatService = ChatServices();
 
   final AuthServices _authServices = AuthServices();
+  List<Map<String, dynamic>>? cachedUserList = [];
 
   String? availableEmailInDB;
   String? lastMessage;
   String? lastMessageTime;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -45,9 +47,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           ),
         ],
       ),
-      body: availableEmailInDB == null
-          ? const Center(child: CircularProgressIndicator())
-          : _buildUserList(),
+      body: _buildUserList(),
     );
   }
 
@@ -75,51 +75,75 @@ class _ChatListScreenState extends State<ChatListScreen> {
         .get();
 
     if (snapshot.exists) {
+      availableEmailInDB = snapshot.get('email') ?? '';
+      cachedUserList = await buildSortedUserList(availableEmailInDB!);
       setState(() {
-        availableEmailInDB = snapshot.get('email') ?? '';
+        isLoading = false;
       });
     }
   }
 
   Widget buildChatListScreen() {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: buildSortedUserList(availableEmailInDB!),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (snapshot.hasError) {
-          return Center(child: Text("Error loading chats = ${snapshot.error}"));
-        }
-
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text("No chats yet"));
-        }
-
-        return ListView(
-          children: snapshot.data!.map((userData) {
-            return UserTiles(
-              text: userData['name'],
-              lastMessage: userData['lastMessage'],
-              lastMessageTime: userData['lastMessageTime'],
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChatScreen(
-                      receiversName: userData['name'],
-                      receiversID: userData['email'],
-                    ),
-                  ),
-                );
-                setState(() {});
-              },
-            );
-          }).toList(),
-        );
+    if (isLoading || cachedUserList == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (cachedUserList!.isEmpty) {
+      return const Center(child: Text("No chats yet"));
+    }
+    return RefreshIndicator(
+      onRefresh: () async {
+        cachedUserList = await buildSortedUserList(availableEmailInDB!);
+        setState(() {});
       },
+      child: ListView(
+        children: cachedUserList!.map((userData) {
+          return StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('chat_rooms')
+                  .doc(getChatRoomId(availableEmailInDB!, userData['email']))
+                  .collection('messages')
+                  .orderBy('timestamp', descending: true)
+                  .limit(1)
+                  .snapshots(),
+              builder: (context, messageSnapshot) {
+                String lastMsg = 'No messages yet';
+                String lastTime = '';
+
+                if (messageSnapshot.hasData &&
+                    messageSnapshot.data!.docs.isNotEmpty) {
+                  final doc = messageSnapshot.data!.docs.first;
+                  lastMsg = doc['message'];
+                  final Timestamp timestamp = doc['timestamp'];
+                  lastTime = formatTimestamp(timestamp);
+                }
+
+                return UserTiles(
+                  text: userData['name'],
+                  lastMessage: lastMsg,
+                  lastMessageTime: lastTime,
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatScreen(
+                          receiversName: userData['name'],
+                          receiversID: userData['email'],
+                        ),
+                      ),
+                    );
+                    setState(() {});
+                  },
+                );
+              });
+        }).toList(),
+      ),
     );
+  }
+
+  String getChatRoomId(String a, String b) {
+    List<String> ids = [a, b];
+    ids.sort();
+    return ids.join('_');
   }
 
   Future<List<Map<String, dynamic>>> buildSortedUserList(

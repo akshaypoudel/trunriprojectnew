@@ -15,7 +15,7 @@ void main() async {
   ]);
   final user = FirebaseAuth.instance.currentUser;
   if (user != null) {
-    await PresenceService.setUserOnline(); // only for current user
+    await PresenceService.setUserOnline();
   }
   runApp(const MyApp());
 }
@@ -32,7 +32,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // PresenceService.setUserOnline();
   }
 
   void monitorUserPresenceIfInternetActive() {

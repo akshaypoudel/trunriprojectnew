@@ -84,7 +84,6 @@ class _SignUpScreenState extends State<SignUpScreen>
       codeSent: (String verificationId, int? resendToken) {
         SignUpScreen.verificationOTP = verificationId;
         NewHelper.hideLoader(loader);
-        //register(completePhoneNum);
         showSnackBar(context, 'OTP sent successfully');
         NewHelper.hideLoader(loader);
 
