@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:trunriproject/nativAddressScreen.dart';
 import 'package:trunriproject/widgets/helper.dart';
@@ -52,6 +53,11 @@ class CustomGoogleSignin {
           userCredential.user?.email,
           context,
         );
+      } else {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          await PresenceService.setUserOnline();
+        }
       }
 
       if (!isNewUser) {
@@ -77,7 +83,9 @@ class CustomGoogleSignin {
       'phoneNumber': "",
       'password': "",
       'address': "",
-      'profile': ""
+      'profile': "",
+      'isOnline': true,
+      'lastSeen': Timestamp.now(),
     }).then((value) {
       NewHelper.hideLoader(loader);
     });

@@ -400,11 +400,11 @@ class UserOnlineStatusTitle extends StatelessWidget {
   }
 
   Widget getOnlineOfflineStream() {
-    return FutureBuilder<QuerySnapshot>(
-      future: FirebaseFirestore.instance
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
           .collection('User')
           .where('email', isEqualTo: userId)
-          .get(),
+          .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container();
@@ -433,14 +433,16 @@ class UserOnlineStatusTitle extends StatelessWidget {
 
         return Row(
           children: [
-            const Text(
-              '🟢',
-              style: TextStyle(
-                color: Colors.green,
-                fontSize: 10,
-              ),
-            ),
-            const SizedBox(width: 5),
+            (isOnline)
+                ? const Text(
+                    '🟢',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 10,
+                    ),
+                  )
+                : Container(),
+            (isOnline) ? const SizedBox(width: 5) : Container(),
             Text(
               isOnline
                   ? 'Online'

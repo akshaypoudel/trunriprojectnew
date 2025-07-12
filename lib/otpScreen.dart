@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:trunriproject/signinscreen.dart';
 import 'package:trunriproject/widgets/helper.dart';
@@ -68,7 +69,9 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
       'phoneNumber': completePhoneNum,
       'password': password,
       'address': "",
-      'profile': ""
+      'profile': "",
+      'isOnline': true,
+      'lastSeen': Timestamp.now(),
     }).then((value) {
       NewHelper.hideLoader(loader);
     });
@@ -145,6 +148,11 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
         SharedPreferences sharedPreferences =
             await SharedPreferences.getInstance();
         sharedPreferences.setString("myPhone", widget.phoneNumber);
+
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          await PresenceService.setUserOnline(); // only for current user
+        }
 
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(

@@ -35,51 +35,6 @@ class _SignInScreenState extends State<SignInScreen> {
 
   String code = "+91";
 
-  // void loginUser() async {
-  //   OverlayEntry loader = NewHelper.overlayLoader(context);
-  //   Overlay.of(context).insert(loader);
-  //   String phone = phoneController.text.trim();
-  //   String password = passwordController.text.trim();
-  //   if (phone.isEmpty || password.isEmpty) {
-  //     showSnackBar(context, "Please enter both phone number and password");
-  //     NewHelper.hideLoader(loader);
-  //     return;
-  //   }
-  //   try {
-  //     QuerySnapshot phoneSnapshot = await FirebaseFirestore.instance
-  //         .collection("User")
-  //         .where("phoneNumber", isEqualTo: phone)
-  //         .get();
-  //     if (phoneSnapshot.docs.isEmpty) {
-  //       NewHelper.hideLoader(loader);
-  //       showSnackBar(context, "Phone number not found");
-  //       return;
-  //     }
-  //     QuerySnapshot userSnapshot = await FirebaseFirestore.instance
-  //         .collection("User")
-  //         .where("phoneNumber", isEqualTo: phone)
-  //         .where("password", isEqualTo: password)
-  //         .get();
-  //     if (userSnapshot.docs.isEmpty) {
-  //       NewHelper.hideLoader(loader);
-  //       showSnackBar(context, "Incorrect password");
-  //       return;
-  //     }
-  //     showSnackBar(context, "Login successful");
-  //     SharedPreferences sharedPreferences =
-  //         await SharedPreferences.getInstance();
-  //     sharedPreferences.setString("myPhone", phoneController.text.trim());
-  //     NewHelper.hideLoader(loader);
-  //     Navigator.pushReplacement(
-  //       context,
-  //       MaterialPageRoute(builder: (context) => const MyBottomNavBar()),
-  //     );
-  //   } catch (e) {
-  //     NewHelper.hideLoader(loader);
-  //     showSnackBar(context, "Error: ${e.toString()}");
-  //   }
-  // }
-
   Future<bool> doesPhoneExist(String phone) async {
     final query = await FirebaseFirestore.instance
         .collection('User')

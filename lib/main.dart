@@ -57,10 +57,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       PresenceService.setUserOnline();
-    } else if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached ||
-        state == AppLifecycleState.inactive) {
-      PresenceService.setUserOffline();
+    } else if (state == AppLifecycleState.detached ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      Future.delayed(const Duration(seconds: 5), () {
+        final currentState = WidgetsBinding.instance.lifecycleState;
+        if (currentState != AppLifecycleState.resumed) {
+          PresenceService.setUserOffline();
+        }
+      });
     }
   }
 
