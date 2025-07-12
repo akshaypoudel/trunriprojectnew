@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:intl/intl.dart';
 import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/chat_module/services/chat_services.dart';
@@ -88,7 +89,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: Text(widget.receiversName),
+        title: UserOnlineStatusTitle(
+          userId: widget.receiversID,
+          userName: widget.receiversName,
+        ),
         backgroundColor: Colors.orange.shade100,
       ),
       body: SafeArea(
@@ -367,6 +371,91 @@ class ChatInputField extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class UserOnlineStatusTitle extends StatelessWidget {
+  final String userId;
+  final String userName;
+
+  const UserOnlineStatusTitle({
+    super.key,
+    required this.userId,
+    required this.userName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          userName,
+          style: const TextStyle(fontSize: 22),
+        ),
+        getOnlineOfflineStream()
+      ],
+    );
+  }
+
+  Widget getOnlineOfflineStream() {
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('User')
+          .where('email', isEqualTo: userId)
+          .get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container();
+        }
+
+        if (snapshot.hasError) {
+          return Container();
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Container();
+        }
+
+        final doc = snapshot.data!.docs.first;
+        final rawData = doc.data();
+
+        if (rawData is! Map<String, dynamic>) {
+          return Container();
+        }
+
+        final data = rawData;
+
+        final bool isOnline = data['isOnline'] ?? false;
+        final Timestamp? lastSeenTimestamp = data['lastSeen'];
+        final lastSeen = lastSeenTimestamp?.toDate();
+
+        return Row(
+          children: [
+            const Text(
+              '🟢',
+              style: TextStyle(
+                color: Colors.green,
+                fontSize: 10,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              isOnline
+                  ? 'Online'
+                  : lastSeen != null
+                      ? 'Last seen ${DateFormat('hh:mm a').format(lastSeen)}'
+                      : 'Offline',
+              style: TextStyle(
+                fontSize: 12,
+                color: isOnline ? Colors.green : Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

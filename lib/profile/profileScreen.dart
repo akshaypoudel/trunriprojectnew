@@ -9,6 +9,7 @@ import 'package:get/route_manager.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:trunriproject/signUpScreen.dart';
 import 'package:trunriproject/signinscreen.dart';
@@ -405,6 +406,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         GestureDetector(
                           onTap: () {
+                            PresenceService.setUserOffline();
                             GoogleSignIn().signOut();
                             FirebaseAuth.instance.signOut().then((value) {
                               Get.offAll(const SignInScreen());

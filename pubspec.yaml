@@ -46,6 +46,7 @@ dependencies:
   firebase_auth: ^5.6.2
   firebase_core: ^3.15.1
   cloud_firestore: ^5.6.11
+  connectivity_plus: ^6.1.4
   form_field_validator: ^1.1.0
   loading_animation_widget: ^1.2.0+4
   flutter_animate: ^4.2.0+1

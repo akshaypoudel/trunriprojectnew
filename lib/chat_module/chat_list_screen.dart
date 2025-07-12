@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:trunriproject/chat_module/chat_screen.dart';
 import 'package:trunriproject/chat_module/components/user_tiles.dart';
 import 'package:trunriproject/chat_module/services/auth_service.dart';
@@ -89,7 +90,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         }
 
         if (snapshot.hasError) {
-          return const Center(child: Text("Error loading chats"));
+          return Center(child: Text("Error loading chats = ${snapshot.error}"));
         }
 
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -133,78 +134,47 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
       if (userEmail == currentUserEmail) continue;
 
-      Map<String, dynamic>? lastMsgData =
-          await getLastMessageForUser(userEmail);
+      Map<String, dynamic> lastMsgData = await getLastMessageForUser(userEmail);
 
       // if (lastMsgData == null) continue;
-
-      sortedList.add({
-        'email': userEmail,
-        'name': userName,
-        'lastMessage': lastMsgData?['message'] ?? 'No messages yet',
-        'lastMessageTime': lastMsgData?['timestamp'] != null
-            ? formatTimestamp(lastMsgData!['timestamp'])
-            : '',
-        'timestamp': lastMsgData?['timestamp'],
-      });
+      try {
+        sortedList.add({
+          'email': userEmail,
+          'name': userName,
+          'lastMessage': lastMsgData['message'] ?? 'No messages yet',
+          'lastMessageTime': lastMsgData['timestamp'] != null
+              ? formatTimestamp(lastMsgData['timestamp'])
+              : '',
+          'timestamp': lastMsgData['timestamp'],
+        });
+      } catch (e) {
+        log('error 1 = $e');
+      }
     }
 
     // // Sort by timestamp descending
     // sortedList.sort((a, b) =>
     //     (b['timestamp'] as Timestamp).compareTo(a['timestamp'] as Timestamp));
+    try {
+      sortedList.sort((a, b) {
+        final aTime = a['timestamp'] as Timestamp?;
+        final bTime = b['timestamp'] as Timestamp?;
 
-    sortedList.sort((a, b) {
-      final aTime = a['timestamp'] as Timestamp?;
-      final bTime = b['timestamp'] as Timestamp?;
+        if (aTime == null && bTime == null) return 0;
+        if (aTime == null) return 1; // push a below
+        if (bTime == null) return -1; // push b below
 
-      if (aTime == null && bTime == null) return 0;
-      if (aTime == null) return 1; // push a below
-      if (bTime == null) return -1; // push b below
-
-      return bTime.compareTo(aTime); // latest on top
-    });
+        return bTime.compareTo(aTime); // latest on top
+      });
+    } catch (e) {
+      log('error 2 = $e');
+    }
 
     return sortedList;
   }
 
-  Widget buildUserTile1(String userEmail, String userName) {
-    return FutureBuilder<Map<String, dynamic>?>(
-      future: getLastMessageForUser(userEmail),
-      builder: (context, snapshot) {
-        String lastMsg = "No messages";
-        String time = "";
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          lastMsg = "Loading...";
-        } else if (snapshot.hasError) {
-          lastMsg = "Error loading message";
-        } else if (snapshot.hasData && snapshot.data != null) {
-          lastMsg = snapshot.data!['message'] ?? '';
-          Timestamp timestamp = snapshot.data!['timestamp'];
-          time = formatTimestamp(timestamp);
-        }
-
-        return UserTiles(
-          text: userName,
-          lastMessage: lastMsg,
-          lastMessageTime: time,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChatScreen(
-                  receiversName: userName,
-                  receiversID: userEmail,
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  String formatTimestamp(Timestamp timestamp) {
+  String formatTimestamp(Timestamp? timestamp) {
+    if (timestamp == null || timestamp.isBlank!) return '';
     final DateTime dt = timestamp.toDate();
     final now = DateTime.now();
 
@@ -215,9 +185,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
     }
   }
 
-  Future<Map<String, dynamic>?> getLastMessageForUser(
+  Future<Map<String, dynamic>> getLastMessageForUser(
       String otherUserEmail) async {
-    final String currentUserEmail = FirebaseAuth.instance.currentUser!.email!;
+    final String currentUserEmail = availableEmailInDB!;
+    log(availableEmailInDB!);
     List<String> ids = [currentUserEmail, otherUserEmail];
     ids.sort();
     String chatRoomId = ids.join('_');
@@ -237,7 +208,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         'timestamp': doc['timestamp'],
       };
     } else {
-      return null; // No messages yet
+      return {}; // No messages yet
     }
   }
 }
