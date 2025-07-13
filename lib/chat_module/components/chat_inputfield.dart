@@ -55,3 +55,44 @@ class ChatInputField extends StatelessWidget {
     );
   }
 }
+
+class GroupNameInputField extends StatelessWidget {
+  const GroupNameInputField({
+    super.key,
+    required this.controller,
+    required this.onTap,
+    required this.focusNode,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: controller,
+              focusNode: focusNode,
+              onTap: onTap,
+              decoration: InputDecoration(
+                hintText: "Enter Group Name",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: const BorderSide(
+                    color: Colors.orange,
+                    width: 2,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

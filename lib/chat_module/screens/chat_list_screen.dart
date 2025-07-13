@@ -2,12 +2,15 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:trunriproject/chat_module/chat_screen.dart';
+import 'package:trunriproject/chat_module/screens/chat_screen.dart';
 import 'package:trunriproject/chat_module/components/user_tiles.dart';
+import 'package:trunriproject/chat_module/screens/group_chat_create_screen.dart';
 import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/chat_module/services/chat_services.dart';
+import 'package:trunriproject/widgets/helper.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -41,9 +44,35 @@ class _ChatListScreenState extends State<ChatListScreen> {
         title: const Text('Messages'),
         backgroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert_rounded),
-            onPressed: () async {},
+          PopupMenuButton<String>(
+            surfaceTintColor: Colors.orange.shade200,
+            elevation: 15,
+            borderRadius: BorderRadius.circular(30),
+            shape: ContinuousRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+            color: Colors.white,
+            position: PopupMenuPosition.under,
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                value: 'Create New Group',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (c) => const GroupChatCreateScreen(),
+                    ),
+                  );
+                },
+                child: const Row(
+                  children: [
+                    Icon(Icons.add),
+                    SizedBox(width: 5),
+                    Text('Create New Group'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
