@@ -9,12 +9,25 @@ class ChatServices {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Stream<List<Map<String, dynamic>>> getUserStream() {
-    return _firestore.collection("User").snapshots().map((snapshot) {
+    final userSnapshot =
+        _firestore.collection("User").snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         final user = doc.data();
         return user;
       }).toList();
     });
+    return userSnapshot;
+  }
+
+  Stream<List<Map<String, dynamic>>> getGroupStream() {
+    final groupSnapShot =
+        _firestore.collection('groups').snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final user = doc.data();
+        return user;
+      }).toList();
+    });
+    return groupSnapShot;
   }
 
   Future<void> sendMessage(String receiverID, message) async {

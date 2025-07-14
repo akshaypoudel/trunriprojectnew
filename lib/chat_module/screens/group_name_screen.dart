@@ -1,15 +1,23 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:path/path.dart' as path;
 import 'package:trunriproject/chat_module/components/chat_inputfield.dart';
+import 'package:trunriproject/chat_module/screens/group_chat_screen.dart';
+import 'package:trunriproject/widgets/helper.dart';
 
 class GroupNameScreen extends StatefulWidget {
   final List<Map<String, dynamic>> selectedUsers;
+  final Set<String> selectedUsersSet;
 
-  const GroupNameScreen({super.key, required this.selectedUsers});
+  const GroupNameScreen(
+      {super.key, required this.selectedUsers, required this.selectedUsersSet});
 
   @override
   State<GroupNameScreen> createState() => _GroupNameScreenState();
@@ -20,6 +28,28 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
   final TextEditingController _groupNameController = TextEditingController();
   final FocusNode focusNode = FocusNode();
   bool _showEmojiKeyboard = false;
+  String currentUserName = '';
+  String currentUserEmail = '';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCurrentUserEmail();
+  }
+
+  Future<void> fetchCurrentUserEmail() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('User')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+
+    if (snapshot.exists) {
+      setState(() {
+        currentUserName = snapshot.get('name');
+        currentUserEmail = snapshot.get('email');
+      });
+    }
+  }
 
   Future<void> _pickGroupImage() async {
     final picker = ImagePicker();
@@ -48,34 +78,134 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
     }
   }
 
-  Future<void> createGroup(String groupName, List<String> memberEmails) async {
-    final groupDoc = await FirebaseFirestore.instance.collection('groups').add({
-      'groupName': groupName,
-      'members': memberEmails,
-      'lastMessage': '',
-      'lastMessageTime': null,
-    });
+  Future<void> createGroup1(String groupName, Set<String> memberEmails) async {
+    File? groupImageFile = _groupImage;
+    try {
+      String? imageUrl;
+      if (groupImageFile != null) {
+        imageUrl = await uploadGroupImage(_groupImage!);
+        final fileName = path.basename(groupImageFile.path);
+        final storageRef =
+            FirebaseStorage.instance.ref().child('group_icons/$fileName');
+        final uploadTask = await storageRef.putFile(groupImageFile);
+        imageUrl = await storageRef.getDownloadURL();
+      }
 
-    // Optionally send a welcome message
-    await groupDoc.collection('messages').add({
-      'senderId': 'system',
-      'message': 'Group "$groupName" created.',
-      'timestamp': Timestamp.now(),
-    });
-  }
+      final groupDoc =
+          await FirebaseFirestore.instance.collection('groups').add({
+        'groupName': groupName,
+        'members': memberEmails,
+        'lastMessage': '',
+        'lastMessageTime': null,
+        'imageUrl': (imageUrl == null) ? null : imageUrl,
+      });
 
-  void _navigateToGroupChatScreen() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => Scaffold(
-          appBar: AppBar(title: const Text("Group Chat")),
-          body: Center(
-            child: Text("Welcome to group: ${_groupNameController.text}"),
+      Navigator.pop(context);
+      Navigator.pop(context);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (c) => GroupChatScreen(
+            groupName: _groupNameController.text.trim(),
+            groupImageUrl: imageUrl,
+            groupId: groupDoc.id,
           ),
         ),
-      ),
+      );
+    } catch (e) {
+      log('Error creating group: $e');
+      showSnackBar(context, 'Failed to create group');
+    }
+  }
+
+  Future<void> createGroup(String groupName, Set<String> memberEmails) async {
+    File? groupImageFile = _groupImage;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return const PopScope(
+          canPop: false,
+          child: AlertDialog(
+            content: Row(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 16),
+                Expanded(child: Text("Creating your Group...")),
+              ],
+            ),
+          ),
+        );
+      },
     );
+
+    try {
+      String? imageUrl;
+
+      // Upload group image if provided
+      if (groupImageFile != null) {
+        final fileName = path.basename(groupImageFile.path);
+        final storageRef =
+            FirebaseStorage.instance.ref().child('group_icons/$fileName');
+        final uploadTask = await storageRef.putFile(groupImageFile);
+        imageUrl = await storageRef.getDownloadURL();
+      }
+
+      // Create group document
+      final groupDoc =
+          await FirebaseFirestore.instance.collection('groups').add({
+        'groupName': groupName,
+        'members': memberEmails,
+        'lastMessage': '',
+        'lastMessageTime': null,
+        'imageUrl': imageUrl,
+        'createdAt': Timestamp.now(),
+        'createdBy': currentUserEmail,
+      });
+
+      // Close loading dialog
+      Navigator.pop(context); // close AlertDialog
+
+      // Navigate back and forward to GroupChatScreen
+      Navigator.pop(context); // close group create screen
+      Navigator.pop(context);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (c) => GroupChatScreen(
+            groupName: groupName,
+            groupImageUrl: imageUrl,
+            groupId: groupDoc.id,
+          ),
+        ),
+      );
+    } catch (e) {
+      log('Error creating group: $e');
+
+      // Close loading dialog if open
+      Navigator.pop(context);
+
+      showSnackBar(context, 'Failed to create group');
+    }
+  }
+
+  Future<String> uploadGroupImage(File imageFile) async {
+    try {
+      final fileName = path.basename(imageFile.path);
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('group_icons/$fileName'); // Folder in Firebase Storage
+
+      final uploadTask = await storageRef.putFile(imageFile);
+
+      final downloadUrl = await storageRef.getDownloadURL();
+
+      return downloadUrl;
+    } catch (e) {
+      throw Exception('Failed to upload image: $e');
+    }
   }
 
   @override
@@ -129,12 +259,17 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Text('Selected Participant: ${widget.selectedUsers.length}'),
+          ),
 
-          // Selected Participants as Chips
           if (widget.selectedUsers.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Wrap(
+                direction: Axis.vertical,
                 spacing: 8,
                 runSpacing: 8,
                 children: widget.selectedUsers.map((user) {
@@ -173,7 +308,9 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
 
       // FAB to navigate
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _navigateToGroupChatScreen,
+        onPressed: () {
+          createGroup(_groupNameController.text, widget.selectedUsersSet);
+        },
         icon: const Icon(Icons.check),
         label: const Text("Create"),
       ),

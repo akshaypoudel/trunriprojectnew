@@ -1,16 +1,22 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class UserTiles extends StatelessWidget {
-  const UserTiles(
-      {super.key,
-      required this.text,
-      required this.onTap,
-      required this.lastMessage,
-      required this.lastMessageTime});
+  const UserTiles({
+    super.key,
+    required this.text,
+    required this.onTap,
+    required this.lastMessage,
+    required this.lastMessageTime,
+    required this.chatType,
+    this.imageUrl,
+  });
   final String text;
   final String lastMessage;
   final String lastMessageTime;
   final void Function() onTap;
+  final String chatType;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -37,15 +43,32 @@ class UserTiles extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const CircleAvatar(
-                radius: 23,
-                backgroundColor: Color.fromARGB(222, 177, 177, 177),
-                foregroundColor: Colors.white,
-                child: Icon(
-                  Icons.person,
-                  size: 41,
-                ),
-              ),
+              (imageUrl != null)
+                  ? CachedNetworkImage(
+                      imageUrl: imageUrl!,
+                      imageBuilder: (context, imageProvider) => CircleAvatar(
+                        radius: 23,
+                        backgroundImage: imageProvider,
+                      ),
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                    )
+                  : CircleAvatar(
+                      radius: 23,
+                      backgroundColor: const Color.fromARGB(222, 177, 177, 177),
+                      foregroundColor: Colors.white,
+                      child: (chatType == 'user')
+                          ? const Icon(
+                              Icons.person,
+                              size: 41,
+                            )
+                          : const Icon(
+                              Icons.group,
+                              size: 41,
+                            ),
+                    ),
               const SizedBox(width: 20),
               Expanded(
                 child: Column(

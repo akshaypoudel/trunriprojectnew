@@ -154,7 +154,7 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
           await PresenceService.setUserOnline(); // only for current user
         }
 
-        Navigator.of(context).pushReplacement(
+        Navigator.of(context).pushAndRemoveUntil(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 const MyBottomNavBar(),
@@ -172,6 +172,7 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
               );
             },
           ),
+          (Route<dynamic> route) => false,
         );
       } catch (e) {
         showSnackBar(context, "Invalid OTP Error : ${e.toString()}");

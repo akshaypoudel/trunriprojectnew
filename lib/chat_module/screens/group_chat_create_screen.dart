@@ -20,7 +20,8 @@ class _GroupChatCreateScreenState extends State<GroupChatCreateScreen> {
   Set<String> selectedUserEmails = {};
   Map<String, String> emailToNameMap = {};
   bool isLoading = true;
-  String? currentUserEmail;
+  String? currentUserEmail = '';
+  String? currentUserName = '';
 
   @override
   void initState() {
@@ -35,7 +36,10 @@ class _GroupChatCreateScreenState extends State<GroupChatCreateScreen> {
           .collection('User')
           .doc(currentUserId)
           .get();
-      currentUserEmail = currentUserDoc.get('email');
+      setState(() {
+        currentUserEmail = currentUserDoc.get('email');
+        currentUserName = currentUserDoc.get('name');
+      });
 
       final querySnapshot =
           await FirebaseFirestore.instance.collection('User').get();
@@ -56,6 +60,8 @@ class _GroupChatCreateScreenState extends State<GroupChatCreateScreen> {
         userList = filteredUsers;
         isLoading = false;
       });
+
+      // log('final user list = $userList');
     } catch (e) {
       log('Error fetching users: $e');
     }
@@ -166,18 +172,22 @@ class _GroupChatCreateScreenState extends State<GroupChatCreateScreen> {
       floatingActionButton: selectedUserEmails.isNotEmpty
           ? FloatingActionButton.extended(
               onPressed: () {
-                final selectedNewUserList = selectedUserEmails.map((email) {
+                final userList = selectedUserEmails.toSet();
+                userList.add(currentUserEmail!);
+                final selectedNewUserList = userList.map((email) {
                   return {
                     'email': email,
-                    'name': emailToNameMap[email] ?? '',
+                    'name': (email == currentUserEmail)
+                        ? "$currentUserName (You)"
+                        : emailToNameMap[email] ?? '',
                   };
                 }).toList();
-
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => GroupNameScreen(
                       selectedUsers: selectedNewUserList,
+                      selectedUsersSet: userList,
                     ),
                   ),
                 );

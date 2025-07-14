@@ -39,8 +39,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     connectivity.onConnectivityChanged.listen((status) {
       if (status.contains(ConnectivityResult.none)) {
         PresenceService.setUserOffline();
-      } else {
-        PresenceService.setUserOnline();
       }
     });
   }
@@ -60,11 +58,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused) {
       Future.delayed(const Duration(seconds: 5), () {
-        final currentState = WidgetsBinding.instance.lifecycleState;
-        if (currentState != AppLifecycleState.resumed) {
-          PresenceService.setUserOffline();
-        }
+        PresenceService.setUserOffline();
       });
+
+      // Future.delayed(const Duration(milliseconds: 500), () {
+      //   final currentState = WidgetsBinding.instance.lifecycleState;
+      //   if (currentState != AppLifecycleState.resumed) {
+      //     PresenceService.setUserOffline();
+      //   }
+      // });
     }
   }
 

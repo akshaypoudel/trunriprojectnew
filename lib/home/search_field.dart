@@ -113,7 +113,7 @@ class _SearchFieldState extends State<SearchField> {
                         fontWeight: FontWeight.w400),
                     counter: const Offstage(),
                     errorMaxLines: 2,
-                    hintText: "Search Places/Jobs",
+                    hintText: "Search TruNri Services",
                     prefixIcon: const Icon(
                       Icons.search,
                       color: Colors.orange,

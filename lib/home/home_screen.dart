@@ -206,47 +206,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       extendBody: true,
-      appBar: AppBar(
-        title: Text(
-          'TruNri',
-          style: GoogleFonts.caveat(
-              color: AppTheme.blackColor,
-              fontSize: 50,
-              fontWeight: FontWeight.w600),
-        ),
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        actions: [
-          const Padding(
-            padding: EdgeInsets.only(right: 10),
-            child: Icon(
-              Icons.location_on_outlined,
-              // color: Colors.orange,
-              size: 30,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 20),
-            child: IconButton(
-              icon: const Icon(
-                Icons.notifications_none_outlined,
-                size: 30,
-              ),
-              // color: Colors.orange,
-              onPressed: () {
-                Get.to(const Notificatioonscreen());
-              },
-            ),
-          ),
-        ],
-      ),
       backgroundColor: Colors.white,
       body: SafeArea(
         bottom: false,
         child: Stack(
           children: [
             Positioned.fill(
-              top: 10,
+              top: 70,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Column(
@@ -1163,7 +1129,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            //const SearchField()
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 5),
+                child: Row(
+                  children: [
+                    const Expanded(child: SearchField()), // takes most space
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Icons.notifications),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
