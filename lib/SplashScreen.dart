@@ -1,16 +1,12 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:trunriproject/signUpScreen.dart';
 import 'package:trunriproject/signinscreen.dart';
 import 'package:trunriproject/widgets/appTheme.dart';
-import 'package:trunriproject/widgets/helper.dart';
 
 import 'home/bottom_bar.dart';
 import 'home/firestore_service.dart';

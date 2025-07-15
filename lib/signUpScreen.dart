@@ -1,23 +1,16 @@
-import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/widgets.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:trunriproject/google_signin/google_signin.dart';
-import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:trunriproject/otpScreen.dart';
 import 'package:trunriproject/signinscreen.dart';
 import 'package:trunriproject/widgets/appTheme.dart';

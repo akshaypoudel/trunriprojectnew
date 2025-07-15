@@ -4,24 +4,15 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dots_indicator/dots_indicator.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:trunriproject/home/product.dart';
-import 'package:trunriproject/home/product_cart.dart';
 import 'package:trunriproject/home/resturentDetailsScreen.dart';
 import 'package:trunriproject/home/resturentItemListScreen.dart';
 import 'package:trunriproject/notificatioonScreen.dart';
-import 'package:trunriproject/widgets/appTheme.dart';
 import 'package:trunriproject/widgets/helper.dart';
 import 'package:url_launcher/url_launcher.dart'; // Import url_launcher
 
-import '../accommodation/accommodationHomeScreen.dart';
 import '../accommodation/lookingForAPlaceScreen.dart';
 import '../events/eventDetailsScreen.dart';
 import '../events/eventHomeScreen.dart';
@@ -30,9 +21,7 @@ import '../model/bannerModel.dart';
 import '../model/categoryModel.dart';
 import '../temple/templeHomePageScreen.dart';
 import 'Controller.dart';
-import 'bottom_bar.dart';
 import 'groceryStoreListScreen.dart';
-import 'icon_btn_with_counter.dart';
 import 'search_field.dart';
 import 'section_title.dart';
 import 'package:http/http.dart' as http;
@@ -1133,19 +1122,39 @@ class _HomeScreenState extends State<HomeScreen> {
               top: 0,
               left: 0,
               right: 0,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 5),
-                child: Row(
-                  children: [
-                    const Expanded(child: SearchField()), // takes most space
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.notifications),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: SearchField(),
+                  ),
+                  // const SizedBox(width: 12),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10, top: 13),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.notifications,
+                          color: Colors.orange,
+                          size: 30,
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (c) => const NotificationScreen(),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ),
+            )
           ],
         ),
       ),

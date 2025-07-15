@@ -57,7 +57,12 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (context) => CurrentAddress(),
+            builder: (context) => const CurrentAddress(
+              isProfileScreen: false,
+              savedAddress: '',
+              latitude: '',
+              longitude: '',
+            ),
           ),
           (Route<dynamic> route) => false,
         );

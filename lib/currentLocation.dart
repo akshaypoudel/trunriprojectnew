@@ -9,7 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_google_places_hoc081098/flutter_google_places_hoc081098.dart';
-import 'package:flutter_google_places_hoc081098/google_maps_webservice_places.dart';
+import 'package:flutter_google_places_hoc081098/google_maps_webservice_places.dart'
+    hide Location;
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:google_api_headers/google_api_headers.dart';
@@ -24,7 +25,15 @@ import 'package:trunriproject/widgets/helper.dart';
 class CurrentAddress extends StatefulWidget {
   const CurrentAddress({
     super.key,
+    required this.isProfileScreen,
+    required this.savedAddress,
+    required this.latitude,
+    required this.longitude,
   });
+  final bool isProfileScreen;
+  final String savedAddress;
+  final String latitude;
+  final String longitude;
   static var chooseAddressScreen = "/chooseAddressScreen";
 
   @override
@@ -34,8 +43,11 @@ class CurrentAddress extends StatefulWidget {
 class _CurrentAddressState extends State<CurrentAddress> {
   final Completer<GoogleMapController> googleMapController = Completer();
   GoogleMapController? mapController;
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   String? _address = "";
+  String? fullAddress = "";
   Position? _currentPosition;
 
   String? street, city, state, country, zipcode, town;
@@ -45,6 +57,8 @@ class _CurrentAddressState extends State<CurrentAddress> {
   String location = "Enter Your Address Here";
   final Set<Marker> markers = {};
   final String appLanguage = "English";
+  String latitude1 = '';
+  String longitude1 = '';
 
   Future<bool> _handleLocationPermission() async {
     bool isServiceEnabled;
@@ -77,19 +91,49 @@ class _CurrentAddressState extends State<CurrentAddress> {
     return true;
   }
 
+  // Future<List<double>> getLatLngFromAddress(String address) async {
+  //   double lat1 = 0;
+  //   double long1 = 0;
+
+  //   List<Location> locations = await locationFromAddress(address);
+  //   if (locations.isNotEmpty) {
+  //     lat1 = locations.first.latitude;
+  //     long1 = locations.first.longitude;
+  //   }
+  //   return [lat1, long1];
+  // }
+
   Future<void> _getCurrentPosition() async {
     final hasPermission = await _handleLocationPermission();
+    // List<double> latlng = [];
+
+    // if (widget.isProfileScreen) {
+    //   latlng = await getLatLngFromAddress(widget.savedAddress);
+    // }
 
     if (!hasPermission) return;
     await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
         .then((Position position) {
       setState(() => _currentPosition = position);
       _getAddressFromLatLng(_currentPosition!);
+
+      double lat = _currentPosition!.latitude;
+      double long = _currentPosition!.longitude;
+      latitude1 = _currentPosition!.latitude.toString();
+      longitude1 = _currentPosition!.longitude.toString();
+
+      if (widget.isProfileScreen) {
+        if (widget.latitude.isNotEmpty && widget.longitude.isNotEmpty) {
+          lat = widget.latitude.toNum.toDouble();
+          long = widget.longitude.toNum.toDouble();
+        }
+        // lat = latlng[0];
+        // long = latlng[1];
+      }
       mapController!.animateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(
-            target:
-                LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+            target: LatLng(lat, long),
             zoom: 15,
           ),
         ),
@@ -119,6 +163,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
         country = placemark.country ?? '';
         zipcode = placemark.postalCode ?? '';
         town = placemark.subAdministrativeArea ?? '';
+        fullAddress = '$street, $town, $city, $state, $zipcode';
       });
     }
     await placemarkFromCoordinates(
@@ -127,8 +172,13 @@ class _CurrentAddressState extends State<CurrentAddress> {
     ).then((List<Placemark> placemarks) {
       Placemark place = placemarks[0];
       setState(() {
-        _address =
-            '${place.subLocality}, ${place.subAdministrativeArea}, ${place.postalCode}';
+        if (widget.isProfileScreen) {
+          _address = widget.savedAddress;
+        } else {
+          _address = fullAddress;
+        }
+        latitude1 = _currentPosition!.latitude.toString();
+        longitude1 = _currentPosition!.longitude.toString();
       });
     }).catchError((e) {
       debugPrint(e.toString());
@@ -148,7 +198,9 @@ class _CurrentAddressState extends State<CurrentAddress> {
       'country': country,
       'zipcode': zipcode,
       'town': town,
-      'userId': FirebaseAuth.instance.currentUser!.uid
+      'userId': FirebaseAuth.instance.currentUser!.uid,
+      'latitude': latitude1,
+      'longitude': longitude1,
     }).then((value) {
       showSnackBar(context, 'Current Location Save Successfully');
       Navigator.pushAndRemoveUntil(
@@ -160,6 +212,58 @@ class _CurrentAddressState extends State<CurrentAddress> {
       );
       NewHelper.hideLoader(loader);
     });
+  }
+
+  Future<void> updateCurrentLocation() async {
+    if (_address == widget.savedAddress) {
+      Navigator.pop(context);
+      return;
+    }
+
+    String fullAddress = '';
+    OverlayEntry loader = NewHelper.overlayLoader(context);
+    Overlay.of(context).insert(loader);
+
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final userRef = _firestore.collection('currentLocation').doc(user.uid);
+
+    try {
+      final snapshot = await userRef.get();
+
+      if (snapshot.exists) {
+        await userRef.update({
+          'Street': street,
+          'city': city,
+          'state': state,
+          'country': country,
+          'zipcode': zipcode,
+          'town': town,
+          // 'userId': user.uid,
+          'latitude': latitude1,
+          'longitude': longitude1,
+        });
+
+        fullAddress = '$street, $town, $city, $state, $zipcode, $country';
+
+        showSnackBar(context, 'Current Location Updated Successfully');
+        log('state = $state, city = $city, full address = $fullAddress');
+
+        Navigator.pop(context, {
+          'state': state,
+          'city': city,
+          'address': fullAddress,
+          'latitude': latitude1,
+          'longitude': longitude1,
+        });
+        NewHelper.hideLoader(loader);
+      } else {
+        log('Document doesnot exist');
+      }
+    } catch (e) {
+      log("error in the update method ===== ${e.toString()}");
+    }
   }
 
   Future<Uint8List> getBytesFromAsset(String path, int width) async {
@@ -177,13 +281,16 @@ class _CurrentAddressState extends State<CurrentAddress> {
     final Uint8List markerIcon =
         await getBytesFromAsset('assets/icons/location.png', 140);
     markers.clear();
-    markers.add(Marker(
+    markers.add(
+      Marker(
         markerId: MarkerId(lastMapPosition.toString()),
         position: lastMapPosition,
         infoWindow: const InfoWindow(
           title: "",
         ),
-        icon: BitmapDescriptor.fromBytes(markerIcon)));
+        icon: BitmapDescriptor.bytes(markerIcon),
+      ),
+    );
     // BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan,)));
     if (googleMapController.isCompleted) {
       mapController!.animateCamera(CameraUpdate.newCameraPosition(
@@ -211,7 +318,6 @@ class _CurrentAddressState extends State<CurrentAddress> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    log(appLanguage.toString());
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
@@ -221,21 +327,102 @@ class _CurrentAddressState extends State<CurrentAddress> {
           body: Stack(
         children: [
           GoogleMap(
-            zoomGesturesEnabled: true,
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(0, 0),
-              zoom: 14.0, //initial zoom level
+              zoomGesturesEnabled: true,
+              initialCameraPosition: const CameraPosition(
+                target: LatLng(0, 0),
+                zoom: 14.0, //initial zoom level
+              ),
+              mapType: MapType.normal,
+              onMapCreated: (controller) {
+                mapController = controller;
+                setState(() async {});
+              },
+              // markers: markers,
+              onCameraMove: (CameraPosition cameraPositions) {
+                cameraPosition = cameraPositions;
+              },
+              onCameraIdle: () async {
+                if (cameraPosition == null) return;
+
+                try {
+                  final placemarks = await placemarkFromCoordinates(
+                    cameraPosition!.target.latitude,
+                    cameraPosition!.target.longitude,
+                  );
+                  setState(() {
+                    latitude1 = cameraPosition!.target.latitude.toString();
+                    longitude1 = cameraPosition!.target.longitude.toString();
+                  });
+
+                  if (placemarks.isEmpty) {
+                    // No address found at this location; hide address in UI
+                    setState(() {
+                      _address = "";
+                      fullAddress = "";
+                      street = city = state = country = zipcode = town = null;
+                    });
+                    // You may show a snackbar or other feedback here if desired
+                    return;
+                  }
+
+                  final placemark = placemarks.first;
+                  final hasPostal = placemark.postalCode != null &&
+                      placemark.postalCode!.isNotEmpty;
+                  final hasCity = placemark.locality != null &&
+                      placemark.locality!.isNotEmpty;
+                  final hasState = placemark.administrativeArea != null &&
+                      placemark.administrativeArea!.isNotEmpty;
+                  final hasCountry = placemark.country != null &&
+                      placemark.country!.isNotEmpty;
+
+                  // Validate required fields (customize as needed)
+                  if (!hasPostal || !hasCity || !hasState || !hasCountry) {
+                    setState(() {
+                      _address = "";
+                      fullAddress = "";
+                      street = city = state = country = zipcode = town = null;
+                    });
+                    // Optionally show a message/snackbar for the user
+                    // showSnackBar(context, "Complete address not available at this location");
+                    return;
+                  }
+
+                  final localStreet = placemark.street ?? '';
+                  final localTown = placemark.subAdministrativeArea ?? '';
+                  final localCity = placemark.locality ?? '';
+                  final localState = placemark.administrativeArea ?? '';
+                  final localZip = placemark.postalCode ?? '';
+                  final localCountry = placemark.country ?? '';
+                  final composedAddress =
+                      '$localStreet, $localTown, $localCity, $localState, $localZip, $localCountry';
+
+                  setState(() {
+                    street = localStreet;
+                    city = localCity;
+                    state = localState;
+                    country = localCountry;
+                    zipcode = localZip;
+                    town = localTown;
+                    fullAddress = composedAddress;
+                    _address = composedAddress;
+                  });
+                } catch (error) {
+                  // Handle all errors gracefully (network, permissions, etc.)
+                  setState(() {
+                    _address = "";
+                    fullAddress = "";
+                    street = city = state = country = zipcode = town = null;
+                  });
+                  // Optionally log or show error feedback to the user
+                  // log("Reverse geocoding failed: $error");
+                  // showSnackBar(context, "Could not retrieve address for this position");
+                }
+              }),
+          const Center(
+            child: Text(
+              '📍',
+              style: TextStyle(fontSize: 45),
             ),
-            mapType: MapType.normal,
-            onMapCreated: (controller) {
-              mapController = controller;
-              setState(() async {});
-            },
-            markers: markers,
-            onCameraMove: (CameraPosition cameraPositions) {
-              cameraPosition = cameraPositions;
-            },
-            onCameraIdle: () async {},
           ),
           Positioned(
               top: 10,
@@ -256,12 +443,13 @@ class _CurrentAddressState extends State<CurrentAddress> {
                     if (place != null) {
                       setState(() {
                         _address = place.description.toString();
+                        // final a = place.description.
                       });
                       final plist = GoogleMapsPlaces(
                         apiKey: googleApikey,
                         apiHeaders: await const GoogleApiHeaders().getHeaders(),
                       );
-                      print(plist);
+                      //print(plist);
                       String placeid = place.placeId ?? "0";
                       final detail = await plist.getDetailsByPlaceId(placeid);
                       final geometry = detail.result.geometry!;
@@ -270,6 +458,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
                       var newlatlang = LatLng(lat, lang);
                       setState(() {
                         _address = place.description.toString();
+
                         _onAddMarkerButtonPressed(
                             LatLng(lat, lang), place.description);
                       });
@@ -277,6 +466,22 @@ class _CurrentAddressState extends State<CurrentAddress> {
                           CameraUpdate.newCameraPosition(
                               CameraPosition(target: newlatlang, zoom: 17)));
                       setState(() {});
+
+                      List<Placemark> placemarks =
+                          await placemarkFromCoordinates(lat, lang);
+                      Placemark placemark = placemarks.first;
+                      setState(() {
+                        street = placemark.street ?? '';
+                        city = placemark.locality ?? '';
+                        state = placemark.administrativeArea ?? '';
+                        country = placemark.country ?? '';
+                        zipcode = placemark.postalCode ?? '';
+                        town = placemark.subAdministrativeArea ?? '';
+                        fullAddress =
+                            '$street, $town, $city, $state, $zipcode, $country';
+                        _address =
+                            fullAddress; // OPTIONALLY update _address to this formatted text
+                      });
                     }
                   },
                   child: Padding(
@@ -338,7 +543,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
                   ),
                   child: Container(
                     padding: const EdgeInsets.only(left: 20, right: 20),
-                    height: 200,
+                    height: 170,
                     width: Get.width,
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -366,6 +571,8 @@ class _CurrentAddressState extends State<CurrentAddress> {
                                   Expanded(
                                     child: Text(
                                       _address.toString(),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 3,
                                       style: Theme.of(context)
                                           .textTheme
                                           .headlineSmall!
@@ -398,11 +605,17 @@ class _CurrentAddressState extends State<CurrentAddress> {
                                 ],
                               ),
                               const SizedBox(
-                                height: 20,
+                                height: 30,
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  addCurrentLocation();
+                                  if (widget.isProfileScreen) {
+                                    updateCurrentLocation();
+                                  } else {
+                                    addCurrentLocation();
+                                  }
+                                  log('full address = $fullAddress');
+                                  log('address = $_address');
                                 },
                                 child: Container(
                                   margin: const EdgeInsets.only(

@@ -4,14 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/route_manager.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
+import 'package:trunriproject/currentLocation.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
-import 'package:trunriproject/signUpScreen.dart';
+import 'package:trunriproject/profile/show_address_text.dart';
 import 'package:trunriproject/signinscreen.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../recoveryPasswordScreen.dart';
@@ -31,16 +30,23 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseFireStoreService fireStoreService = FirebaseFireStoreService();
   bool isobscurepassword = true;
-  File image = File("");
+  File userImageFile = File("");
   bool isEditing = false;
   bool imagePicked = false;
   bool dataLoaded = true;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController address = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+
   final formKey = GlobalKey<FormState>();
   String name = '';
   String email = '';
+  String addressText = '';
+  String city = '';
+  String state = '';
+  String latitude = '';
+  String longitude = '';
+  String imageUrl = '';
 
   updateProfile() async {
     if (!formKey.currentState!.validate()) {
@@ -49,12 +55,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     try {
       await fireStoreService.updateProfile(
-        address: address.text.trim(),
-        allowChange: image.path.isEmpty ? false : imagePicked,
+        address: addressText,
+        allowChange: userImageFile.path.isEmpty ? false : true,
         context: context,
         email: emailController.text.trim(),
         name: nameController.text.trim(),
-        profileImage: image,
+        profileImage: userImageFile,
         updated: (bool value) {
           if (value) {
             if (widget.fromLogin == false) {
@@ -74,7 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void fetchUserData() async {
+  Future<void> fetchUserData() async {
     FirebaseAuth auth = FirebaseAuth.instance;
 
     String phone = '';
@@ -85,9 +91,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .doc(auth.currentUser!.uid)
         .get();
 
+    dynamic addressSnapshot = await FirebaseFirestore.instance
+        .collection('currentLocation')
+        .doc(auth.currentUser!.uid)
+        .get();
+
     if (snapshot.exists) {
       newEmail = snapshot.get('email') ?? '';
       phone = snapshot.get('phoneNumber') ?? '';
+      imageUrl = snapshot.get('profile') ?? '';
+    }
+
+    if (addressSnapshot.exists) {
+      final street = addressSnapshot.data()['Street'] ?? '';
+      final city = addressSnapshot.data()['city'] ?? '';
+      this.city = city;
+      final town = addressSnapshot.data()['town'] ?? '';
+      final state = addressSnapshot.data()['state'] ?? '';
+      this.state = state;
+      final country = addressSnapshot.data()['country'] ?? '';
+      final zip = addressSnapshot.data()['zipcode'] ?? '';
+
+      final fullAddress = '$street, $town, $city, $state, $zip, $country';
+      addressText = fullAddress;
+      latitude = addressSnapshot.data()['latitude'] ?? '';
+      longitude = addressSnapshot.data()['longitude'] ?? '';
+
+      final shortFormAddress = '📍 $city, ${getStateShortForm(state)}';
+      addressController.text = shortFormAddress;
+    } else {
+      log('currentLocation doesnt exists');
     }
 
     dynamic querySnapshot;
@@ -112,6 +145,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         name = userData['name'] ?? '';
         email = userData['email'] ?? '';
+        log('user address = $addressText');
       } else {
         showSnackBar(context, "User data not found for phone number");
       }
@@ -120,10 +154,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  String getStateShortForm(String stateName) {
+    List<String> words = stateName.trim().split(RegExp(r'\s+'));
+
+    if (words.length == 1) {
+      return words[0]; // Single word (e.g., Rajasthan)
+    }
+
+    // Multiple words: take first letter of each word and capitalize
+    return words.map((word) => word[0].toUpperCase()).join();
+  }
+
   @override
   void initState() {
     super.initState();
-    fetchUserData();
+    initialize();
+  }
+
+  void initialize() async {
+    await fetchUserData();
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    addressController.dispose();
+    nameController.dispose();
+    emailController.dispose();
+    super.dispose();
   }
 
   @override
@@ -181,8 +239,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               onTap: () {
                                 NewHelper.showImagePickerSheet(
                                     gotImage: (File gg) {
-                                      image = gg;
+                                      userImageFile = gg;
                                       imagePicked = true;
+                                      updateProfile();
                                       setState(() {});
                                     },
                                     context: context);
@@ -199,7 +258,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         BoxShadow(
                                           spreadRadius: 2,
                                           blurRadius: 10,
-                                          color: Colors.black.withOpacity(0.1),
+                                          color: Colors.black
+                                              .withValues(alpha: 0.1),
                                         )
                                       ],
                                       shape: BoxShape.circle,
@@ -207,20 +267,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     child: ClipRRect(
                                       borderRadius:
                                           BorderRadius.circular(10000),
-                                      child: Image.file(
-                                        image,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            Image.network(
-                                          image.path,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => Icon(
-                                            CupertinoIcons.person_alt_circle,
-                                            size: 45,
-                                            color: Colors.grey.shade700,
-                                          ),
-                                        ),
-                                      ),
+                                      child: (imageUrl.isNotEmpty)
+                                          ? Image.network(
+                                              imageUrl,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Icon(
+                                              CupertinoIcons.person_alt_circle,
+                                              size: 45,
+                                              color: Colors.grey.shade700,
+                                            ),
                                     ),
                                   ),
                                   Positioned(
@@ -265,7 +321,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                   TextFormField(
                                     decoration: InputDecoration(
-                                      // border: InputBorder.none,
                                       hintText: email,
                                     ),
                                     readOnly: !isEditing,
@@ -275,17 +330,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         fontSize: 14,
                                         color: Colors.black),
                                   ),
-                                  // TextFormField(
-                                  //   decoration: const InputDecoration(
-                                  //     border: InputBorder.none,
-                                  //     hintText: 'Address',
-                                  //   ),
-                                  //   readOnly: !isEditing,
-                                  //   controller: address,
-                                  //   maxLines: 3,
-                                  //   style:
-                                  //       const TextStyle(fontWeight: FontWeight.w400, fontSize: 14, color: Colors.black),
-                                  // ),
+                                  ShowAddressText(
+                                    controller: addressController,
+                                    onTap: () async {
+                                      Map<String, dynamic> selectedAddress =
+                                          await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => CurrentAddress(
+                                            isProfileScreen: true,
+                                            savedAddress: addressText,
+                                            latitude: latitude,
+                                            longitude: longitude,
+                                          ),
+                                        ),
+                                      );
+
+                                      if (selectedAddress.isNotEmpty) {
+                                        setState(() {
+                                          latitude =
+                                              selectedAddress['latitude'];
+                                          longitude =
+                                              selectedAddress['longitude'];
+                                          addressText =
+                                              selectedAddress['address'];
+                                          final shortFormAddress =
+                                              '📍 ${selectedAddress['city']}, ${getStateShortForm(selectedAddress['state'])}';
+
+                                          log('short form address == $shortFormAddress');
+                                          addressController.text =
+                                              shortFormAddress;
+                                        });
+                                      }
+                                    },
+                                  ),
                                 ],
                               ),
                             ),
@@ -425,31 +503,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ),
                         ),
-                        const Divider(
-                          height: 10,
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-                            User? user = FirebaseAuth.instance.currentUser;
-                            await user!.delete();
-                            GoogleSignIn().signOut();
-                            showSnackBar(
-                                context, "Your account has been deleted");
-                            Get.to(const SignUpScreen());
-                          },
-                          child: ListTile(
-                            leading: Image.asset(
-                              'assets/images/delete.png',
-                              height: 30,
-                            ),
-                            title: const Text('Delete Account'),
-                            trailing: const Icon(
-                              Icons.arrow_forward_ios_outlined,
-                              size: 15,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 75),
+                        //const Divider(
+                        //  height: 10,
+                        //),
+                        // GestureDetector(
+                        //   onTap: () async {
+                        //     User? user = FirebaseAuth.instance.currentUser;
+                        //     await user!.delete();
+                        //     GoogleSignIn().signOut();
+                        //     showSnackBar(
+                        //         context, "Your account has been deleted");
+                        //     Get.to(const SignUpScreen());
+                        //   },
+                        //   child: ListTile(
+                        //     leading: Image.asset(
+                        //       'assets/images/delete.png',
+                        //       height: 30,
+                        //     ),
+                        //     title: const Text('Delete Account'),
+                        //     trailing: const Icon(
+                        //       Icons.arrow_forward_ios_outlined,
+                        //       size: 15,
+                        //     ),
+                        //   ),
+                        // ),
+                        const SizedBox(height: 85),
                       ],
                     ),
                   ),

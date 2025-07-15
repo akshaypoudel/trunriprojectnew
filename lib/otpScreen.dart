@@ -1,7 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:developer';
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,7 +9,6 @@ import 'package:pinput/pinput.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
-import 'package:trunriproject/signinscreen.dart';
 import 'package:trunriproject/widgets/helper.dart';
 
 import 'nativAddressScreen.dart';

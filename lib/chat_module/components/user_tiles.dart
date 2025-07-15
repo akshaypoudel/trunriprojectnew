@@ -43,7 +43,7 @@ class UserTiles extends StatelessWidget {
           ),
           child: Row(
             children: [
-              (imageUrl != null)
+              (imageUrl != null && imageUrl!.isNotEmpty)
                   ? CachedNetworkImage(
                       imageUrl: imageUrl!,
                       imageBuilder: (context, imageProvider) => CircleAvatar(

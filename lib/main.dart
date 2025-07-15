@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:trunriproject/SplashScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
+import 'package:trunriproject/notifications/notification_services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,7 @@ void main() async {
   if (user != null) {
     await PresenceService.setUserOnline();
   }
+  // LocalNotificationService.initialize();
   runApp(const MyApp());
 }
 
@@ -73,7 +75,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Flutter Demo',
+      title: 'TruNri',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orangeAccent),

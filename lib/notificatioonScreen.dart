@@ -1,22 +1,33 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class Notificatioonscreen extends StatefulWidget {
-  const Notificatioonscreen({super.key});
+class NotificationScreen extends StatefulWidget {
+  const NotificationScreen({super.key});
 
   @override
-  State<Notificatioonscreen> createState() => _NotificatioonscreenState();
+  State<NotificationScreen> createState() => _NotificationScreenState();
 }
 
-class _NotificatioonscreenState extends State<Notificatioonscreen> {
+class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Notifications',
+        ),
+      ),
       backgroundColor: Colors.white,
-      body: SafeArea(
+      body: const SafeArea(
         child: Column(
           children: [
-            Center(child: Text("Notification Screen"))
+            Center(
+              child: Text(
+                "You are all caught up!\nNo Notification for now!",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 25),
+              ),
+            ),
           ],
         ),
       ),

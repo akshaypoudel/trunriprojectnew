@@ -78,47 +78,6 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
     }
   }
 
-  Future<void> createGroup1(String groupName, Set<String> memberEmails) async {
-    File? groupImageFile = _groupImage;
-    try {
-      String? imageUrl;
-      if (groupImageFile != null) {
-        imageUrl = await uploadGroupImage(_groupImage!);
-        final fileName = path.basename(groupImageFile.path);
-        final storageRef =
-            FirebaseStorage.instance.ref().child('group_icons/$fileName');
-        final uploadTask = await storageRef.putFile(groupImageFile);
-        imageUrl = await storageRef.getDownloadURL();
-      }
-
-      final groupDoc =
-          await FirebaseFirestore.instance.collection('groups').add({
-        'groupName': groupName,
-        'members': memberEmails,
-        'lastMessage': '',
-        'lastMessageTime': null,
-        'imageUrl': (imageUrl == null) ? null : imageUrl,
-      });
-
-      Navigator.pop(context);
-      Navigator.pop(context);
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (c) => GroupChatScreen(
-            groupName: _groupNameController.text.trim(),
-            groupImageUrl: imageUrl,
-            groupId: groupDoc.id,
-          ),
-        ),
-      );
-    } catch (e) {
-      log('Error creating group: $e');
-      showSnackBar(context, 'Failed to create group');
-    }
-  }
-
   Future<void> createGroup(String groupName, Set<String> memberEmails) async {
     File? groupImageFile = _groupImage;
 
@@ -140,7 +99,6 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
         );
       },
     );
-
     try {
       String? imageUrl;
 
@@ -165,12 +123,10 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
         'createdBy': currentUserEmail,
       });
 
-      // Close loading dialog
       Navigator.pop(context); // close AlertDialog
+      Navigator.pop(context); // close group name screen
+      Navigator.pop(context); // close group chat create screen
 
-      // Navigate back and forward to GroupChatScreen
-      Navigator.pop(context); // close group create screen
-      Navigator.pop(context);
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -191,22 +147,22 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
     }
   }
 
-  Future<String> uploadGroupImage(File imageFile) async {
-    try {
-      final fileName = path.basename(imageFile.path);
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('group_icons/$fileName'); // Folder in Firebase Storage
+  // Future<String> uploadGroupImage(File imageFile) async {
+  //   try {
+  //     final fileName = path.basename(imageFile.path);
+  //     final storageRef = FirebaseStorage.instance
+  //         .ref()
+  //         .child('group_icons/$fileName'); // Folder in Firebase Storage
 
-      final uploadTask = await storageRef.putFile(imageFile);
+  //     final uploadTask = await storageRef.putFile(imageFile);
 
-      final downloadUrl = await storageRef.getDownloadURL();
+  //     final downloadUrl = await storageRef.getDownloadURL();
 
-      return downloadUrl;
-    } catch (e) {
-      throw Exception('Failed to upload image: $e');
-    }
-  }
+  //     return downloadUrl;
+  //   } catch (e) {
+  //     throw Exception('Failed to upload image: $e');
+  //   }
+  // }
 
   @override
   void dispose() {
