@@ -11,6 +11,7 @@ import 'package:trunriproject/chat_module/components/date_bubble.dart';
 import 'package:trunriproject/chat_module/components/useronline_status_title.dart';
 import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/chat_module/services/chat_services.dart';
+import 'package:trunriproject/notifications/notification_services.dart';
 import 'package:trunriproject/widgets/helper.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -141,6 +142,81 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Widget buildMessageList() {
+    String? lastNotifiedMessageId;
+
+    String senderID = availableEmailInDB ?? '';
+    return StreamBuilder(
+      stream: chatServices.getMessages(senderID, widget.receiversID),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Text('Error');
+        }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        final docs = snapshot.data!.docs;
+        final List<Widget> messageWidgets = [];
+
+        String? lastDateLabel;
+
+        // Detect latest message from peer (not me)
+        // if (docs.isNotEmpty) {
+        //   final latest = docs.last.data()
+        //       as Map<String, dynamic>; // last because .reversed
+        //   if (latest['senderID'] != availableEmailInDB) {
+        //     // Optional: You may want to check if this message id is new
+        //     NotificationService.showNotification(
+        //       widget.receiversName,
+        //       latest['message'] ?? 'New message',
+        //     );
+        //   }
+        // }
+        // Detect latest message from peer (not me)
+        if (docs.isNotEmpty) {
+          final latestDoc = docs.last; // last because messages are reversed
+          final latest = latestDoc.data() as Map<String, dynamic>;
+          final latestId = latestDoc.id;
+          if (latest['senderID'] != availableEmailInDB &&
+              lastNotifiedMessageId != latestId) {
+            NotificationService.showNotification(
+              widget.receiversName,
+              latest['message'] ?? 'New message',
+            );
+            lastNotifiedMessageId = latestId;
+          }
+        }
+
+        for (var doc in docs) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          DateTime messageDate = (data['timestamp'] as Timestamp).toDate();
+
+          String currentDateLabel = getDateLabel(messageDate);
+
+          if (lastDateLabel != currentDateLabel) {
+            messageWidgets.add(DateBubble(date: currentDateLabel));
+            lastDateLabel = currentDateLabel;
+          }
+
+          messageWidgets.add(buildMessageItem(doc));
+        }
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          scrollToBottom();
+        });
+
+        return ListView(
+          controller: scrollController,
+          reverse: true,
+          children: messageWidgets.reversed.toList(),
+        );
+      },
+    );
+  }
+
+  Widget buildMessageList1() {
     String senderID = availableEmailInDB ?? '';
     return StreamBuilder(
       stream: chatServices.getMessages(senderID, widget.receiversID),

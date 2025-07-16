@@ -1,12 +1,55 @@
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications_plus/flutter_local_notifications_plus.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 import 'package:trunriproject/SplashScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:trunriproject/chat_module/services/chat_services.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/notifications/notification_services.dart';
+import 'package:trunriproject/subscription/subscription_data.dart';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+Future<void> notificationSetup() async {
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'chat_messages', // id
+    'Chat Messages', // title
+    description: 'This channel is used for chat message notifications.',
+    importance: Importance.high,
+  );
+
+  // Init local notifications
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+
+  // iOS request
+  await FirebaseMessaging.instance.requestPermission();
+
+  await NotificationService.initialize();
+
+  // Listen for new messages (foreground only)
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    final notification = message.notification;
+    if (notification != null) {
+      NotificationService.showNotification(
+        notification.title ?? 'New message',
+        notification.body ?? 'You have received a new chat message!',
+      );
+    }
+  });
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +61,6 @@ void main() async {
   if (user != null) {
     await PresenceService.setUserOnline();
   }
-  // LocalNotificationService.initialize();
   runApp(const MyApp());
 }
 
@@ -62,26 +104,22 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       Future.delayed(const Duration(seconds: 5), () {
         PresenceService.setUserOffline();
       });
-
-      // Future.delayed(const Duration(milliseconds: 500), () {
-      //   final currentState = WidgetsBinding.instance.lifecycleState;
-      //   if (currentState != AppLifecycleState.resumed) {
-      //     PresenceService.setUserOffline();
-      //   }
-      // });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'TruNri',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orangeAccent),
-        useMaterial3: true,
+    return ChangeNotifierProvider(
+      create: (c) => SubscriptionData(),
+      child: GetMaterialApp(
+        title: 'TruNri',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.orangeAccent),
+          useMaterial3: true,
+        ),
+        home: const SplashScreen(),
       ),
-      home: const SplashScreen(),
     );
   }
 }

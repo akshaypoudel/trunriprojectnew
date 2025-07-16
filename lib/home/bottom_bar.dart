@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:trunriproject/chat_module/screens/chat_list_screen.dart';
 import 'package:trunriproject/profile/profileScreen.dart';
+import 'package:trunriproject/subscription/subscription_data.dart';
 import 'explorScreen.dart';
 import 'home_screen.dart';
 
@@ -23,47 +25,11 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
   @override
   void initState() {
     super.initState();
-    // listenToIncomingMessages(FirebaseAuth.instance.currentUser!.uid);
+    Provider.of<SubscriptionData>(
+      context,
+      listen: false,
+    ).fetchSubscriptionStatus();
   }
-
-  // void listenToIncomingMessages(String currentUserEmail) {
-  //   FirebaseFirestore.instance
-  //       .collection('chat_rooms')
-  //       .snapshots()
-  //       .listen((snapshot) {
-  //     for (final doc in snapshot.docs) {
-  //       final chatRoomId = doc.id;
-
-  //       // Check if current user is part of this chat room
-  //       if (!chatRoomId.contains(currentUserEmail)) continue;
-
-  //       FirebaseFirestore.instance
-  //           .collection('chat_rooms')
-  //           .doc(chatRoomId)
-  //           .collection('messages')
-  //           .orderBy('timestamp', descending: true)
-  //           .limit(1)
-  //           .snapshots()
-  //           .listen((msgSnapshot) {
-  //         if (msgSnapshot.docs.isEmpty) return;
-
-  //         final data = msgSnapshot.docs.first.data();
-  //         final receiverId = data['receiverId'];
-  //         final senderId = data['senderId'];
-  //         final message = data['message'];
-
-  //         if (receiverId == currentUserEmail && senderId != currentUserEmail) {
-  //           // Show local notification
-  //           LocalNotificationService.showNotification(
-  //               "New Message", message.toString());
-
-  //           // Update badge count
-  //           BadgeHelper.incrementBadge();
-  //         }
-  //       });
-  //     }
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {

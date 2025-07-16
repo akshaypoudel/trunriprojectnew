@@ -19,16 +19,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ),
       backgroundColor: Colors.white,
       body: const SafeArea(
-        child: Column(
-          children: [
-            Center(
-              child: Text(
-                "You are all caught up!\nNo Notification for now!",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 25),
-              ),
-            ),
-          ],
+        child: Center(
+          child: Text(
+            "You are all caught up!\nNo Notification for now!",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 25),
+          ),
         ),
       ),
     );

@@ -5,13 +5,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/currentLocation.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:trunriproject/profile/show_address_text.dart';
 import 'package:trunriproject/signinscreen.dart';
+import 'package:trunriproject/subscription/subscription_data.dart';
+import 'package:trunriproject/subscription/subscription_screen.dart';
+import 'package:trunriproject/subscription/subscription_success_screen.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../recoveryPasswordScreen.dart';
 import '../widgets/helper.dart';
@@ -186,6 +191,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<SubscriptionData>(context, listen: false);
+
     return Scaffold(
       backgroundColor: Colors.white,
       extendBody: true,
@@ -370,8 +377,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
                         const SizedBox(
-                          height: 10,
+                          height: 40,
                         ),
+
+                        (provider.isUserSubscribed)
+                            ? alreadySubscribedProButton(context)
+                            : buildTryProButton(context),
                         ListTile(
                           leading: Image.asset(
                             'assets/images/address.png',
@@ -539,6 +550,144 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Colors.orange,
               ),
             ),
+    );
+  }
+
+  Widget buildTryProButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          Container(
+            height: 55,
+            width: Get.width,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(color: Colors.orange, width: 1.5),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white54,
+                  Colors.orangeAccent.shade100,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.shade100.withValues(alpha: 0.3),
+                  offset: const Offset(0, 4),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            child: RawMaterialButton(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (c) => const SubscriptionScreen(),
+                  ),
+                );
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Try TruNri Pro',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepOrange,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Crown image floating above
+          Positioned(
+            top: -55,
+            child: Container(
+              height: 80,
+              width: 80,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(6.0),
+                child: Image.asset(
+                  'assets/icons/crown.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget alreadySubscribedProButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      child: Container(
+        height: 50,
+        width: Get.width,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: BoxBorder.all(color: Colors.orange, width: 1.5),
+          gradient: LinearGradient(
+            colors: [
+              Colors.white54,
+              Colors.red.shade50,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              offset: const Offset(0, 4),
+              blurRadius: 10,
+            )
+          ],
+        ),
+        child: RawMaterialButton(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (c) => const SubscriptionSuccessScreen(),
+              ),
+            );
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Image.asset(
+                'assets/icons/crown.png',
+                height: 80,
+                width: 80,
+              ),
+              Text(
+                'You are a Pro TruNri',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.orange,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

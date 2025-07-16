@@ -68,6 +68,8 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
       'profile': "",
       'isOnline': true,
       'lastSeen': Timestamp.now(),
+      'isSubscribed': false,
+      'subscriptionExpiry': DateTime.now(),
     }).then((value) {
       NewHelper.hideLoader(loader);
     });
