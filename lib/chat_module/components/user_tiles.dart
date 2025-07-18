@@ -21,13 +21,14 @@ class UserTiles extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.all(15),
+          padding:
+              const EdgeInsets.only(left: 15, right: 15, top: 11, bottom: 11),
           decoration: BoxDecoration(
-            color: Colors.transparent,
+            color: Colors.white,
             boxShadow: [
               BoxShadow(
                 color: Colors.orange.withValues(alpha: 0.04),

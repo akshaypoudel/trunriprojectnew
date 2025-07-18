@@ -188,6 +188,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Messages'),
         backgroundColor: Colors.white,
@@ -220,103 +221,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
         ],
       ),
       body: _buildChatList(),
-    );
-  }
-
-  Widget _buildChatList1() {
-    if (isLoading) return const Center(child: CircularProgressIndicator());
-    if (cachedChatList == null || cachedChatList!.isEmpty) {
-      return const Center(child: Text("No chats yet!!"));
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadChats,
-      child: ListView.builder(
-        itemCount: cachedChatList!.length,
-        itemBuilder: (context, i) {
-          final chat = cachedChatList![i];
-          if (chat['type'] == 'user') {
-            // —— one‑on‑one
-
-            final otherEmail = chat['email'] as String;
-            return StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('chat_rooms')
-                  .doc(chatRoomId(currentEmail!, otherEmail))
-                  .collection('messages')
-                  .orderBy('timestamp', descending: true)
-                  .limit(1)
-                  .snapshots(),
-              builder: (ctx, snap) {
-                String lastMsg = 'No messages yet';
-                String lastTime = '';
-                if (snap.hasData && snap.data!.docs.isNotEmpty) {
-                  final d = snap.data!.docs.first;
-                  lastMsg = d['message'] as String;
-                  lastTime = _formatTime(d['timestamp'] as Timestamp);
-                }
-                return UserTiles(
-                  chatType: 'user',
-                  text: chat['name'] as String,
-                  lastMessage: lastMsg,
-                  lastMessageTime: lastTime,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ChatScreen(
-                          receiversName: chat['name'] as String,
-                          receiversID: otherEmail,
-                        ),
-                      ),
-                    ).then((_) => _loadChats());
-                  },
-                );
-              },
-            );
-          } else {
-            // —— group
-            final groupId = chat['groupId'] as String;
-            return StreamBuilder<DocumentSnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('groups')
-                  .doc(groupId)
-                  .snapshots(),
-              builder: (ctx, snap) {
-                String lastMsg = 'No messages yet';
-                String lastTime = '';
-                String? imageUrl = chat['imageUrl'] as String?;
-                if (snap.hasData && snap.data!.exists) {
-                  final data = snap.data!.data() as Map<String, dynamic>;
-                  lastMsg = (data['lastMessage'] as String?) ?? lastMsg;
-                  final t = data['lastMessageTime'] as Timestamp?;
-                  if (t != null) lastTime = _formatTime(t);
-                  imageUrl = data['imageUrl'] as String?;
-                }
-                return UserTiles(
-                  chatType: 'group',
-                  text: chat['name'] as String,
-                  lastMessage: lastMsg,
-                  lastMessageTime: lastTime,
-                  imageUrl: imageUrl,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => GroupChatScreen(
-                          groupId: groupId,
-                          groupName: chat['name'] as String,
-                          groupImageUrl: imageUrl,
-                        ),
-                      ),
-                    ).then((_) => _loadChats());
-                  },
-                );
-              },
-            );
-          }
-        },
-      ),
     );
   }
 

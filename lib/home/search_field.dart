@@ -60,33 +60,6 @@ class _SearchFieldState extends State<SearchField> {
     });
   }
 
-  void _navigateToScreen1(String selectedItem) {
-    switch (selectedItem.toLowerCase()) {
-      case "restaurants":
-        Get.to(ResturentItemListScreen(
-            restaurant_List: Provider.of<LocationData>(context, listen: false)
-                .getRestaurauntList));
-        break;
-      case "grocery stores":
-        Get.to(const GroceryStoreListScreen());
-        break;
-      case "accommodation":
-        Get.to(const Accommodationhomescreen());
-        break;
-      case "temple":
-        Get.to(const TempleHomePageScreen());
-        break;
-      case "job":
-        Get.to(const JobHomePageScreen());
-        break;
-      case "events":
-        Get.to(EventListScreen());
-        break;
-      default:
-        Get.snackbar("Error", "No matching screen found for '$selectedItem'");
-    }
-  }
-
   void _navigateToScreen(String selectedItem) {
     final item = selectedItem.toLowerCase();
 

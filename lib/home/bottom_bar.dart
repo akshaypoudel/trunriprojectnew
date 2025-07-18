@@ -52,6 +52,7 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
         children: pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.orange,
         unselectedItemColor: Colors.blueGrey,

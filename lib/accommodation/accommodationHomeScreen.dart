@@ -11,7 +11,8 @@ class Accommodationhomescreen extends StatefulWidget {
   const Accommodationhomescreen({super.key});
 
   @override
-  State<Accommodationhomescreen> createState() => _AccommodationhomescreenState();
+  State<Accommodationhomescreen> createState() =>
+      _AccommodationhomescreenState();
 }
 
 class _AccommodationhomescreenState extends State<Accommodationhomescreen> {
@@ -40,7 +41,9 @@ class _AccommodationhomescreenState extends State<Accommodationhomescreen> {
                       padding: const EdgeInsets.only(left: 10, right: 10),
                       margin: const EdgeInsets.only(right: 5, left: 5),
                       height: 30,
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.black),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.black),
                       child: const Center(
                           child: Text(
                         'sydney',
@@ -57,7 +60,7 @@ class _AccommodationhomescreenState extends State<Accommodationhomescreen> {
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: (){
+                    onTap: () {
                       Get.to(const Searchforroomscreen());
                     },
                     child: Column(
@@ -65,7 +68,9 @@ class _AccommodationhomescreenState extends State<Accommodationhomescreen> {
                         Container(
                           padding: const EdgeInsets.all(10),
                           height: 130,
-                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.grey.shade200),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.grey.shade200),
                           child: Image.asset('assets/images/house.png'),
                         ),
                         const Padding(
@@ -82,7 +87,9 @@ class _AccommodationhomescreenState extends State<Accommodationhomescreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         height: 130,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.grey.shade200),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.grey.shade200),
                         child: Image.asset('assets/images/property.png'),
                       ),
                       const Padding(
@@ -106,7 +113,9 @@ class _AccommodationhomescreenState extends State<Accommodationhomescreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         height: 130,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.grey.shade200),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.grey.shade200),
                         child: Image.asset('assets/images/room.png'),
                       ),
                       const Padding(
@@ -122,7 +131,9 @@ class _AccommodationhomescreenState extends State<Accommodationhomescreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         height: 130,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.grey.shade200),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.grey.shade200),
                         child: Image.asset('assets/images/communite.png'),
                       ),
                       const Padding(
@@ -143,69 +154,71 @@ class _AccommodationhomescreenState extends State<Accommodationhomescreen> {
                     press: () {},
                   ),
                 ),
-               ListView.builder(
-                 itemCount: 5,
-                   shrinkWrap: true,
-                   physics: const NeverScrollableScrollPhysics(),
-                   itemBuilder: (context,index){
-                 return Column(
-                   children: [
-                     Container(
-                       margin: const EdgeInsets.only(left: 15,right: 15,bottom: 10),
-                       width: Get.width,
-                       height: 100,
-                       child: ClipRRect(
-                         borderRadius: BorderRadius.circular(20),
-                         child: Stack(
-                           children: [
-                             Image.asset(
-                               'assets/images/fashion.jpeg',
-                               fit: BoxFit.cover,
-                               width: double.infinity, // Ensures the image stretches across the container width
-                               height: double.infinity,
-                             ),
-                             Container(
-                               decoration: const BoxDecoration(
-                                 gradient: LinearGradient(
-                                   begin: Alignment.topCenter,
-                                   end: Alignment.bottomCenter,
-                                   colors: [
-                                     Colors.black54,
-                                     Colors.black38,
-                                     Colors.black26,
-                                     Colors.transparent,
-                                   ],
-                                 ),
-                               ),
-                             ),
-                             const Padding(
-                               padding: EdgeInsets.symmetric(
-                                 horizontal: 15,
-                                 vertical: 10,
-                               ),
-                               child: Text.rich(
-                                 TextSpan(
-                                   style: TextStyle(color: Colors.white),
-                                   children: [
-                                     TextSpan(
-                                       text: "Villa For Family\n",
-                                       style: TextStyle(
-                                         fontSize: 18,
-                                         fontWeight: FontWeight.bold,
-                                       ),
-                                     ),
-                                     TextSpan(text: "\$${135}")
-                                   ],
-                                 ),
-                               ),
-                             ),
-                           ],
-                         ),
-                       ),
-                     ),
-                   ],
-                 );
-               })
+                ListView.builder(
+                    itemCount: 5,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      return Column(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(
+                                left: 15, right: 15, bottom: 10),
+                            width: Get.width,
+                            height: 100,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Stack(
+                                children: [
+                                  Image.asset(
+                                    'assets/images/fashion.jpeg',
+                                    fit: BoxFit.cover,
+                                    width: double
+                                        .infinity, // Ensures the image stretches across the container width
+                                    height: double.infinity,
+                                  ),
+                                  Container(
+                                    decoration: const BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.black54,
+                                          Colors.black38,
+                                          Colors.black26,
+                                          Colors.transparent,
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 15,
+                                      vertical: 10,
+                                    ),
+                                    child: Text.rich(
+                                      TextSpan(
+                                        style: TextStyle(color: Colors.white),
+                                        children: [
+                                          TextSpan(
+                                            text: "Villa For Family\n",
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          TextSpan(text: "\$${135}")
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    })
               ],
             ),
           ],
