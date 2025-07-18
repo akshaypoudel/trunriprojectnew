@@ -21,7 +21,13 @@ class ExplorScreen extends StatefulWidget {
 class _ExplorScreenState extends State<ExplorScreen> {
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<LocationData>(context, listen: false);
+
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Explore'),
+        backgroundColor: Colors.white,
+      ),
       extendBody: true,
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -29,7 +35,7 @@ class _ExplorScreenState extends State<ExplorScreen> {
         child: Stack(
           children: [
             Positioned.fill(
-              top: 80,
+              top: 10,
               child: SingleChildScrollView(
                 child: Column(
                   children: [
@@ -86,7 +92,11 @@ class _ExplorScreenState extends State<ExplorScreen> {
                       ),
                       child: ListTile(
                         onTap: () {
-                          Get.to(const GroceryStoreListScreen());
+                          Get.to(
+                            GroceryStoreListScreen(
+                              groceryStores: provider.getGroceryList,
+                            ),
+                          );
                         },
                         leading: Image.asset('assets/icons/grocery.png'),
                         title: const Text('Grocery Stores'),
@@ -167,7 +177,11 @@ class _ExplorScreenState extends State<ExplorScreen> {
                       ),
                       child: ListTile(
                         onTap: () {
-                          Get.to(const TempleHomePageScreen());
+                          Get.to(
+                            TempleHomePageScreen(
+                              templesList: provider.getTemplesList,
+                            ),
+                          );
                         },
                         leading: Image.asset('assets/icons/templs.png'),
                         title: const Text('Temple'),
@@ -194,7 +208,11 @@ class _ExplorScreenState extends State<ExplorScreen> {
                       ),
                       child: ListTile(
                         onTap: () {
-                          Get.to(const EventDiscoveryScreen());
+                          Get.to(
+                            EventDiscoveryScreen(
+                              eventList: provider.getEventList,
+                            ),
+                          );
                         },
                         leading: Image.asset('assets/icons/events.png'),
                         title: const Text('Event'),
@@ -208,7 +226,6 @@ class _ExplorScreenState extends State<ExplorScreen> {
                 ),
               ),
             ),
-            const SearchField(),
           ],
         ),
       ),

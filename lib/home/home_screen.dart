@@ -60,8 +60,6 @@ class _HomeScreenState extends State<HomeScreen> {
   RxDouble sliderIndex = (0.0).obs;
 
   int currentIndex = 0;
-  String templeLat = '';
-  String templeLong = '';
   List<dynamic> _temples = [];
   List<String> imageUrls = [];
 
@@ -70,19 +68,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _getCurrentLocation();
     fetchImageData();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    final locationData = Provider.of<LocationData>(context, listen: false);
-
-    _fetchBasedOn(
-      locationData.getLatitude,
-      locationData.getLongitude,
-      locationData.getRadiusFilter,
-    );
   }
 
   void _fetchBasedOn(
@@ -182,6 +167,8 @@ class _HomeScreenState extends State<HomeScreen> {
     double longitude,
     int radiusFilter,
   ) async {
+    final provider = Provider.of<LocationData>(context, listen: false);
+
     final radiusInMeters = radiusFilter * 1000;
     final url =
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radiusInMeters&type=grocery_or_supermarket&keyword=indian&key=${Constants.API_KEY}';
@@ -192,10 +179,10 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() {
           _groceryStores = data['results'];
+          provider.setGroceryList(_groceryStores);
         });
       }
     } else {
-      // throw Exception('Failed to fetch data');
       showSnackBar(context, 'Failed to Fetch Grocery Stores Data');
     }
   }
@@ -205,6 +192,8 @@ class _HomeScreenState extends State<HomeScreen> {
     double longitude,
     int radiusFilter,
   ) async {
+    final provider = Provider.of<LocationData>(context, listen: false);
+
     final radiusInMeters = radiusFilter * 1000;
     final url =
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radiusInMeters&type=hindu_temple&keyword=temple&key=${Constants.API_KEY}';
@@ -219,6 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
             return temple['photos'] != null &&
                 temple['photos'][0]['photo_reference'] != null;
           }).toList();
+          provider.setTemplessList(_temples);
         });
       }
     } else {
@@ -246,6 +236,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final locationData = Provider.of<LocationData>(context, listen: false);
+
+    if (!locationData.isLocationFetched) {
+      _fetchBasedOn(
+        locationData.getLatitude,
+        locationData.getLongitude,
+        locationData.getRadiusFilter,
+      );
+      locationData.setIsLocationFetched(true);
+    }
+
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.white,
@@ -254,9 +255,9 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Stack(
           children: [
             Positioned.fill(
-              top: 70,
+              top: 90,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Column(
                   children: [
                     const Padding(
@@ -289,7 +290,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    GetCategoriesVisuals(restaurants: _restaurants),
+                    GetCategoriesVisuals(
+                      restaurants: _restaurants,
+                      temples: _temples,
+                      groceryStores: _groceryStores,
+                      eventList: locationData.getEventList,
+                    ),
                     const NearbyEventsVisual(),
                     const SizedBox(height: 20),
                     NearbyRestaurauntsVisual(restaurants: _restaurants),
@@ -325,7 +331,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: SectionTitle(
                             title: "Near By Temples",
                             press: () {
-                              Get.to(const TempleHomePageScreen());
+                              Get.to(
+                                TempleHomePageScreen(
+                                  templesList: _temples,
+                                ),
+                              );
                             },
                           ),
                         ),
@@ -337,40 +347,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            Positioned(
+            const Positioned(
               top: 0,
               left: 0,
               right: 0,
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: SearchField(),
                   ),
                   // const SizedBox(width: 12),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10, top: 13),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade50,
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.notifications,
-                          color: Colors.orange,
-                          size: 30,
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (c) => const NotificationScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
                 ],
               ),
             )

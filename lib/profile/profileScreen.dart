@@ -175,7 +175,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final latitude = value.getLatitude;
         final longitude = value.getLongitude;
         final radiusFilter = value.getRadiusFilter;
-        log('radius filter ===== $radiusFilter');
 
         return Scaffold(
           backgroundColor: Colors.white,
@@ -324,53 +323,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ),
                                       ShowAddressText(
                                         controller: addressController,
-                                        onTap: () async {
-                                          Map<String, dynamic> selectedAddress =
-                                              await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => CurrentAddress(
-                                                isProfileScreen: true,
-                                                savedAddress: address,
-                                                latitude: latitude.toString(),
-                                                longitude: longitude.toString(),
-                                                radiusFilter: radiusFilter,
-                                              ),
-                                            ),
+                                        onTap: () {
+                                          onLocationChanged(
+                                            address,
+                                            radiusFilter,
                                           );
-
-                                          final provider =
-                                              Provider.of<LocationData>(context,
-                                                  listen: false);
-                                          // ignore: unnecessary_null_comparison
-                                          if (selectedAddress.isNotEmpty &&
-                                              selectedAddress != null) {
-                                            String lat =
-                                                selectedAddress['latitude'];
-                                            String lon =
-                                                selectedAddress['longitude'];
-                                            setState(() {
-                                              provider.setLatitudeAndLongitude(
-                                                lat.toNum.toDouble(),
-                                                lon.toNum.toDouble(),
-                                              );
-                                              provider.setUserAddress(
-                                                selectedAddress['address'],
-                                              );
-                                              provider.setRadiusFilter(
-                                                selectedAddress['radiusFilter'],
-                                              );
-
-                                              final shortFormAddress =
-                                                  '📍 ${selectedAddress['city']}, ${provider.getStateShortForm(selectedAddress['state'])}';
-                                              provider.setStateShortForm(
-                                                  shortFormAddress);
-                                              log('short form address = $shortFormAddress');
-
-                                              addressController.text =
-                                                  shortFormAddress;
-                                            });
-                                          }
                                         },
                                       ),
                                     ],
@@ -694,5 +651,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
+  }
+
+  void onLocationChanged(String address, int radiusFilter) async {
+    Map<String, dynamic> selectedAddress = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CurrentAddress(
+          isProfileScreen: true,
+          savedAddress: address,
+          latitude: latitude.toString(),
+          longitude: longitude.toString(),
+          radiusFilter: radiusFilter,
+        ),
+      ),
+    );
+
+    final provider = Provider.of<LocationData>(context, listen: false);
+    // ignore: unnecessary_null_comparison
+    if (selectedAddress.isNotEmpty) {
+      String lat = selectedAddress['latitude'];
+      String lon = selectedAddress['longitude'];
+      setState(() {
+        provider.setLatitudeAndLongitude(
+          lat.toNum.toDouble(),
+          lon.toNum.toDouble(),
+        );
+        provider.setUserAddress(
+          selectedAddress['address'],
+        );
+        provider.setRadiusFilter(
+          selectedAddress['radiusFilter'],
+        );
+
+        final shortFormAddress =
+            '📍 ${selectedAddress['city']}, ${provider.getStateShortForm(selectedAddress['state'])}';
+        provider.setStateShortForm(shortFormAddress);
+        provider.setIsLocationFetched(false);
+
+        addressController.text = shortFormAddress;
+      });
+    }
   }
 }

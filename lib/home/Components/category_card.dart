@@ -36,7 +36,7 @@ class CategoryCard extends StatelessWidget {
             margin: const EdgeInsets.only(right: 10),
             width: 56, // Adjust width if needed
             child: Text(
-              text.toString().toUpperCase() ?? '',
+              text.toString(),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.black,

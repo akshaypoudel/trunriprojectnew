@@ -22,7 +22,7 @@ class NearbyGroceryStoresVisual extends StatelessWidget {
           child: SectionTitle(
             title: "Near By Grocery Stores",
             press: () {
-              Get.to(const GroceryStoreListScreen());
+              Get.to(GroceryStoreListScreen(groceryStores: groceryStores));
             },
           ),
         ),

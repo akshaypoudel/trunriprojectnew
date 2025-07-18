@@ -162,19 +162,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
         String? lastDateLabel;
 
-        // Detect latest message from peer (not me)
-        // if (docs.isNotEmpty) {
-        //   final latest = docs.last.data()
-        //       as Map<String, dynamic>; // last because .reversed
-        //   if (latest['senderID'] != availableEmailInDB) {
-        //     // Optional: You may want to check if this message id is new
-        //     NotificationService.showNotification(
-        //       widget.receiversName,
-        //       latest['message'] ?? 'New message',
-        //     );
-        //   }
-        // }
-        // Detect latest message from peer (not me)
         if (docs.isNotEmpty) {
           final latestDoc = docs.last; // last because messages are reversed
           final latest = latestDoc.data() as Map<String, dynamic>;
@@ -207,11 +194,21 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           scrollToBottom();
         });
 
-        return ListView(
-          controller: scrollController,
-          reverse: true,
-          children: messageWidgets.reversed.toList(),
-        );
+        if (messageWidgets.isEmpty) {
+          return const Center(
+            child: Text(
+              'You haven\'t messaged this person yet!\nStart messaging now to build connections!',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 17),
+            ),
+          );
+        } else {
+          return ListView(
+            controller: scrollController,
+            reverse: true,
+            children: messageWidgets.reversed.toList(),
+          );
+        }
       },
     );
   }

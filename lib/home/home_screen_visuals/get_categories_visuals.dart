@@ -2,7 +2,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:trunriproject/accommodation/lookingForAPlaceScreen.dart';
 import 'package:trunriproject/events/eventHomeScreen.dart';
 import 'package:trunriproject/home/Components/category_card.dart';
@@ -13,11 +12,22 @@ import 'package:trunriproject/model/categoryModel.dart';
 import 'package:trunriproject/temple/templeHomePageScreen.dart';
 
 class GetCategoriesVisuals extends StatelessWidget {
-  const GetCategoriesVisuals({super.key, required this.restaurants});
+  const GetCategoriesVisuals({
+    super.key,
+    required this.restaurants,
+    required this.temples,
+    required this.groceryStores,
+    required this.eventList,
+  });
   final List<dynamic> restaurants;
+  final List<dynamic> temples;
+  final List<dynamic> groceryStores;
+  final List<Map<String, dynamic>> eventList;
 
   @override
   Widget build(BuildContext context) {
+    //final provider = Provider.of<LocationData>(context, listen: false);
+
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance.collection('categories').snapshots(),
       builder: (context, snapshot) {
@@ -50,9 +60,15 @@ class GetCategoriesVisuals extends StatelessWidget {
                     text: category[index].name,
                     press: () {
                       if (category[index].name == 'Temples') {
-                        Get.to(const TempleHomePageScreen());
+                        Get.to(TempleHomePageScreen(
+                          templesList: temples,
+                        ));
                       } else if (category[index].name == 'Grocery stores') {
-                        Get.to(const GroceryStoreListScreen());
+                        Get.to(
+                          GroceryStoreListScreen(
+                            groceryStores: groceryStores,
+                          ),
+                        );
                       } else if (category[index].name == 'Accommodation') {
                         Get.to(const LookingForAPlaceScreen());
                       } else if (category[index].name == 'Restaurants') {
@@ -64,7 +80,7 @@ class GetCategoriesVisuals extends StatelessWidget {
                       } else if (category[index].name == 'Jobs') {
                         Get.to(const JobHomePageScreen());
                       } else if (category[index].name == 'Events') {
-                        Get.to(const EventDiscoveryScreen());
+                        Get.to(EventDiscoveryScreen(eventList: eventList));
                       }
                     });
               },
