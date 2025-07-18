@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/home/resturentItemListScreen.dart';
 import 'package:trunriproject/home/search_field.dart';
 import 'package:trunriproject/job/jobHomePageScreen.dart';
@@ -48,7 +50,14 @@ class _ExplorScreenState extends State<ExplorScreen> {
                       ),
                       child: ListTile(
                         onTap: () {
-                          Get.to(const ResturentItemListScreen());
+                          Get.to(
+                            ResturentItemListScreen(
+                              restaurant_List: Provider.of<LocationData>(
+                                      context,
+                                      listen: false)
+                                  .getRestaurauntList,
+                            ),
+                          );
                         },
                         leading: Image.asset(
                           'assets/icons/rasturent.png',
@@ -185,7 +194,7 @@ class _ExplorScreenState extends State<ExplorScreen> {
                       ),
                       child: ListTile(
                         onTap: () {
-                          Get.to(EventDiscoveryScreen());
+                          Get.to(const EventDiscoveryScreen());
                         },
                         leading: Image.asset('assets/icons/events.png'),
                         title: const Text('Event'),

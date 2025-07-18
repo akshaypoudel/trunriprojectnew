@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/chat_module/screens/chat_list_screen.dart';
+import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/profile/profileScreen.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 import 'explorScreen.dart';
@@ -25,10 +26,20 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
   @override
   void initState() {
     super.initState();
-    Provider.of<SubscriptionData>(
+    // initializeProvider();
+    Future.microtask(() => initializeProvider());
+  }
+
+  Future<void> initializeProvider() async {
+    await Provider.of<SubscriptionData>(
       context,
       listen: false,
     ).fetchSubscriptionStatus();
+
+    await Provider.of<LocationData>(
+      context,
+      listen: false,
+    ).fetchUserAddressAndLocation();
   }
 
   @override
@@ -60,10 +71,10 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
+            icon: Icon(Icons.explore_outlined),
+            label: 'Explore',
             activeIcon: Icon(
-              Icons.search,
+              Icons.explore,
               size: 30,
             ),
           ),

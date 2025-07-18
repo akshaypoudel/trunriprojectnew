@@ -1,10 +1,14 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:trunriproject/accommodation/accommodationHomeScreen.dart';
 import 'package:trunriproject/events/event_list_screen.dart';
 import 'package:trunriproject/home/groceryStoreListScreen.dart';
+import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/home/resturentItemListScreen.dart';
 import 'package:trunriproject/job/jobHomePageScreen.dart';
 import 'package:trunriproject/temple/templeHomePageScreen.dart';
@@ -40,6 +44,7 @@ class _SearchFieldState extends State<SearchField> {
           querySnapshot.docs.map((doc) => doc['name'] as String).toList();
       setState(() {
         _allItems = items;
+        log("all items in search === $_allItems");
       });
     } catch (e) {
       print("Error fetching items: $e");
@@ -55,10 +60,12 @@ class _SearchFieldState extends State<SearchField> {
     });
   }
 
-  void _navigateToScreen(String selectedItem) {
+  void _navigateToScreen1(String selectedItem) {
     switch (selectedItem.toLowerCase()) {
       case "restaurants":
-        Get.to(const ResturentItemListScreen());
+        Get.to(ResturentItemListScreen(
+            restaurant_List: Provider.of<LocationData>(context, listen: false)
+                .getRestaurauntList));
         break;
       case "grocery stores":
         Get.to(const GroceryStoreListScreen());
@@ -77,6 +84,28 @@ class _SearchFieldState extends State<SearchField> {
         break;
       default:
         Get.snackbar("Error", "No matching screen found for '$selectedItem'");
+    }
+  }
+
+  void _navigateToScreen(String selectedItem) {
+    final item = selectedItem.toLowerCase();
+
+    if (item.contains("restaurant")) {
+      Get.to(ResturentItemListScreen(
+          restaurant_List: Provider.of<LocationData>(context, listen: false)
+              .getRestaurauntList));
+    } else if (item.contains("grocery")) {
+      Get.to(const GroceryStoreListScreen());
+    } else if (item.contains("accommodation")) {
+      Get.to(const Accommodationhomescreen());
+    } else if (item.contains("temple")) {
+      Get.to(const TempleHomePageScreen());
+    } else if (item.contains("job")) {
+      Get.to(const JobHomePageScreen());
+    } else if (item.contains("event")) {
+      Get.to(EventListScreen());
+    } else {
+      Get.snackbar("Error", "No matching screen found for '$selectedItem'");
     }
   }
 

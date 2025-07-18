@@ -14,6 +14,7 @@ import 'package:trunriproject/SplashScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:trunriproject/chat_module/services/chat_services.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
+import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/notifications/notification_services.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 
@@ -109,8 +110,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (c) => SubscriptionData(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SubscriptionData()),
+        ChangeNotifierProvider(create: (_) => LocationData()),
+      ],
       child: GetMaterialApp(
         title: 'TruNri',
         debugShowCheckedModeBanner: false,

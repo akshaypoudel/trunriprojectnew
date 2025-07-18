@@ -30,12 +30,26 @@ class _UploadResumeScreenState extends State<UploadResumeScreen> {
   File? selectedFile;
   final formKey = GlobalKey<FormState>();
   String? fileUrl;
+
+  @override
+  void dispose() {
+    firstNameController.dispose();
+    familyNameController.dispose();
+    emailController.dispose();
+    cityController.dispose();
+    phoneNumberController.dispose();
+    super.dispose();
+  }
+
   Future<void> uploadData(BuildContext context) async {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
     if (selectedFile != null) {
       String fileName = basename(selectedFile!.path);
-      UploadTask uploadTask = FirebaseStorage.instance.ref().child('resumes/$fileName').putFile(selectedFile!);
+      UploadTask uploadTask = FirebaseStorage.instance
+          .ref()
+          .child('resumes/$fileName')
+          .putFile(selectedFile!);
 
       TaskSnapshot taskSnapshot = await uploadTask;
       fileUrl = await taskSnapshot.ref.getDownloadURL();
@@ -49,7 +63,7 @@ class _UploadResumeScreenState extends State<UploadResumeScreen> {
         'resume_file': fileUrl,
       }).then((value) {
         NewHelper.hideLoader(loader);
-        showSnackBar(context,'Thanks for applying for this job');
+        showSnackBar(context, 'Thanks for applying for this job');
         Get.to(const JobHomePageScreen());
       });
     }
@@ -112,31 +126,36 @@ class _UploadResumeScreenState extends State<UploadResumeScreen> {
                   hintText: 'City,State/Territory(Optional)',
                   controller: cityController,
                   validator: MultiValidator([
-                    RequiredValidator(errorText: 'City,State/Territory is required'),
+                    RequiredValidator(
+                      errorText: 'City,State/Territory is required',
+                    ),
                   ]).call),
               const Padding(
                 padding: EdgeInsets.only(left: 25),
                 child: Text('Phone Number'),
               ),
               CommonTextField(
-                  hintText: 'Phone Number',
-                  controller: phoneNumberController,
-                  keyboardType: TextInputType.number,
-                  validator: MultiValidator([
-                    RequiredValidator(errorText: 'Phone Number is required'),
-                  ]).call),
+                hintText: 'Phone Number',
+                controller: phoneNumberController,
+                keyboardType: TextInputType.number,
+                validator: MultiValidator([
+                  RequiredValidator(errorText: 'Phone Number is required'),
+                ]).call,
+              ),
               Padding(
                 padding: const EdgeInsets.all(25),
                 child: DottedBorder(
                   borderType: BorderType.RRect,
                   radius: const Radius.circular(2),
-                  padding: const EdgeInsets.only(left: 40, right: 40, bottom: 10),
+                  padding:
+                      const EdgeInsets.only(left: 40, right: 40, bottom: 10),
                   color: Colors.red,
                   dashPattern: const [6],
                   strokeWidth: 1,
                   child: InkWell(
                     onTap: () async {
-                      FilePickerResult? result = await FilePicker.platform.pickFiles(
+                      FilePickerResult? result =
+                          await FilePicker.platform.pickFiles(
                         type: FileType.custom,
                         allowedExtensions: ['pdf', 'docx', 'trf', 'txt'],
                         allowMultiple: false,
@@ -150,7 +169,8 @@ class _UploadResumeScreenState extends State<UploadResumeScreen> {
                     },
                     child: Container(
                       padding: const EdgeInsets.only(top: 8),
-                      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 8),
                       width: double.maxFinite,
                       height: 150,
                       alignment: Alignment.center,
@@ -174,7 +194,8 @@ class _UploadResumeScreenState extends State<UploadResumeScreen> {
                           ),
                           const Text(
                             'Accepted file types: PDF, DOCX, TRF, TXT',
-                            style: TextStyle(fontSize: 12, color: Colors.black54),
+                            style:
+                                TextStyle(fontSize: 12, color: Colors.black54),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -212,6 +233,7 @@ class _UploadResumeScreenState extends State<UploadResumeScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 30),
             ],
           ),
         ),

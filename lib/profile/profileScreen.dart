@@ -12,6 +12,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/currentLocation.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
+import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/profile/show_address_text.dart';
 import 'package:trunriproject/signinscreen.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
@@ -47,8 +48,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String name = '';
   String email = '';
   String addressText = '';
-  String city = '';
-  String state = '';
   String latitude = '';
   String longitude = '';
   String imageUrl = '';
@@ -87,6 +86,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> fetchUserData() async {
     FirebaseAuth auth = FirebaseAuth.instance;
+    final provider = Provider.of<LocationData>(context, listen: false);
 
     String phone = '';
     String newEmail = '';
@@ -96,37 +96,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .doc(auth.currentUser!.uid)
         .get();
 
-    dynamic addressSnapshot = await FirebaseFirestore.instance
-        .collection('currentLocation')
-        .doc(auth.currentUser!.uid)
-        .get();
-
     if (snapshot.exists) {
       newEmail = snapshot.get('email') ?? '';
       phone = snapshot.get('phoneNumber') ?? '';
       imageUrl = snapshot.get('profile') ?? '';
     }
-
-    if (addressSnapshot.exists) {
-      final street = addressSnapshot.data()['Street'] ?? '';
-      final city = addressSnapshot.data()['city'] ?? '';
-      this.city = city;
-      final town = addressSnapshot.data()['town'] ?? '';
-      final state = addressSnapshot.data()['state'] ?? '';
-      this.state = state;
-      final country = addressSnapshot.data()['country'] ?? '';
-      final zip = addressSnapshot.data()['zipcode'] ?? '';
-
-      final fullAddress = '$street, $town, $city, $state, $zip, $country';
-      addressText = fullAddress;
-      latitude = addressSnapshot.data()['latitude'] ?? '';
-      longitude = addressSnapshot.data()['longitude'] ?? '';
-
-      final shortFormAddress = '📍 $city, ${getStateShortForm(state)}';
-      addressController.text = shortFormAddress;
-    } else {
-      log('currentLocation doesnt exists');
-    }
+    addressText = provider.getUsersAddress;
+    addressController.text = provider.getShortFormAddress;
+    latitude = provider.getLatitude.toString();
+    longitude = provider.getLongitude.toString();
+    // log('address text = $addressText');
 
     dynamic querySnapshot;
     if (phone.isNotEmpty) {
@@ -159,20 +138,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  String getStateShortForm(String stateName) {
-    List<String> words = stateName.trim().split(RegExp(r'\s+'));
-
-    if (words.length == 1) {
-      return words[0]; // Single word (e.g., Rajasthan)
-    }
-
-    // Multiple words: take first letter of each word and capitalize
-    return words.map((word) => word[0].toUpperCase()).join();
-  }
-
   @override
   void initState() {
     super.initState();
+    Future.microtask(() {
+      Provider.of<LocationData>(context, listen: false)
+          .fetchUserAddressAndLocation();
+    });
+
     initialize();
   }
 
@@ -191,365 +164,397 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<SubscriptionData>(context, listen: false);
+    final subscriptionProvider =
+        Provider.of<SubscriptionData>(context, listen: false);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      extendBody: true,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text('Profile'),
-        automaticallyImplyLeading: false,
-        actions: [
-          GestureDetector(
-            onTap: () {
-              if (isEditing) {
-                updateProfile();
-              }
-              setState(() {
-                isEditing = !isEditing;
-              });
-            },
-            child: isEditing
-                ? const Text(
-                    'save',
-                    style: TextStyle(color: Colors.green, fontSize: 17),
-                  )
-                : Image.asset(
-                    'assets/images/edit.png',
-                    height: 30,
-                  ),
-          ),
-          const SizedBox(
-            width: 15,
-          )
-        ],
-      ),
-      body: dataLoaded
-          ? Container(
-              height: Get.height,
-              color: Colors.white,
-              padding: const EdgeInsets.only(left: 15, top: 20, right: 15),
-              child: GestureDetector(
+    return Consumer<LocationData>(
+      builder: (BuildContext context, LocationData value, Widget? child) {
+        final address = value.getUsersAddress;
+        final shortFormAddress = value.getShortFormAddress;
+        addressController.text = shortFormAddress;
+        final latitude = value.getLatitude;
+        final longitude = value.getLongitude;
+        final radiusFilter = value.getRadiusFilter;
+        log('radius filter ===== $radiusFilter');
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          extendBody: true,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            title: const Text('Profile'),
+            automaticallyImplyLeading: false,
+            actions: [
+              GestureDetector(
                 onTap: () {
-                  FocusScope.of(context).unfocus();
+                  if (isEditing) {
+                    updateProfile();
+                  }
+                  setState(() {
+                    isEditing = !isEditing;
+                  });
                 },
-                child: Form(
-                  key: formKey,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Row(
+                child: isEditing
+                    ? const Text(
+                        'save',
+                        style: TextStyle(color: Colors.green, fontSize: 17),
+                      )
+                    : Image.asset(
+                        'assets/images/edit.png',
+                        height: 30,
+                      ),
+              ),
+              const SizedBox(
+                width: 15,
+              )
+            ],
+          ),
+          body: dataLoaded
+              ? Container(
+                  height: Get.height,
+                  color: Colors.white,
+                  padding: const EdgeInsets.only(left: 15, top: 20, right: 15),
+                  child: GestureDetector(
+                    onTap: () {
+                      FocusScope.of(context).unfocus();
+                    },
+                    child: Form(
+                      key: formKey,
+                      child: SingleChildScrollView(
+                        child: Column(
                           children: [
-                            GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              onTap: () {
-                                NewHelper.showImagePickerSheet(
-                                    gotImage: (File gg) {
-                                      userImageFile = gg;
-                                      imagePicked = true;
-                                      updateProfile();
-                                      setState(() {});
-                                    },
-                                    context: context);
-                              },
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    width: 130,
-                                    height: 130,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          width: 4, color: Colors.white),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          spreadRadius: 2,
-                                          blurRadius: 10,
-                                          color: Colors.black
-                                              .withValues(alpha: 0.1),
-                                        )
-                                      ],
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius:
-                                          BorderRadius.circular(10000),
-                                      child: (imageUrl.isNotEmpty)
-                                          ? Image.network(
-                                              imageUrl,
-                                              fit: BoxFit.cover,
-                                            )
-                                          : Icon(
-                                              CupertinoIcons.person_alt_circle,
-                                              size: 45,
-                                              color: Colors.grey.shade700,
-                                            ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Container(
-                                      height: 40,
-                                      width: 40,
-                                      decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
+                            Row(
+                              children: [
+                                GestureDetector(
+                                  behavior: HitTestBehavior.translucent,
+                                  onTap: () {
+                                    NewHelper.showImagePickerSheet(
+                                        gotImage: (File gg) {
+                                          userImageFile = gg;
+                                          imagePicked = true;
+                                          updateProfile();
+                                          setState(() {});
+                                        },
+                                        context: context);
+                                  },
+                                  child: Stack(
+                                    children: [
+                                      Container(
+                                        width: 130,
+                                        height: 130,
+                                        decoration: BoxDecoration(
                                           border: Border.all(
-                                            width: 4,
+                                              width: 4, color: Colors.white),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              spreadRadius: 2,
+                                              blurRadius: 10,
+                                              color: Colors.black
+                                                  .withValues(alpha: 0.1),
+                                            )
+                                          ],
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(10000),
+                                          child: (imageUrl.isNotEmpty)
+                                              ? Image.network(
+                                                  imageUrl,
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : Icon(
+                                                  CupertinoIcons
+                                                      .person_alt_circle,
+                                                  size: 45,
+                                                  color: Colors.grey.shade700,
+                                                ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        bottom: 0,
+                                        right: 0,
+                                        child: Container(
+                                          height: 40,
+                                          width: 40,
+                                          decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                width: 4,
+                                                color: Colors.white,
+                                              ),
+                                              color: Colors.blue),
+                                          child: const Icon(
+                                            Icons.edit,
                                             color: Colors.white,
                                           ),
-                                          color: Colors.blue),
-                                      child: const Icon(
-                                        Icons.edit,
-                                        color: Colors.white,
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 20,
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    children: [
+                                      TextFormField(
+                                        decoration: InputDecoration(
+                                          // border: InputBorder.none,
+                                          hintText: name,
+                                        ),
+                                        readOnly: !isEditing,
+                                        controller: nameController,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 20,
+                                            color: Colors.black),
                                       ),
-                                    ),
-                                  )
-                                ],
-                              ),
+                                      TextFormField(
+                                        decoration: InputDecoration(
+                                          hintText: email,
+                                        ),
+                                        readOnly: !isEditing,
+                                        controller: emailController,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 14,
+                                            color: Colors.black),
+                                      ),
+                                      ShowAddressText(
+                                        controller: addressController,
+                                        onTap: () async {
+                                          Map<String, dynamic> selectedAddress =
+                                              await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => CurrentAddress(
+                                                isProfileScreen: true,
+                                                savedAddress: address,
+                                                latitude: latitude.toString(),
+                                                longitude: longitude.toString(),
+                                                radiusFilter: radiusFilter,
+                                              ),
+                                            ),
+                                          );
+
+                                          final provider =
+                                              Provider.of<LocationData>(context,
+                                                  listen: false);
+                                          // ignore: unnecessary_null_comparison
+                                          if (selectedAddress.isNotEmpty &&
+                                              selectedAddress != null) {
+                                            String lat =
+                                                selectedAddress['latitude'];
+                                            String lon =
+                                                selectedAddress['longitude'];
+                                            setState(() {
+                                              provider.setLatitudeAndLongitude(
+                                                lat.toNum.toDouble(),
+                                                lon.toNum.toDouble(),
+                                              );
+                                              provider.setUserAddress(
+                                                selectedAddress['address'],
+                                              );
+                                              provider.setRadiusFilter(
+                                                selectedAddress['radiusFilter'],
+                                              );
+
+                                              final shortFormAddress =
+                                                  '📍 ${selectedAddress['city']}, ${provider.getStateShortForm(selectedAddress['state'])}';
+                                              provider.setStateShortForm(
+                                                  shortFormAddress);
+                                              log('short form address = $shortFormAddress');
+
+                                              addressController.text =
+                                                  shortFormAddress;
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(
-                              width: 20,
+                              height: 40,
                             ),
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  TextFormField(
-                                    decoration: InputDecoration(
-                                      // border: InputBorder.none,
-                                      hintText: name,
-                                    ),
-                                    readOnly: !isEditing,
-                                    controller: nameController,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 20,
-                                        color: Colors.black),
-                                  ),
-                                  TextFormField(
-                                    decoration: InputDecoration(
-                                      hintText: email,
-                                    ),
-                                    readOnly: !isEditing,
-                                    controller: emailController,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 14,
-                                        color: Colors.black),
-                                  ),
-                                  ShowAddressText(
-                                    controller: addressController,
-                                    onTap: () async {
-                                      Map<String, dynamic> selectedAddress =
-                                          await Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => CurrentAddress(
-                                            isProfileScreen: true,
-                                            savedAddress: addressText,
-                                            latitude: latitude,
-                                            longitude: longitude,
-                                          ),
-                                        ),
-                                      );
 
-                                      if (selectedAddress.isNotEmpty) {
-                                        setState(() {
-                                          latitude =
-                                              selectedAddress['latitude'];
-                                          longitude =
-                                              selectedAddress['longitude'];
-                                          addressText =
-                                              selectedAddress['address'];
-                                          final shortFormAddress =
-                                              '📍 ${selectedAddress['city']}, ${getStateShortForm(selectedAddress['state'])}';
-
-                                          log('short form address == $shortFormAddress');
-                                          addressController.text =
-                                              shortFormAddress;
-                                        });
-                                      }
-                                    },
-                                  ),
-                                ],
+                            (subscriptionProvider.isUserSubscribed)
+                                ? alreadySubscribedProButton(context)
+                                : buildTryProButton(context),
+                            ListTile(
+                              leading: Image.asset(
+                                'assets/images/address.png',
+                                height: 30,
+                              ),
+                              title: const Text('Address'),
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios_outlined,
+                                size: 15,
+                              ),
+                              onTap: () {
+                                Get.to(const AddressListScreen());
+                              },
+                            ),
+                            const Divider(
+                              height: 10,
+                            ),
+                            ListTile(
+                              onTap: () {
+                                Get.to(const RecoveryPasswordScreen());
+                              },
+                              leading: Image.asset(
+                                'assets/images/password.png',
+                                height: 30,
+                              ),
+                              title: const Text('Change Password'),
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios_outlined,
+                                size: 15,
                               ),
                             ),
+                            const Divider(
+                              height: 10,
+                            ),
+                            ListTile(
+                              leading: Image.asset(
+                                'assets/images/language.png',
+                                height: 30,
+                              ),
+                              title: const Text('Change Language'),
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios_outlined,
+                                size: 15,
+                              ),
+                            ),
+                            const Divider(
+                              height: 10,
+                            ),
+                            ListTile(
+                              leading: Image.asset(
+                                'assets/images/notification.png',
+                                height: 30,
+                              ),
+                              title: const Text('Notification preferences'),
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios_outlined,
+                                size: 15,
+                              ),
+                            ),
+                            const Divider(
+                              height: 10,
+                            ),
+                            ListTile(
+                              leading: Image.asset(
+                                'assets/images/feedback.png',
+                                height: 30,
+                              ),
+                              title: const Text('Feedback'),
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios_outlined,
+                                size: 15,
+                              ),
+                            ),
+                            const Divider(
+                              height: 10,
+                            ),
+                            ListTile(
+                              onTap: () {
+                                Share.share('https://www.google.co.in/');
+                              },
+                              leading: Image.asset(
+                                'assets/images/share.png',
+                                height: 30,
+                              ),
+                              title: const Text('Share App'),
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios_outlined,
+                                size: 15,
+                              ),
+                            ),
+                            const Divider(
+                              height: 10,
+                            ),
+                            ListTile(
+                              onTap: () {
+                                launchUrlString("tel://+917665096245");
+                              },
+                              leading: Image.asset(
+                                'assets/images/contact.png',
+                                height: 30,
+                              ),
+                              title: const Text('Contact Us'),
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios_outlined,
+                                size: 15,
+                              ),
+                            ),
+                            const Divider(
+                              height: 10,
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                PresenceService.setUserOffline();
+                                GoogleSignIn().signOut();
+                                FirebaseAuth.instance.signOut().then((value) {
+                                  Get.offAll(const SignInScreen());
+                                  showSnackBar(
+                                      context, "Logged Out Successfully");
+                                });
+                              },
+                              child: ListTile(
+                                leading: Image.asset(
+                                  'assets/images/logout.png',
+                                  height: 30,
+                                ),
+                                title: const Text('LogOut'),
+                                trailing: const Icon(
+                                  Icons.arrow_forward_ios_outlined,
+                                  size: 15,
+                                ),
+                              ),
+                            ),
+                            //const Divider(
+                            //  height: 10,
+                            //),
+                            // GestureDetector(
+                            //   onTap: () async {
+                            //     User? user = FirebaseAuth.instance.currentUser;
+                            //     await user!.delete();
+                            //     GoogleSignIn().signOut();
+                            //     showSnackBar(
+                            //         context, "Your account has been deleted");
+                            //     Get.to(const SignUpScreen());
+                            //   },
+                            //   child: ListTile(
+                            //     leading: Image.asset(
+                            //       'assets/images/delete.png',
+                            //       height: 30,
+                            //     ),
+                            //     title: const Text('Delete Account'),
+                            //     trailing: const Icon(
+                            //       Icons.arrow_forward_ios_outlined,
+                            //       size: 15,
+                            //     ),
+                            //   ),
+                            // ),
+                            const SizedBox(height: 85),
                           ],
                         ),
-                        const SizedBox(
-                          height: 40,
-                        ),
-
-                        (provider.isUserSubscribed)
-                            ? alreadySubscribedProButton(context)
-                            : buildTryProButton(context),
-                        ListTile(
-                          leading: Image.asset(
-                            'assets/images/address.png',
-                            height: 30,
-                          ),
-                          title: const Text('Address'),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            size: 15,
-                          ),
-                          onTap: () {
-                            Get.to(const AddressListScreen());
-                          },
-                        ),
-                        const Divider(
-                          height: 10,
-                        ),
-                        ListTile(
-                          onTap: () {
-                            Get.to(const RecoveryPasswordScreen());
-                          },
-                          leading: Image.asset(
-                            'assets/images/password.png',
-                            height: 30,
-                          ),
-                          title: const Text('Change Password'),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            size: 15,
-                          ),
-                        ),
-                        const Divider(
-                          height: 10,
-                        ),
-                        ListTile(
-                          leading: Image.asset(
-                            'assets/images/language.png',
-                            height: 30,
-                          ),
-                          title: const Text('Change Language'),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            size: 15,
-                          ),
-                        ),
-                        const Divider(
-                          height: 10,
-                        ),
-                        ListTile(
-                          leading: Image.asset(
-                            'assets/images/notification.png',
-                            height: 30,
-                          ),
-                          title: const Text('Notification preferences'),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            size: 15,
-                          ),
-                        ),
-                        const Divider(
-                          height: 10,
-                        ),
-                        ListTile(
-                          leading: Image.asset(
-                            'assets/images/feedback.png',
-                            height: 30,
-                          ),
-                          title: const Text('Feedback'),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            size: 15,
-                          ),
-                        ),
-                        const Divider(
-                          height: 10,
-                        ),
-                        ListTile(
-                          onTap: () {
-                            Share.share('https://www.google.co.in/');
-                          },
-                          leading: Image.asset(
-                            'assets/images/share.png',
-                            height: 30,
-                          ),
-                          title: const Text('Share App'),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            size: 15,
-                          ),
-                        ),
-                        const Divider(
-                          height: 10,
-                        ),
-                        ListTile(
-                          onTap: () {
-                            launchUrlString("tel://+917665096245");
-                          },
-                          leading: Image.asset(
-                            'assets/images/contact.png',
-                            height: 30,
-                          ),
-                          title: const Text('Contact Us'),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            size: 15,
-                          ),
-                        ),
-                        const Divider(
-                          height: 10,
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            PresenceService.setUserOffline();
-                            GoogleSignIn().signOut();
-                            FirebaseAuth.instance.signOut().then((value) {
-                              Get.offAll(const SignInScreen());
-                              showSnackBar(context, "Logged Out Successfully");
-                            });
-                          },
-                          child: ListTile(
-                            leading: Image.asset(
-                              'assets/images/logout.png',
-                              height: 30,
-                            ),
-                            title: const Text('LogOut'),
-                            trailing: const Icon(
-                              Icons.arrow_forward_ios_outlined,
-                              size: 15,
-                            ),
-                          ),
-                        ),
-                        //const Divider(
-                        //  height: 10,
-                        //),
-                        // GestureDetector(
-                        //   onTap: () async {
-                        //     User? user = FirebaseAuth.instance.currentUser;
-                        //     await user!.delete();
-                        //     GoogleSignIn().signOut();
-                        //     showSnackBar(
-                        //         context, "Your account has been deleted");
-                        //     Get.to(const SignUpScreen());
-                        //   },
-                        //   child: ListTile(
-                        //     leading: Image.asset(
-                        //       'assets/images/delete.png',
-                        //       height: 30,
-                        //     ),
-                        //     title: const Text('Delete Account'),
-                        //     trailing: const Icon(
-                        //       Icons.arrow_forward_ios_outlined,
-                        //       size: 15,
-                        //     ),
-                        //   ),
-                        // ),
-                        const SizedBox(height: 85),
-                      ],
+                      ),
                     ),
                   ),
+                )
+              : const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.orange,
+                  ),
                 ),
-              ),
-            )
-          : const Center(
-              child: CircularProgressIndicator(
-                color: Colors.orange,
-              ),
-            ),
+        );
+      },
     );
   }
 

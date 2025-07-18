@@ -62,6 +62,7 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
               savedAddress: '',
               latitude: '',
               longitude: '',
+              radiusFilter: 50,
             ),
           ),
           (Route<dynamic> route) => false,

@@ -2,11 +2,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 import 'package:trunriproject/subscription/subscription_success_screen.dart';
 import 'package:trunriproject/widgets/helper.dart';
+
+const daysInAYear = (30 * 12);
+const daysInAMonth = 30;
+
+const monthlyPlan = 'Monthly';
+const annualPlan = 'Annual';
+
+const annualPrice = '₹4099.99/year';
+const monthlyPrice = '₹619.99/month';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -95,14 +103,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                 child: GestureDetector(
                                   onTap: () {
                                     setState(() {
-                                      selectedPlan = 'Annual';
+                                      selectedPlan = annualPlan;
                                     });
                                   },
                                   child: buildPlanTile(
-                                      title: "Annual",
+                                      title: annualPlan,
                                       price: "₹341.29/month",
-                                      subtitle: "₹4099.99/year",
-                                      isSelected: selectedPlan == 'Annual'),
+                                      subtitle: annualPrice,
+                                      isSelected: selectedPlan == annualPlan),
                                 ),
                               ),
                             ),
@@ -112,14 +120,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                 child: GestureDetector(
                                   onTap: () {
                                     setState(() {
-                                      selectedPlan = 'Monthly';
+                                      selectedPlan = monthlyPlan;
                                     });
                                   },
                                   child: buildPlanTile(
-                                      title: "Monthly",
-                                      price: "₹619.99/month",
+                                      title: monthlyPlan,
+                                      price: monthlyPrice,
                                       subtitle: "Billed monthly",
-                                      isSelected: selectedPlan == 'Monthly'),
+                                      isSelected: selectedPlan == monthlyPlan),
                                 ),
                               ),
                             ),
@@ -155,7 +163,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               child: const Text(
                                 "SUBSCRIBE TO PRO",
                                 style: TextStyle(
-                                    fontSize: 16, color: Colors.white),
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
@@ -179,46 +189,21 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       showSnackBar(context, 'User not logged in');
       return;
     }
-    // bool isCancelled = false;
-    // await showDialog(
-    //   context: context,
-    //   barrierDismissible: false,
-    //   builder: (context) {
-    //     return PopScope(
-    //       onPopInvokedWithResult: (b, t) {
-    //         isCancelled = true;
-    //         Navigator.of(context).pop();
-    //       },
-    //       child: AlertDialog(
-    //         shape:
-    //             RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-    //         content: Column(
-    //           mainAxisSize: MainAxisSize.min,
-    //           children: [
-    //             const SizedBox(height: 16),
-    //             const CircularProgressIndicator(color: Colors.orange),
-    //             const SizedBox(height: 24),
-    //             Text(
-    //               "Activating your PRO membership...",
-    //               style: GoogleFonts.poppins(fontSize: 16),
-    //               textAlign: TextAlign.center,
-    //             ),
-    //             const SizedBox(height: 16),
-    //           ],
-    //         ),
-    //       ),
-    //     );
-    //   },
-    // );
-    // if (isCancelled) return;
-
-    /// Dont' Forget to Add Expirty Date of Subscription after testing
+    final expiryDuration = (selectedPlan == annualPlan)
+        ? daysInAYear
+        : ((selectedPlan == monthlyPlan) ? daysInAMonth : 0);
     try {
-      final DateTime expiryDate = DateTime.now().add(const Duration(days: 30));
-      await firestore.collection('User').doc(uid).update({
-        'isSubscribed': true,
-        'subscriptionExpiry': expiryDate,
-      });
+      final DateTime expiryDate = DateTime.now().add(
+        Duration(
+          days: expiryDuration,
+        ),
+      );
+      await firestore.collection('User').doc(uid).update(
+        {
+          'isSubscribed': true,
+          'subscriptionExpiry': expiryDate,
+        },
+      );
 
       Provider.of<SubscriptionData>(context, listen: false)
           .changeSubscriptionStatus(true);
