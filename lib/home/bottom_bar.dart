@@ -27,7 +27,10 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
   void initState() {
     super.initState();
     // initializeProvider();
-    Future.microtask(() => initializeProvider());
+    // Future.microtask(() => );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      initializeProvider();
+    });
   }
 
   Future<void> initializeProvider() async {

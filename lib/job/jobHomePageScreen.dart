@@ -24,16 +24,6 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
     super.dispose();
   }
 
-  void _showFilterBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => const JobFilterOptionScreen(),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<SubscriptionData>(context, listen: false);
@@ -78,21 +68,6 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
               const SizedBox(height: 10),
               Row(
                 children: [
-                  // Expanded(
-                  //   child: ElevatedButton.icon(
-                  //     onPressed: _showFilterBottomSheet,
-                  //     icon: const Icon(Icons.filter_list),
-                  //     label: const Text('Filter'),
-                  //     style: ElevatedButton.styleFrom(
-                  //       backgroundColor: Colors.blueGrey.shade50,
-                  //       foregroundColor: Colors.deepOrange,
-                  //       elevation: 0,
-                  //       shape: RoundedRectangleBorder(
-                  //         borderRadius: BorderRadius.circular(10),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
                   const SizedBox(width: 10),
                   (provider.isUserSubscribed)
                       ? Expanded(

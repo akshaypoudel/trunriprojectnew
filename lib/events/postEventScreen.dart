@@ -25,24 +25,40 @@ class PostEventScreen extends StatefulWidget {
 }
 
 class _PostEventScreenState extends State<PostEventScreen> {
-  String? selectedState;
   TextEditingController addressController = TextEditingController();
   TextEditingController pincodeController = TextEditingController();
   TextEditingController eventNameController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   TextEditingController ticketPriceController = TextEditingController();
   TextEditingController locationController = TextEditingController();
+  TextEditingController stateController = TextEditingController();
   TextEditingController contactInformationController = TextEditingController();
+
   Rx<File> profileImage = Rx<File>(File(''));
   List<File> selectedFiles = [];
   String? selectedDate;
   String? selectedTime;
+  // String? selectedState;
   var borderColor = const Color(0xff99B2C6).obs;
   List<String> selectedCategories = [];
   List<String> selectedEventTypes = [];
   String selectedEventTypePrice = 'Paid';
+
+  @override
+  void dispose() {
+    addressController.dispose();
+    pincodeController.dispose();
+    eventNameController.dispose();
+    descriptionController.dispose();
+    ticketPriceController.dispose();
+    locationController.dispose();
+    stateController.dispose();
+
+    contactInformationController.dispose();
+    super.dispose();
+  }
+
   Future<void> pickImage() async {
-    print("message");
     final pickedFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
@@ -79,35 +95,16 @@ class _PostEventScreenState extends State<PostEventScreen> {
 
                 // Country (Fixed: Australia)
                 TextFormField(
-                  initialValue: "Australia",
+                  initialValue: "India",
                   enabled: false,
                   decoration: const InputDecoration(labelText: "Country"),
                 ),
                 const SizedBox(height: 10),
-
-                // State
-                DropdownButtonFormField<String>(
-                  value: selectedState,
+                TextFormField(
+                  // initialValue: "India",
+                  controller: stateController,
+                  enabled: true,
                   decoration: const InputDecoration(labelText: "State"),
-                  items: [
-                    "QLD",
-                    "NSW",
-                    "VICTORIA",
-                    "WA",
-                    "SA",
-                    "TASMANIA",
-                    "Canberra",
-                    "NT"
-                  ].map((state) {
-                    return DropdownMenuItem<String>(
-                      value: state,
-                      child: Text(state),
-                    );
-                  }).toList(),
-                  dropdownColor: Colors.white,
-                  onChanged: (value) {
-                    selectedState = value!;
-                  },
                 ),
                 const SizedBox(height: 10),
 
@@ -129,7 +126,7 @@ class _PostEventScreenState extends State<PostEventScreen> {
                 ElevatedButton(
                   onPressed: () {
                     locationController.text =
-                        "Country: Australia\nState: ${selectedState.toString()}\nAddress: ${addressController.text}\nPincode: ${pincodeController.text}";
+                        "Country: India\nState: ${stateController.text.trim().toString()}\nAddress: ${addressController.text}\nPincode: ${pincodeController.text}";
 
                     Get.back(); // Close modal
                   },
@@ -210,7 +207,16 @@ class _PostEventScreenState extends State<PostEventScreen> {
             .toList();
         Provider.of<LocationData>(context, listen: false)
             .setEventList(eventList);
-        Get.to(EventDiscoveryScreen(eventList: eventList));
+        // Get.to(EventDiscoveryScreen(eventList: eventList));
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (c) => EventDiscoveryScreen(
+              eventList: eventList,
+            ),
+          ),
+        );
       });
 
       NewHelper.hideLoader(loader);

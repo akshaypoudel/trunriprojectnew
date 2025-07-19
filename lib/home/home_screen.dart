@@ -1,5 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:trunriproject/home/Components/category_card.dart';
 import 'package:trunriproject/home/constants.dart';
 import 'package:trunriproject/home/home_screen_visuals/get_banners_visual.dart';
 import 'package:trunriproject/home/home_screen_visuals/get_categories_visuals.dart';
@@ -18,19 +15,11 @@ import 'package:trunriproject/home/home_screen_visuals/nearby_jobs_visual.dart';
 import 'package:trunriproject/home/home_screen_visuals/nearby_restauraunts_visual.dart';
 import 'package:trunriproject/home/home_screen_visuals/nearby_temples_visual.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
-import 'package:trunriproject/home/resturentItemListScreen.dart';
-import 'package:trunriproject/job/jobDetailsScreen.dart';
-import 'package:trunriproject/notificatioonScreen.dart';
 import 'package:trunriproject/widgets/helper.dart';
 import '../accommodation/lookingForAPlaceScreen.dart';
-import '../events/eventDetailsScreen.dart';
-import '../events/eventHomeScreen.dart';
 import '../job/jobHomePageScreen.dart';
-import '../model/bannerModel.dart';
-import '../model/categoryModel.dart';
 import '../temple/templeHomePageScreen.dart';
 import 'Controller.dart';
-import 'groceryStoreListScreen.dart';
 import 'search_field.dart';
 import 'section_title.dart';
 import 'package:http/http.dart' as http;
@@ -48,6 +37,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final FocusNode _focusNode = FocusNode();
 
   String usersLatitude = '';
   String usersLongitude = '';
@@ -68,6 +58,12 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _getCurrentLocation();
     fetchImageData();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   void _fetchBasedOn(
@@ -92,14 +88,14 @@ class _HomeScreenState extends State<HomeScreen> {
     isServiceEnabled = await Geolocator.isLocationServiceEnabled();
 
     if (!isServiceEnabled) {
-      showSnackBar(context, 'Location Service Not Enabled');
+      //showSnackBar(context, 'Location Service Not Enabled');
     }
 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        showSnackBar(context, 'Location Permission Not Given.');
+        // showSnackBar(context, 'Location Permission Not Given.');
       }
     }
 
@@ -123,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       if (usersLatitude.isEmpty || usersLongitude.isEmpty) {
-        showSnackBar(context, 'Cannot Fetch Users Location Data');
+        //showSnackBar(context, 'Cannot Fetch Users Location Data');
         return;
       }
 
@@ -237,130 +233,143 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final locationData = Provider.of<LocationData>(context, listen: false);
-
-    if (!locationData.isLocationFetched) {
-      _fetchBasedOn(
-        locationData.getLatitude,
-        locationData.getLongitude,
-        locationData.getRadiusFilter,
-      );
-      locationData.setIsLocationFetched(true);
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!locationData.isLocationFetched) {
+        _fetchBasedOn(
+          locationData.getLatitude,
+          locationData.getLongitude,
+          locationData.getRadiusFilter,
+        );
+        locationData.setIsLocationFetched(true);
+      }
+    });
 
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.white,
       body: SafeArea(
         bottom: false,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              top: 90,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 5),
-                child: Column(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [],
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    GetBannersVisual(
-                      onPageChanged: (value, _) {
-                        sliderIndex.value = value.toDouble();
-                      },
-                    ),
-                    Obx(
-                      () => DotsIndicator(
-                        dotsCount: 3,
-                        position: sliderIndex.value.toInt(),
-                        decorator: DotsDecorator(
-                          activeColor: Colors.orange,
-                          size: const Size.square(8.0),
-                          activeSize: const Size(18.0, 8.0),
-                          activeShape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5.0),
+        child: GestureDetector(
+          onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          child: Stack(
+            children: [
+              Positioned.fill(
+                top: 90,
+                child: RefreshIndicator.adaptive(
+                  onRefresh: () async {
+                    _getCurrentLocation();
+                  },
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: Column(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [],
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    GetCategoriesVisuals(
-                      restaurants: _restaurants,
-                      temples: _temples,
-                      groceryStores: _groceryStores,
-                      eventList: locationData.getEventList,
-                    ),
-                    const NearbyEventsVisual(),
-                    const SizedBox(height: 20),
-                    NearbyRestaurauntsVisual(restaurants: _restaurants),
-                    const SizedBox(height: 20),
-                    NearbyGroceryStoresVisual(groceryStores: _groceryStores),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: SectionTitle(
-                        title: "Near By Accommodations",
-                        press: () {
-                          Get.to(const LookingForAPlaceScreen());
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const NearbyAccomodationVisual(),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: SectionTitle(
-                        title: "Find Your Job",
-                        press: () {
-                          Get.to(const JobHomePageScreen());
-                        },
-                      ),
-                    ),
-                    const NearbyJobsVisual(),
-                    const SizedBox(height: 20),
-                    Column(
-                      children: [
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        GetBannersVisual(
+                          onPageChanged: (value, _) {
+                            sliderIndex.value = value.toDouble();
+                          },
+                        ),
+                        Obx(
+                          () => DotsIndicator(
+                            dotsCount: 3,
+                            position: sliderIndex.value.toInt(),
+                            decorator: DotsDecorator(
+                              activeColor: Colors.orange,
+                              size: const Size.square(8.0),
+                              activeSize: const Size(18.0, 8.0),
+                              activeShape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5.0),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        GetCategoriesVisuals(
+                          restaurants: _restaurants,
+                          temples: _temples,
+                          groceryStores: _groceryStores,
+                          eventList: locationData.getEventList,
+                        ),
+                        const NearbyEventsVisual(),
+                        const SizedBox(height: 20),
+                        NearbyRestaurauntsVisual(restaurants: _restaurants),
+                        const SizedBox(height: 20),
+                        NearbyGroceryStoresVisual(
+                            groceryStores: _groceryStores),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: SectionTitle(
-                            title: "Near By Temples",
+                            title: "Near By Accommodations",
                             press: () {
-                              Get.to(
-                                TempleHomePageScreen(
-                                  templesList: _temples,
-                                ),
-                              );
+                              Get.to(const LookingForAPlaceScreen());
                             },
                           ),
                         ),
-                        NearbyTemplesVisual(templesList: _temples),
+                        const SizedBox(height: 20),
+                        const NearbyAccomodationVisual(),
+                        const SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: SectionTitle(
+                            title: "Find Your Job",
+                            press: () {
+                              Get.to(const JobHomePageScreen());
+                            },
+                          ),
+                        ),
+                        const NearbyJobsVisual(),
+                        const SizedBox(height: 20),
+                        Column(
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: SectionTitle(
+                                title: "Near By Temples",
+                                press: () {
+                                  Get.to(
+                                    TempleHomePageScreen(
+                                      templesList: _temples,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            NearbyTemplesVisual(templesList: _temples),
+                          ],
+                        ),
+                        const SizedBox(height: 60),
                       ],
                     ),
-                    const SizedBox(height: 60),
-                  ],
+                  ),
                 ),
               ),
-            ),
-            const Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: SearchField(),
-                  ),
-                  // const SizedBox(width: 12),
-                ],
-              ),
-            )
-          ],
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SearchField(focusNode: _focusNode),
+                    ),
+                    // const SizedBox(width: 12),
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

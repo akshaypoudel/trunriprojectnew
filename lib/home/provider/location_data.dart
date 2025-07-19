@@ -123,4 +123,21 @@ class LocationData extends ChangeNotifier {
     }
     return words.map((word) => word[0].toUpperCase()).join();
   }
+
+  void setAllLocationData({
+    double? lat,
+    double? long,
+    String? fullAddress,
+    String? shortFormAddress,
+    int? radiusFilter,
+    bool? isLocationFetched,
+  }) {
+    _latitude = lat!;
+    _longitude = long!;
+    _usersAddress = fullAddress!;
+    _shortFormAddress = shortFormAddress!;
+    _radiusFilter = radiusFilter!;
+    _isLocationFetched = isLocationFetched!;
+    notifyListeners();
+  }
 }

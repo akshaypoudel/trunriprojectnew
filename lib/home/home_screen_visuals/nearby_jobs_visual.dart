@@ -124,6 +124,7 @@ class NearbyJobsVisual extends StatelessWidget {
         const SizedBox(width: 6),
         Expanded(
           child: RichText(
+            maxLines: 1,
             text: TextSpan(
               text: '$label ',
               style: const TextStyle(

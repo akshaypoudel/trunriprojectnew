@@ -17,7 +17,8 @@ import '../notificatioonScreen.dart';
 import '../widgets/appTheme.dart';
 
 class SearchField extends StatefulWidget {
-  const SearchField({super.key});
+  const SearchField({super.key, this.focusNode});
+  final FocusNode? focusNode;
 
   @override
   _SearchFieldState createState() => _SearchFieldState();
@@ -25,6 +26,7 @@ class SearchField extends StatefulWidget {
 
 class _SearchFieldState extends State<SearchField> {
   final TextEditingController _controller = TextEditingController();
+  late FocusNode _focusNode;
   List<String> _allItems = [];
   List<String> _filteredItems = [];
   RxBool showSuggestions = false.obs;
@@ -33,6 +35,26 @@ class _SearchFieldState extends State<SearchField> {
   void initState() {
     super.initState();
     _fetchItems();
+
+    _focusNode = widget.focusNode!;
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (!_focusNode.hasFocus) {
+      // When losing focus, hide suggestions and clear filtered items
+      showSuggestions.value = false;
+      setState(() {
+        _filteredItems.clear();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _controller.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchItems() async {
@@ -43,7 +65,6 @@ class _SearchFieldState extends State<SearchField> {
           querySnapshot.docs.map((doc) => doc['name'] as String).toList();
       setState(() {
         _allItems = items;
-        log("all items in search === $_allItems");
       });
     } catch (e) {
       print("Error fetching items: $e");
@@ -60,6 +81,9 @@ class _SearchFieldState extends State<SearchField> {
   }
 
   void _navigateToScreen(String selectedItem) {
+    _focusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+
     final item = selectedItem.toLowerCase();
 
     if (item.contains("restaurant")) {
@@ -103,7 +127,7 @@ class _SearchFieldState extends State<SearchField> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        FocusScope.of(context).unfocus();
+        FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Column(
         children: [
@@ -119,6 +143,7 @@ class _SearchFieldState extends State<SearchField> {
                 child: Form(
                   child: TextFormField(
                     controller: _controller,
+                    focusNode: _focusNode,
                     onChanged: (value) {
                       if (value.isNotEmpty) {
                         _filterItems(value);
@@ -143,6 +168,8 @@ class _SearchFieldState extends State<SearchField> {
                       ),
                       suffixIcon: IconButton(
                         onPressed: () {
+                          FocusManager.instance.primaryFocus?.unfocus();
+
                           Get.to(const NotificationScreen());
                         },
                         icon: Container(
@@ -212,7 +239,8 @@ class _SearchFieldState extends State<SearchField> {
                                 leading: const Icon(Icons.search),
                                 title: Text(_filteredItems[index]),
                                 onTap: () {
-                                  FocusScope.of(context).unfocus();
+                                  FocusManager.instance.primaryFocus?.unfocus();
+
                                   String selectedItem = _filteredItems[index];
                                   _controller.text = selectedItem;
                                   setState(() {

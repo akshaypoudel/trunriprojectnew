@@ -58,7 +58,8 @@ class SubscriptionSuccessScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildFeature("✔️ Post unlimited jobs"),
+                      _buildFeature(
+                          "✔️ Post unlimited jobs,events and accomodations"),
                       _buildFeature("✔️ Promote business ads and offers"),
                       _buildFeature("✔️ Direct replies to job seekers"),
                       _buildFeature("✔️ Control visibility of your postings"),

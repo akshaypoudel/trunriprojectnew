@@ -122,6 +122,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.orangeAccent),
           useMaterial3: true,
         ),
+        routingCallback: (routing) {
+          if (routing?.isBack == true) {
+            // Unfocus when navigating back
+            FocusManager.instance.primaryFocus?.unfocus();
+          }
+        },
         home: const SplashScreen(),
       ),
     );
