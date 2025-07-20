@@ -1,8 +1,14 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:trunriproject/home/constants.dart';
+import 'package:trunriproject/subscription/phone_number_verification.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 import 'package:trunriproject/subscription/subscription_success_screen.dart';
 import 'package:trunriproject/widgets/helper.dart';
@@ -16,6 +22,9 @@ const annualPlan = 'Annual';
 const annualPrice = '₹4099.99/year';
 const monthlyPrice = '₹619.99/month';
 
+const annualPriceAmount = 4099.99;
+const monthlyPriceAmount = 619.99;
+
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
 
@@ -24,7 +33,38 @@ class SubscriptionScreen extends StatefulWidget {
 }
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
+  late Razorpay _razorpay;
   String selectedPlan = 'Annual';
+
+  @override
+  void initState() {
+    super.initState();
+    _razorpay = Razorpay();
+
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear();
+    super.dispose();
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    log('razorpay payment successfull = $response');
+    _subscribeUserToProMemberShip();
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    showSnackBar(context, "Payment failed. Please try again.");
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    showSnackBar(context, "External Wallet selected: ${response.walletName}");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -163,7 +203,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                               ),
-                              onPressed: subscribeUserToProMemberShip,
+                              onPressed: startRazorpayTransaction,
                               child: const Text(
                                 "SUBSCRIBE TO PRO",
                                 style: TextStyle(
@@ -186,7 +226,76 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
-  void subscribeUserToProMemberShip() async {
+  Future<List<String?>> getUserPhoneNumber() async {
+    final firestore = FirebaseFirestore.instance;
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    try {
+      DocumentSnapshot userDoc =
+          await firestore.collection('User').doc(uid).get();
+
+      if (userDoc.exists) {
+        final data = userDoc.data() as Map<String, dynamic>;
+        final phoneNumber = data['phoneNumber'] as String?;
+        final email = data['email'] as String?;
+        return [phoneNumber, email];
+      } else {
+        showSnackBar(context, "User not found");
+        return [];
+      }
+    } catch (e) {
+      showSnackBar(context, "Error fetching phone number: $e");
+      return [];
+    }
+  }
+
+  void startRazorpayTransaction() async {
+    final list = await getUserPhoneNumber();
+    final phoneNumber = list[0];
+    log('phonenum = $list');
+    // ignore: unnecessary_null_comparison
+    if (phoneNumber!.isEmpty || phoneNumber == null) {
+      Get.to(() => const PhoneNumberVerification());
+      return;
+    }
+    final email = list[1];
+    log('email..... = $email');
+
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final firestore = FirebaseFirestore.instance;
+    if (uid == null) {
+      showSnackBar(context, 'User not logged in');
+      return;
+    }
+    await firestore.collection('User').doc(uid).get();
+
+    double amount =
+        (selectedPlan == annualPlan) ? annualPriceAmount : monthlyPriceAmount;
+
+    amount *= 100; //amount in paise
+
+    var options = {
+      'key': Constants.RAZORPAY_KEY,
+      'amount': amount,
+      'name': 'TruNri',
+      'description': 'Pro Subscription',
+      'prefill': {
+        'contact': phoneNumber,
+        'email': email,
+      },
+      'external': {
+        'wallets': ['paytm']
+      }
+    };
+
+    try {
+      _razorpay.open(options);
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
+  void _subscribeUserToProMemberShip() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final firestore = FirebaseFirestore.instance;
     if (uid == null) {
@@ -205,6 +314,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       await firestore.collection('User').doc(uid).update(
         {
           'isSubscribed': true,
+          'subscriptionDate': FieldValue.serverTimestamp(),
           'subscriptionExpiry': expiryDate,
         },
       );
@@ -218,6 +328,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           builder: (c) => const SubscriptionSuccessScreen(),
         ),
       );
+
+      showSnackBar(context, "Subscription Activated");
     } catch (e) {
       showSnackBar(context, 'Failed to activate subscription: $e');
     }

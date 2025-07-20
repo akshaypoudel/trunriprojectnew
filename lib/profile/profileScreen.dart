@@ -339,10 +339,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             const SizedBox(
                               height: 40,
                             ),
+                            Consumer<SubscriptionData>(
+                              builder: (context, subscriptionProvider, _) {
+                                return subscriptionProvider.isUserSubscribed
+                                    ? alreadySubscribedProButton(context)
+                                    : buildTryProButton(context);
+                              },
+                            ),
 
-                            (subscriptionProvider.isUserSubscribed)
-                                ? alreadySubscribedProButton(context)
-                                : buildTryProButton(context),
                             ListTile(
                               leading: Image.asset(
                                 'assets/images/address.png',

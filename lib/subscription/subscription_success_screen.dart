@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:provider/provider.dart';
-import 'package:trunriproject/subscription/subscription_data.dart';
 
 class SubscriptionSuccessScreen extends StatelessWidget {
   const SubscriptionSuccessScreen({super.key});
