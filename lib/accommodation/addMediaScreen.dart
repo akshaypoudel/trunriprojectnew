@@ -1,9 +1,9 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as path;
@@ -14,8 +14,8 @@ import '../widgets/imageWidget.dart';
 import 'flatmatesScreen.dart';
 
 class AddMediaScreen extends StatefulWidget {
-  String? dateTime;
-  AddMediaScreen({super.key, this.dateTime});
+  final String formID;
+  const AddMediaScreen({super.key, required this.formID});
 
   @override
   State<AddMediaScreen> createState() => _AddMediaScreenState();
@@ -59,7 +59,7 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
 
       QuerySnapshot querySnapshot = await _firestore
           .collection('accommodation')
-          .where('formID', isEqualTo: widget.dateTime)
+          .where('formID', isEqualTo: widget.formID)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -70,16 +70,16 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
             'Add a description': descriptionController.text.trim(),
           });
         }
-        Get.to(FlatmateScreen(dateTime: widget.dateTime));
+        Get.to(() => FlatmateScreen(formID: widget.formID));
         NewHelper.hideLoader(loader);
-        showToast('Media saved');
+        showSnackBar(context, 'Media saved');
       } else {
         NewHelper.hideLoader(loader);
-        print('No matching document found');
+        log('No matching document found');
       }
     } else {
       NewHelper.hideLoader(loader);
-      print('No user logged in');
+      log('No user logged in');
     }
   }
 
@@ -211,7 +211,9 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
                     if (isFormValid()) {
                       saveMediaData();
                     } else {
-                      showToast('Please fill in all required fields');
+                      // showToast('Please fill in all required fields');
+                      showSnackBar(
+                          context, 'Please fill in all required fields');
                       setState(() {});
                     }
                   },

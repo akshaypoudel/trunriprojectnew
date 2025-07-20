@@ -1,14 +1,20 @@
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:provider/provider.dart';
 import 'package:trunriproject/chat_module/screens/chat_screen.dart';
 import 'package:trunriproject/chat_module/screens/group_chat_screen.dart';
 import 'package:trunriproject/chat_module/screens/group_chat_create_screen.dart';
 import 'package:trunriproject/chat_module/components/user_tiles.dart';
 import 'package:trunriproject/chat_module/services/chat_services.dart';
-import 'package:trunriproject/notifications/notification_services.dart';
+import 'package:trunriproject/subscription/subscription_data.dart';
+import 'package:trunriproject/subscription/subscription_screen.dart';
+// import 'package:trunriproject/notifications/notification_services.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -187,41 +193,151 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Messages'),
-        backgroundColor: Colors.white,
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.black),
-            onSelected: (v) {
-              if (v == 'new_group') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const GroupChatCreateScreen(),
+    final provider = Provider.of<SubscriptionData>(context, listen: false);
+    if (!provider.isUserSubscribed) {
+      return Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.white.withOpacity(0.5),
+          elevation: 0,
+          title: const Text('Messages'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: Stack(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(
+                    'assets/images/chatbackground.jpg',
                   ),
-                ).then((_) => _loadChats());
-              }
-            },
-            itemBuilder: (_) => [
-              const PopupMenuItem(
-                value: 'new_group',
-                child: Row(
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+              child: Container(
+                color: Colors.white.withValues(alpha: 0.8),
+              ),
+            ),
+
+            // Foreground content
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.group_add),
-                    SizedBox(width: 8),
-                    Text('Create New Group'),
+                    const Icon(Icons.lock_outline,
+                        size: 100, color: Colors.orangeAccent),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Upgrade to Pro',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Subscribe to unlock one-on-one and group chat features,\nalong with other premium tools!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Navigator.pushNamed(context, '/subscriptionScreen');
+                          Get.to(() => const SubscriptionScreen());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          backgroundColor: Colors.transparent,
+                          elevation: 0,
+                        ).copyWith(
+                          backgroundColor:
+                              WidgetStateProperty.resolveWith((states) {
+                            return null; // Gradient handled below
+                          }),
+                        ),
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Colors.orange, Colors.deepOrange],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Container(
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: const Text(
+                              'Subscribe Now',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ],
-          )
-        ],
-      ),
-      body: _buildChatList(),
-    );
+            )
+          ],
+        ),
+      );
+    } else {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: const Text('Messages'),
+          backgroundColor: Colors.white,
+          actions: [
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: Colors.black),
+              onSelected: (v) {
+                if (v == 'new_group') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const GroupChatCreateScreen(),
+                    ),
+                  ).then((_) => _loadChats());
+                }
+              },
+              itemBuilder: (_) => [
+                const PopupMenuItem(
+                  value: 'new_group',
+                  child: Row(
+                    children: [
+                      Icon(Icons.group_add),
+                      SizedBox(width: 8),
+                      Text('Create New Group'),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          ],
+        ),
+        body: _buildChatList(),
+      );
+    }
   }
 
   Widget _buildChatList() {

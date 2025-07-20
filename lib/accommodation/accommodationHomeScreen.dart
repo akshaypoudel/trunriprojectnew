@@ -1,10 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:trunriproject/accommodation/searchForRoomScreen.dart';
 
-import '../home/home_screen.dart';
-import '../home/search_field.dart';
 import '../home/section_title.dart';
 
 class Accommodationhomescreen extends StatefulWidget {
@@ -21,7 +18,6 @@ class _AccommodationhomescreenState extends State<Accommodationhomescreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const SearchField(),
       ),
       body: SingleChildScrollView(
         child: Column(

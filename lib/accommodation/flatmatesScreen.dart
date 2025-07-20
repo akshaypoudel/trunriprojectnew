@@ -1,16 +1,16 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
-
 import '../widgets/commomButton.dart';
 import '../widgets/helper.dart';
 
 class FlatmateScreen extends StatefulWidget {
-  String? dateTime;
-  FlatmateScreen({super.key, this.dateTime});
+  final String formID;
+  const FlatmateScreen({super.key, required this.formID});
 
   @override
   State<FlatmateScreen> createState() => _FlatmateScreenState();
@@ -37,7 +37,12 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
 
   bool isFormValid() {
     bool genderSelected = male || female || nonBinary;
-    bool situationSelected = isStudents || isEmployees || isFamilies || isSingle || isIndividuals || isCouples;
+    bool situationSelected = isStudents ||
+        isEmployees ||
+        isFamilies ||
+        isSingle ||
+        isIndividuals ||
+        isCouples;
     return genderSelected && situationSelected;
   }
 
@@ -45,9 +50,14 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
     if (!isFormValid()) {
       setState(() {
         showGenderError = !(male || female || nonBinary);
-        showSituationError = !(isStudents || isEmployees || isFamilies || isSingle || isIndividuals || isCouples);
+        showSituationError = !(isStudents ||
+            isEmployees ||
+            isFamilies ||
+            isSingle ||
+            isIndividuals ||
+            isCouples);
       });
-      showToast('Please fill in all required fields');
+      showSnackBar(context, 'Please fill in all required fields');
       return;
     }
 
@@ -57,7 +67,7 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
     if (user != null) {
       QuerySnapshot querySnapshot = await _firestore
           .collection('accommodation')
-          .where('formID', isEqualTo: widget.dateTime)
+          .where('formID', isEqualTo: widget.formID)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -80,13 +90,13 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
         }
         Get.to(const MyBottomNavBar());
         NewHelper.hideLoader(loader);
-        showToast('Flatmate preferences saved');
+        showSnackBar(context, 'Your property lisitng saved');
       } else {
         NewHelper.hideLoader(loader);
-        print('No matching document found');
+        log('No matching document found');
       }
     } else {
-      print('No user logged in');
+      log('No user logged in');
     }
   }
 
@@ -95,7 +105,10 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
     scaffold.showSnackBar(
       SnackBar(
         content: Text(message),
-        action: SnackBarAction(label: 'OK', onPressed: scaffold.hideCurrentSnackBar),
+        action: SnackBarAction(
+          label: 'OK',
+          onPressed: scaffold.hideCurrentSnackBar,
+        ),
       ),
     );
   }
@@ -127,18 +140,24 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
             children: [
               const Text(
                 'Who would you prefer to live in the property?',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               const SizedBox(height: 20),
               const Text(
                 'Choose at least one option.',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.black),
               ),
               Row(
                 children: [
                   Checkbox(
                     value: male,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         male = value ?? false;
@@ -156,7 +175,7 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
                 children: [
                   Checkbox(
                     value: female,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         female = value ?? false;
@@ -174,7 +193,7 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
                 children: [
                   Checkbox(
                     value: nonBinary,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         nonBinary = value ?? false;
@@ -196,13 +215,16 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
               const SizedBox(height: 10),
               const Text(
                 'What is the preferred age group?',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               Align(
                 alignment: Alignment.bottomRight,
                 child: Text(
                   '${_currentRangeValues.start.round()} to ${_currentRangeValues.end.round()} years old',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
                     color: Colors.black,
@@ -228,13 +250,16 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
               const SizedBox(height: 20),
               const Text(
                 'Who are you looking to accommodate in your rental home?',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               Row(
                 children: [
                   Checkbox(
                     value: isStudents,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         isStudents = value ?? false;
@@ -252,7 +277,7 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
                 children: [
                   Checkbox(
                     value: isEmployees,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         isEmployees = value ?? false;
@@ -270,7 +295,7 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
                 children: [
                   Checkbox(
                     value: isFamilies,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         isFamilies = value ?? false;
@@ -288,7 +313,7 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
                 children: [
                   Checkbox(
                     value: isSingle,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         isSingle = value ?? false;
@@ -306,7 +331,7 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
                 children: [
                   Checkbox(
                     value: isIndividuals,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         isIndividuals = value ?? false;
@@ -324,7 +349,7 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
                 children: [
                   Checkbox(
                     value: isCouples,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         isCouples = value ?? false;
@@ -364,7 +389,12 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
                     } else {
                       setState(() {
                         showGenderError = !(male || female || nonBinary);
-                        showSituationError = !(isStudents || isEmployees || isFamilies || isSingle || isIndividuals || isCouples);
+                        showSituationError = !(isStudents ||
+                            isEmployees ||
+                            isFamilies ||
+                            isSingle ||
+                            isIndividuals ||
+                            isCouples);
                       });
                       showToast('Please fill in all required fields');
                     }

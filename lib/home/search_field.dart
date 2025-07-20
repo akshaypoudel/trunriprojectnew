@@ -17,8 +17,8 @@ import '../notificatioonScreen.dart';
 import '../widgets/appTheme.dart';
 
 class SearchField extends StatefulWidget {
-  const SearchField({super.key, this.focusNode});
-  final FocusNode? focusNode;
+  const SearchField({super.key, required this.focusNode});
+  final FocusNode focusNode;
 
   @override
   _SearchFieldState createState() => _SearchFieldState();
@@ -36,7 +36,7 @@ class _SearchFieldState extends State<SearchField> {
     super.initState();
     _fetchItems();
 
-    _focusNode = widget.focusNode!;
+    _focusNode = widget.focusNode;
     _focusNode.addListener(_onFocusChange);
   }
 

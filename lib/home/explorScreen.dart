@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:trunriproject/accommodation/lookingForAPlaceScreen.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/home/resturentItemListScreen.dart';
 import 'package:trunriproject/home/search_field.dart';
 import 'package:trunriproject/job/jobHomePageScreen.dart';
+import 'package:trunriproject/subscription/subscription_data.dart';
 
 import '../accommodation/accommodationOptionScreen.dart';
 import '../events/eventHomeScreen.dart';
@@ -22,6 +24,8 @@ class _ExplorScreenState extends State<ExplorScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<LocationData>(context, listen: false);
+    final subscriptionProvider =
+        Provider.of<SubscriptionData>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
@@ -125,7 +129,15 @@ class _ExplorScreenState extends State<ExplorScreen> {
                         leading: Image.asset('assets/icons/accommodation.png'),
                         title: const Text('Accommodation'),
                         onTap: () {
-                          Get.to(const Accommodationoptionscreen());
+                          if (subscriptionProvider.isUserSubscribed) {
+                            Get.to(const Accommodationoptionscreen());
+                          } else {
+                            Get.to(
+                              LookingForAPlaceScreen(
+                                accommodationList: provider.getAccomodationList,
+                              ),
+                            );
+                          }
                         },
                         trailing: const Icon(
                           Icons.arrow_forward_ios_outlined,

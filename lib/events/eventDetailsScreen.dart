@@ -1,6 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
@@ -56,14 +53,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ClipRRect(
-            //   borderRadius: BorderRadius.circular(16),
-            //   child: widget.photoUrl?.isNotEmpty ?? false
-            //       ? Image.network(widget.photoUrl!,
-            //           width: double.infinity, height: 220, fit: BoxFit.cover)
-            //       : Image.asset("assets/images/singing.jpeg",
-            //           height: 220, width: double.infinity, fit: BoxFit.cover),
-            // ),
             if (widget.photoUrl != null && widget.photoUrl!.isNotEmpty) ...[
               SizedBox(
                 height: 220,
@@ -113,7 +102,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 ),
               ),
             ],
-
             const SizedBox(height: 16),
             Column(
               children: [

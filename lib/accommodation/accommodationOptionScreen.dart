@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 import 'package:trunriproject/accommodation/whichYouListScreen.dart';
+import 'package:trunriproject/home/provider/location_data.dart';
 
 import 'lookingForAPlaceScreen.dart';
 
@@ -9,7 +11,8 @@ class Accommodationoptionscreen extends StatefulWidget {
   const Accommodationoptionscreen({super.key});
 
   @override
-  State<Accommodationoptionscreen> createState() => _AccommodationoptionscreenState();
+  State<Accommodationoptionscreen> createState() =>
+      _AccommodationoptionscreenState();
 }
 
 class _AccommodationoptionscreenState extends State<Accommodationoptionscreen> {
@@ -27,21 +30,28 @@ class _AccommodationoptionscreenState extends State<Accommodationoptionscreen> {
               ),
               const Text(
                 'Hi there, how can i help you?',
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 30),
+                style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 30),
               ),
               const Text(
                 'To get started, let us know what brings to you to TruNRI',
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.w300, fontSize: 15),
+                style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w300,
+                    fontSize: 15),
               ),
               const Spacer(),
               GestureDetector(
-                onTap: (){
+                onTap: () {
                   Get.to(const WhichYouListScreen());
                 },
                 child: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey, width: 2), borderRadius: BorderRadius.circular(11)),
+                      border: Border.all(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.circular(11)),
                   child: Row(
                     children: [
                       Image.asset(
@@ -54,7 +64,10 @@ class _AccommodationoptionscreenState extends State<Accommodationoptionscreen> {
                       ),
                       const Text(
                         'I want to publish a listing',
-                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500, fontSize: 15),
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15),
                       ),
                     ],
                   ),
@@ -64,13 +77,20 @@ class _AccommodationoptionscreenState extends State<Accommodationoptionscreen> {
                 height: 10,
               ),
               GestureDetector(
-                onTap: (){
-                  Get.to(const LookingForAPlaceScreen());
+                onTap: () {
+                  Get.to(
+                    LookingForAPlaceScreen(
+                      accommodationList:
+                          Provider.of<LocationData>(context, listen: false)
+                              .getAccomodationList,
+                    ),
+                  );
                 },
                 child: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey, width: 2), borderRadius: BorderRadius.circular(11)),
+                      border: Border.all(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.circular(11)),
                   child: Row(
                     children: [
                       Image.asset(
@@ -83,7 +103,10 @@ class _AccommodationoptionscreenState extends State<Accommodationoptionscreen> {
                       ),
                       const Text(
                         'I am looking for a place to live',
-                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500, fontSize: 15),
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15),
                       ),
                     ],
                   ),

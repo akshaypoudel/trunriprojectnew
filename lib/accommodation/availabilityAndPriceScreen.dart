@@ -1,24 +1,25 @@
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:uuid/uuid.dart';
 
 import '../widgets/commomButton.dart';
 import '../widgets/helper.dart';
 import 'addMediaScreen.dart';
 
 class AvailabilityAndPriceScreen extends StatefulWidget {
-  String? dateTime;
-  AvailabilityAndPriceScreen({super.key, this.dateTime});
+  final String formID;
+  const AvailabilityAndPriceScreen({super.key, required this.formID});
 
   @override
-  State<AvailabilityAndPriceScreen> createState() => _AvailabilityAndPriceScreenState();
+  State<AvailabilityAndPriceScreen> createState() =>
+      _AvailabilityAndPriceScreenState();
 }
 
-class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen> {
+class _AvailabilityAndPriceScreenState
+    extends State<AvailabilityAndPriceScreen> {
   DateTime? selectedAvailabilityDate;
   DateTime? selectedNoDate;
   String selectedMinStay = '1 Month';
@@ -43,7 +44,7 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
     if (user != null) {
       QuerySnapshot querySnapshot = await _firestore
           .collection('accommodation')
-          .where('formID', isEqualTo: widget.dateTime)
+          .where('formID', isEqualTo: widget.formID)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -64,20 +65,21 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
             'gym': gym,
           });
         }
-        Get.to(AddMediaScreen(dateTime: widget.dateTime));
+        Get.to(() => AddMediaScreen(formID: widget.formID));
         NewHelper.hideLoader(loader);
-        showToast('Availability and price saved');
+        showSnackBar(context, 'Availability and price saved');
       } else {
         NewHelper.hideLoader(loader);
-        print('No matching document found');
+        log('No matching document found');
       }
     } else {
       NewHelper.hideLoader(loader);
-      print('No user logged in');
+      log('No user logged in');
     }
   }
 
-  Future<void> _selectDate(BuildContext context, bool isAvailabilityDate) async {
+  Future<void> _selectDate(
+      BuildContext context, bool isAvailabilityDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -101,15 +103,20 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
   }
 
   List<String> _generateMonths(int count) {
-    return List<String>.generate(count, (int index) => '${index + 1} Month${index + 1 > 1 ? 's' : ''}');
+    return List<String>.generate(
+        count, (int index) => '${index + 1} Month${index + 1 > 1 ? 's' : ''}');
   }
 
   List<String> _generateYears(int count) {
-    return List<String>.generate(count, (int index) => '${index + 1} Year${index + 1 > 1 ? 's' : ''}');
+    return List<String>.generate(
+        count, (int index) => '${index + 1} Year${index + 1 > 1 ? 's' : ''}');
   }
 
   bool isFormComplete() {
-    if (selectedAvailabilityDate == null || selectedNoDate == null || selectedMinStay.isEmpty || selectedMaxStay.isEmpty) {
+    if (selectedAvailabilityDate == null ||
+        selectedNoDate == null ||
+        selectedMinStay.isEmpty ||
+        selectedMaxStay.isEmpty) {
       return false;
     }
     return true;
@@ -120,7 +127,8 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
     scaffold.showSnackBar(
       SnackBar(
         content: Text(message),
-        action: SnackBarAction(label: 'OK', onPressed: scaffold.hideCurrentSnackBar),
+        action: SnackBarAction(
+            label: 'OK', onPressed: scaffold.hideCurrentSnackBar),
       ),
     );
   }
@@ -155,7 +163,10 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
             children: [
               const Text(
                 'Set the availability',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               const SizedBox(height: 10),
               Row(
@@ -164,7 +175,8 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
                     onTap: () => _selectDate(context, true),
                     child: Container(
                       width: 150,
-                      padding: const EdgeInsets.only(top: 10, bottom: 10, left: 25, right: 25),
+                      padding: const EdgeInsets.only(
+                          top: 10, bottom: 10, left: 25, right: 25),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey, width: 1),
                         borderRadius: BorderRadius.circular(25),
@@ -179,7 +191,8 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
                     onTap: () => _selectDate(context, false),
                     child: Container(
                       width: 150,
-                      padding: const EdgeInsets.only(top: 10, bottom: 10, left: 25, right: 25),
+                      padding: const EdgeInsets.only(
+                          top: 10, bottom: 10, left: 25, right: 25),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey, width: 1),
                         borderRadius: BorderRadius.circular(25),
@@ -215,12 +228,13 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
                             builder: (BuildContext context) {
                               return AlertDialog(
                                 title: const Text('Select Minimum Stay'),
-                                content: Container(
+                                content: SizedBox(
                                   width: double.minPositive,
                                   child: ListView.builder(
                                     shrinkWrap: true,
                                     itemCount: months.length,
-                                    itemBuilder: (BuildContext context, int index) {
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
                                       return ListTile(
                                         title: Text(months[index]),
                                         onTap: () {
@@ -241,7 +255,8 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
                         },
                         child: Container(
                           width: 150,
-                          padding: const EdgeInsets.only(top: 10, bottom: 10, left: 25, right: 25),
+                          padding: const EdgeInsets.only(
+                              top: 10, bottom: 10, left: 25, right: 25),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey, width: 1),
                             borderRadius: BorderRadius.circular(25),
@@ -270,12 +285,13 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
                             builder: (BuildContext context) {
                               return AlertDialog(
                                 title: const Text('Select Maximum Stay'),
-                                content: Container(
+                                content: SizedBox(
                                   width: double.minPositive,
                                   child: ListView.builder(
                                     shrinkWrap: true,
                                     itemCount: years.length,
-                                    itemBuilder: (BuildContext context, int index) {
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
                                       return ListTile(
                                         title: Text(years[index]),
                                         onTap: () {
@@ -296,7 +312,8 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
                         },
                         child: Container(
                           width: 150,
-                          padding: const EdgeInsets.only(top: 10, bottom: 10, left: 25, right: 25),
+                          padding: const EdgeInsets.only(
+                              top: 10, bottom: 10, left: 25, right: 25),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey, width: 1),
                             borderRadius: BorderRadius.circular(25),
@@ -313,13 +330,16 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
               const SizedBox(height: 20),
               const Text(
                 'Are the amenities and utilities included in the rental price?',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               Row(
                 children: [
                   Checkbox(
                     value: rentalContract,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         rentalContract = value ?? false;
@@ -336,7 +356,7 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
                 children: [
                   Checkbox(
                     value: cleaningService,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         cleaningService = value ?? false;
@@ -353,7 +373,7 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
                 children: [
                   Checkbox(
                     value: maintenanceService,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         maintenanceService = value ?? false;
@@ -370,7 +390,7 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
                 children: [
                   Checkbox(
                     value: lawnCare,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         lawnCare = value ?? false;
@@ -387,7 +407,7 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
                 children: [
                   Checkbox(
                     value: poolAccess,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         poolAccess = value ?? false;
@@ -404,7 +424,7 @@ class _AvailabilityAndPriceScreenState extends State<AvailabilityAndPriceScreen>
                 children: [
                   Checkbox(
                     value: gym,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         gym = value ?? false;

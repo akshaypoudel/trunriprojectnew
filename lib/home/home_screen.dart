@@ -300,21 +300,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           temples: _temples,
                           groceryStores: _groceryStores,
                           eventList: locationData.getEventList,
+                          accomodationList: locationData.getAccomodationList,
                         ),
                         const NearbyEventsVisual(),
                         const SizedBox(height: 20),
                         NearbyRestaurauntsVisual(restaurants: _restaurants),
                         const SizedBox(height: 20),
                         NearbyGroceryStoresVisual(
-                            groceryStores: _groceryStores),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: SectionTitle(
-                            title: "Near By Accommodations",
-                            press: () {
-                              Get.to(const LookingForAPlaceScreen());
-                            },
-                          ),
+                          groceryStores: _groceryStores,
                         ),
                         const SizedBox(height: 20),
                         const NearbyAccomodationVisual(),
@@ -364,7 +357,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: SearchField(focusNode: _focusNode),
                     ),
-                    // const SizedBox(width: 12),
                   ],
                 ),
               )

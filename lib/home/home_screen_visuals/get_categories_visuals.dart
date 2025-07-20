@@ -18,16 +18,16 @@ class GetCategoriesVisuals extends StatelessWidget {
     required this.temples,
     required this.groceryStores,
     required this.eventList,
+    required this.accomodationList,
   });
   final List<dynamic> restaurants;
   final List<dynamic> temples;
   final List<dynamic> groceryStores;
   final List<Map<String, dynamic>> eventList;
+  final List<Map<String, dynamic>> accomodationList;
 
   @override
   Widget build(BuildContext context) {
-    //final provider = Provider.of<LocationData>(context, listen: false);
-
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance.collection('categories').snapshots(),
       builder: (context, snapshot) {
@@ -70,7 +70,11 @@ class GetCategoriesVisuals extends StatelessWidget {
                           ),
                         );
                       } else if (category[index].name == 'Accommodation') {
-                        Get.to(const LookingForAPlaceScreen());
+                        Get.to(
+                          LookingForAPlaceScreen(
+                            accommodationList: accomodationList,
+                          ),
+                        );
                       } else if (category[index].name == 'Restaurants') {
                         if (restaurants.isNotEmpty) {
                           Get.to(ResturentItemListScreen(

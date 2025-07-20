@@ -1,111 +1,143 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+import 'package:trunriproject/accommodation/accomodationDetailsScreen.dart';
+import 'package:trunriproject/accommodation/lookingForAPlaceScreen.dart';
+import 'package:trunriproject/home/provider/location_data.dart';
+import 'package:trunriproject/home/section_title.dart';
 
 class NearbyAccomodationVisual extends StatelessWidget {
   const NearbyAccomodationVisual({super.key});
 
   @override
   Widget build(BuildContext context) {
-    var height = MediaQuery.of(context).size.height;
+    return StreamBuilder(
+      stream:
+          FirebaseFirestore.instance.collection('accommodation').snapshots(),
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+              child: CircularProgressIndicator(color: Colors.orange));
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text("No accommodations available"));
+        }
 
-    return Container(
-      height: height * .35,
-      width: MediaQuery.of(context).size.width,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(11)),
-      child: StreamBuilder<QuerySnapshot>(
-        stream:
-            FirebaseFirestore.instance.collection('accommodation').snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-                child: CircularProgressIndicator(
-              color: Colors.orange,
-            ));
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No accommodations found'));
-          }
-          return ListView(
-            shrinkWrap: true,
-            scrollDirection: Axis.horizontal,
-            children: snapshot.data!.docs.map((DocumentSnapshot doc) {
-              Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-              List<dynamic> images;
-              if (data['images'] != null) {
-                images = data['images'];
-              } else {
-                images = [];
-              }
+        List<Map<String, dynamic>> accommodationList = snapshot.data!.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList();
 
-              return Container(
-                height: 180,
-                width: 200,
-                margin: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(11)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: images.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: images[0],
-                              height: 180,
-                              width: 200,
-                              fit: BoxFit.cover,
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Provider.of<LocationData>(context, listen: false)
+              .setAccomodationList(accommodationList);
+        });
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SectionTitle(
+                title: "Near By Accommodations",
+                press: () {
+                  Get.to(() => LookingForAPlaceScreen(
+                        accommodationList: accommodationList,
+                      ));
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // Carousel Slider
+            Container(
+              height: 160,
+              margin: const EdgeInsets.only(left: 20),
+              child: CarouselSlider.builder(
+                itemCount: accommodationList.length,
+                itemBuilder: (context, index, realIndex) {
+                  final data = accommodationList[index];
+                  final List<dynamic> images = data['images'] ?? [];
+                  final String imageUrl =
+                      images.isNotEmpty ? images.first.toString() : "";
+
+                  return GestureDetector(
+                    onTap: () {
+                      Get.to(
+                        () => AccommodationDetailsScreen(
+                          accommodation: accommodationList[index],
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 242,
+                      margin: const EdgeInsets.only(right: 10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Stack(
+                          children: [
+                            imageUrl.isNotEmpty
+                                ? CachedNetworkImage(
+                                    imageUrl: imageUrl,
+                                    height: double.infinity,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    color: Colors.grey[300],
+                                    child:
+                                        const Center(child: Text("No Image")),
+                                  ),
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                color: Colors.black54,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      data['city'] ?? 'No City',
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      data['state'] ?? 'No State',
+                                      style: const TextStyle(
+                                          color: Colors.white70, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             )
-                          : const SizedBox(),
-                    ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10.0),
-                      child: Text(
-                        "City -  ${data['city'] ?? 'No Address'}",
-                        textAlign: TextAlign.start,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          ],
                         ),
-                        maxLines: 1,
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10.0),
-                      child: Text(
-                        "State -  ${data['state'] ?? 'No Address'}",
-                        textAlign: TextAlign.start,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                        ),
-                        maxLines: 1,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10.0),
-                      child: Text(
-                        "FullAddress -  ${data['fullAddress'] ?? 'No Address'}",
-                        textAlign: TextAlign.start,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                        ),
-                        maxLines: 1,
-                      ),
-                    ),
-                  ],
+                  );
+                },
+                options: CarouselOptions(
+                  height: 160,
+                  viewportFraction: 0.55,
+                  enlargeCenterPage: true,
+                  autoPlay: true,
+                  autoPlayInterval: const Duration(seconds: 4),
+                  autoPlayCurve: Curves.easeInOut,
                 ),
-              );
-            }).toList(),
-          );
-        },
-      ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

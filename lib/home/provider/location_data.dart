@@ -25,6 +25,7 @@ class LocationData extends ChangeNotifier {
   List<dynamic> _groceryList = [];
   List<dynamic> _templeList = [];
   List<Map<String, dynamic>> _eventList = [];
+  List<Map<String, dynamic>> _accomodationList = [];
 
   double get getLatitude => _latitude;
   double get getLongitude => _longitude;
@@ -38,6 +39,7 @@ class LocationData extends ChangeNotifier {
   List<dynamic> get getTemplesList => _templeList;
   bool get isLocationFetched => _isLocationFetched;
   List<Map<String, dynamic>> get getEventList => _eventList;
+  List<Map<String, dynamic>> get getAccomodationList => _accomodationList;
 
   void setIsLocationFetched(bool val) {
     _isLocationFetched = val;
@@ -61,6 +63,11 @@ class LocationData extends ChangeNotifier {
 
   void setEventList(List<Map<String, dynamic>> eventList) {
     _eventList = eventList;
+    notifyListeners();
+  }
+
+  void setAccomodationList(List<Map<String, dynamic>> accomodationList) {
+    _accomodationList = accomodationList;
     notifyListeners();
   }
 

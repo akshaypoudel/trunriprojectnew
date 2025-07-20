@@ -17,30 +17,29 @@ class WhichYouListScreen extends StatefulWidget {
 }
 
 class _WhichYouListScreenState extends State<WhichYouListScreen> {
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final Uuid uuid = Uuid();
+  Uuid uuid = const Uuid();
   String formID = '';
-  Future<void> saveData(String text) async {
 
+  Future<void> saveData(String text) async {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
     User? user = _auth.currentUser;
 
     if (user != null) {
-       formID = uuid.v4();
-       log(formID.toString());
-      await _firestore.collection('accommodation').add({
-        'uid': user.uid,
-        'roomType': text,
-        'formID' : formID
-      });
+      formID = uuid.v4();
+      log(formID.toString());
+      await _firestore
+          .collection('accommodation')
+          .add({'uid': user.uid, 'roomType': text, 'formID': formID});
       NewHelper.hideLoader(loader);
-       showSnackBar(context,'Selected');
+
+      Get.to(() => LocationScreen(formID: formID));
+      // showSnackBar(context, 'Selected');
     } else {
       NewHelper.hideLoader(loader);
-      print('No user logged in');
+      log('No user logged in');
     }
   }
 
@@ -64,13 +63,21 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
               children: [
                 const Text(
                   'What do you wish to list ?',
-                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 30),
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 30,
+                  ),
                 ),
-                const SizedBox(height: 20,),
+                const SizedBox(
+                  height: 20,
+                ),
                 GestureDetector(
                   onTap: () async {
                     await saveData('A room');
-                    Get.to(LocationScreen(dateTime: formID,));
+                    // Get.to(LocationScreen(
+                    //   dateTime: formID,
+                    // ));
                   },
                   child: Container(
                     height: 80,
@@ -79,7 +86,7 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                         color: Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             spreadRadius: 2,
                             blurRadius: 5,
                             offset: const Offset(0, 3),
@@ -89,11 +96,20 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                     child: Center(
                       child: Row(
                         children: [
-                          Image.asset('assets/images/aroom.png',height: 40,width: 40,),
-                          const SizedBox(width: 15,),
+                          Image.asset(
+                            'assets/images/aroom.png',
+                            height: 40,
+                            width: 40,
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
                           const Text(
                             'A room',
-                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w400, fontSize: 15),
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 15),
                           ),
                         ],
                       ),
@@ -106,7 +122,7 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                 GestureDetector(
                   onTap: () async {
                     await saveData('Entire home for rent');
-                    Get.to(LocationScreen());
+                    // Get.to(LocationScreen());
                   },
                   child: Container(
                     height: 80,
@@ -114,7 +130,7 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           spreadRadius: 2,
                           blurRadius: 5,
                           offset: const Offset(0, 3),
@@ -126,11 +142,20 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                     child: Center(
                       child: Row(
                         children: [
-                          Image.asset('assets/images/apartment.png',height: 40,width: 40,),
-                          const SizedBox(width: 15,),
+                          Image.asset(
+                            'assets/images/apartment.png',
+                            height: 40,
+                            width: 40,
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
                           const Text(
                             'Entire home for rent',
-                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w400, fontSize: 15),
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 15),
                           ),
                         ],
                       ),
@@ -143,7 +168,7 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                 GestureDetector(
                   onTap: () async {
                     await saveData('Studio unit');
-                    Get.to(LocationScreen());
+                    // Get.to(LocationScreen());
                   },
                   child: Container(
                     height: 80,
@@ -151,7 +176,7 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           spreadRadius: 2,
                           blurRadius: 5,
                           offset: const Offset(0, 3),
@@ -163,23 +188,33 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                     child: Center(
                       child: Row(
                         children: [
-                          Image.asset('assets/images/apartment.png',height: 40,width: 40,),
-                          const SizedBox(width: 15,),
+                          Image.asset(
+                            'assets/images/apartment.png',
+                            height: 40,
+                            width: 40,
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
                           const Text(
                             'Studio unit',
-                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w400, fontSize: 15),
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 15),
                           ),
                         ],
                       ),
                     ),
                   ),
-                ), const SizedBox(
+                ),
+                const SizedBox(
                   height: 10,
                 ),
                 GestureDetector(
                   onTap: () async {
                     await saveData('Granny flat');
-                    Get.to(LocationScreen());
+                    // Get.to(LocationScreen());
                   },
                   child: Container(
                     height: 80,
@@ -187,7 +222,7 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           spreadRadius: 2,
                           blurRadius: 5,
                           offset: const Offset(0, 3),
@@ -199,23 +234,33 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                     child: Center(
                       child: Row(
                         children: [
-                          Image.asset('assets/images/apartment.png',height: 40,width: 40,),
-                          const SizedBox(width: 15,),
+                          Image.asset(
+                            'assets/images/apartment.png',
+                            height: 40,
+                            width: 40,
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
                           const Text(
                             'Granny flat',
-                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w400, fontSize: 15),
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 15),
                           ),
                         ],
                       ),
                     ),
                   ),
-                ), const SizedBox(
+                ),
+                const SizedBox(
                   height: 10,
                 ),
                 GestureDetector(
                   onTap: () async {
                     await saveData('Shared room / rooms in shared house');
-                    Get.to(LocationScreen());
+                    // Get.to(LocationScreen());
                   },
                   child: Container(
                     height: 80,
@@ -223,7 +268,7 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           spreadRadius: 2,
                           blurRadius: 5,
                           offset: const Offset(0, 3),
@@ -235,25 +280,35 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                     child: Center(
                       child: Row(
                         children: [
-                          Image.asset('assets/images/apartment.png',height: 40,width: 40,),
-                          const SizedBox(width: 15,),
-                          Expanded(
-                            child: const Text(
+                          Image.asset(
+                            'assets/images/apartment.png',
+                            height: 40,
+                            width: 40,
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
+                          const Expanded(
+                            child: Text(
                               'Shared room / rooms in shared house',
-                              style: TextStyle(color: Colors.black, fontWeight: FontWeight.w400, fontSize: 15),
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 15),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                ), const SizedBox(
+                ),
+                const SizedBox(
                   height: 10,
                 ),
                 GestureDetector(
                   onTap: () async {
                     await saveData('Shared bedroom');
-                    Get.to(LocationScreen());
+                    // Get.to(LocationScreen());
                   },
                   child: Container(
                     height: 80,
@@ -261,7 +316,7 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           spreadRadius: 2,
                           blurRadius: 5,
                           offset: const Offset(0, 3),
@@ -273,23 +328,33 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                     child: Center(
                       child: Row(
                         children: [
-                          Image.asset('assets/images/apartment.png',height: 40,width: 40,),
-                          const SizedBox(width: 15,),
+                          Image.asset(
+                            'assets/images/apartment.png',
+                            height: 40,
+                            width: 40,
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
                           const Text(
                             'Shared bedroom',
-                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w400, fontSize: 15),
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 15),
                           ),
                         ],
                       ),
                     ),
                   ),
-                ), const SizedBox(
+                ),
+                const SizedBox(
                   height: 10,
                 ),
                 GestureDetector(
                   onTap: () async {
                     await saveData('Single bed unit');
-                    Get.to(LocationScreen());
+                    // Get.to(LocationScreen());
                   },
                   child: Container(
                     height: 80,
@@ -297,7 +362,7 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           spreadRadius: 2,
                           blurRadius: 5,
                           offset: const Offset(0, 3),
@@ -309,11 +374,20 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
                     child: Center(
                       child: Row(
                         children: [
-                          Image.asset('assets/images/apartment.png',height: 40,width: 40,),
-                          const SizedBox(width: 15,),
+                          Image.asset(
+                            'assets/images/apartment.png',
+                            height: 40,
+                            width: 40,
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
                           const Text(
                             'Single bed unit',
-                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w400, fontSize: 15),
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 15),
                           ),
                         ],
                       ),

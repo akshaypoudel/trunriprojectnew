@@ -1,7 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -12,7 +9,6 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/SplashScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:trunriproject/chat_module/services/chat_services.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/notifications/notification_services.dart';
@@ -29,18 +25,15 @@ Future<void> notificationSetup() async {
     importance: Importance.high,
   );
 
-  // Init local notifications
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
-  // iOS request
   await FirebaseMessaging.instance.requestPermission();
 
   await NotificationService.initialize();
 
-  // Listen for new messages (foreground only)
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     final notification = message.notification;
     if (notification != null) {
@@ -102,9 +95,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     } else if (state == AppLifecycleState.detached ||
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused) {
-      Future.delayed(const Duration(seconds: 5), () {
-        PresenceService.setUserOffline();
-      });
+      Future.delayed(
+        const Duration(seconds: 5),
+        () {
+          PresenceService.setUserOffline();
+        },
+      );
     }
   }
 

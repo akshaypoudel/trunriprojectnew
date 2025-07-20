@@ -84,6 +84,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         buildFeatureRow("Promote Business Ads", true),
                         buildFeatureRow("Direct Replies to Jobs", true),
                         buildFeatureRow("Control Job Visibility", true),
+                        buildFeatureRow(
+                          "One-on-One and Group Chat Feature",
+                          true,
+                        ),
                         buildFeatureRow("Basic App Access", false),
                         const SizedBox(height: 30),
                         FadeIn(
@@ -294,7 +298,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           ),
           const SizedBox(height: 5),
           Text(
-            subtitle,
+            (subtitle == annualPrice) ? '$subtitle\nBilled Annualy' : subtitle,
             style: TextStyle(
               fontSize: 13,
               color: Colors.grey[700],
