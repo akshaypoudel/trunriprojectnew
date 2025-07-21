@@ -1,17 +1,15 @@
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:uuid/uuid.dart';
-
 import '../widgets/commomButton.dart';
 import '../widgets/helper.dart';
 import 'availabilityAndPriceScreen.dart';
 
 class PropertyScreen extends StatefulWidget {
-  String? dateTime;
-  PropertyScreen({super.key, this.dateTime});
+  final String formID;
+  const PropertyScreen({super.key, required this.formID});
 
   @override
   State<PropertyScreen> createState() => _PropertyScreenState();
@@ -39,22 +37,31 @@ class _PropertyScreenState extends State<PropertyScreen> {
     setState(() {
       switch (key) {
         case 'singleBadRoom':
-          singleBadRoom = increment ? singleBadRoom + 1 : (singleBadRoom > 0 ? singleBadRoom - 1 : 0);
+          singleBadRoom = increment
+              ? singleBadRoom + 1
+              : (singleBadRoom > 0 ? singleBadRoom - 1 : 0);
           break;
         case 'doubleBadRoom':
-          doubleBadRoom = increment ? doubleBadRoom + 1 : (doubleBadRoom > 0 ? doubleBadRoom - 1 : 0);
+          doubleBadRoom = increment
+              ? doubleBadRoom + 1
+              : (doubleBadRoom > 0 ? doubleBadRoom - 1 : 0);
           break;
         case 'bathrooms':
-          bathrooms = increment ? bathrooms + 1 : (bathrooms > 0 ? bathrooms - 1 : 0);
+          bathrooms =
+              increment ? bathrooms + 1 : (bathrooms > 0 ? bathrooms - 1 : 0);
           break;
         case 'toilets':
           toilets = increment ? toilets + 1 : (toilets > 0 ? toilets - 1 : 0);
           break;
         case 'livingFemale':
-          livingFemale = increment ? livingFemale + 1 : (livingFemale > 0 ? livingFemale - 1 : 0);
+          livingFemale = increment
+              ? livingFemale + 1
+              : (livingFemale > 0 ? livingFemale - 1 : 0);
           break;
         case 'livingMale':
-          livingMale = increment ? livingMale + 1 : (livingMale > 0 ? livingMale - 1 : 0);
+          livingMale = increment
+              ? livingMale + 1
+              : (livingMale > 0 ? livingMale - 1 : 0);
           break;
       }
     });
@@ -71,7 +78,10 @@ class _PropertyScreenState extends State<PropertyScreen> {
             maxRadius: 15,
             minRadius: 15,
             backgroundColor: Color(0xffFF730A),
-            child: Icon(Icons.remove,color: Colors.white,),
+            child: Icon(
+              Icons.remove,
+              color: Colors.white,
+            ),
           ),
         ),
         const SizedBox(width: 10),
@@ -83,7 +93,10 @@ class _PropertyScreenState extends State<PropertyScreen> {
             maxRadius: 15,
             minRadius: 15,
             backgroundColor: Color(0xffFF730A),
-            child: Icon(Icons.add,color: Colors.white,),
+            child: Icon(
+              Icons.add,
+              color: Colors.white,
+            ),
           ),
         ),
       ],
@@ -113,15 +126,12 @@ class _PropertyScreenState extends State<PropertyScreen> {
     if (user != null) {
       QuerySnapshot querySnapshot = await _firestore
           .collection('accommodation')
-          .where('formID', isEqualTo: widget.dateTime)
+          .where('formID', isEqualTo: widget.formID)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         for (var doc in querySnapshot.docs) {
-          await _firestore
-              .collection('accommodation')
-              .doc(doc.id)
-              .update({
+          await _firestore.collection('accommodation').doc(doc.id).update({
             'singleBadRoom': singleBadRoom,
             'doubleBadRoom': doubleBadRoom,
             'bathrooms': bathrooms,
@@ -136,16 +146,16 @@ class _PropertyScreenState extends State<PropertyScreen> {
             'homeRules': homeRules,
           });
         }
-        Get.to(AvailabilityAndPriceScreen(dateTime: widget.dateTime));
+        Get.to(() => AvailabilityAndPriceScreen(formID: widget.formID));
         NewHelper.hideLoader(loader);
-        showSnackBar(context,'Property saved');
+        showSnackBar(context, 'Property saved');
       } else {
         NewHelper.hideLoader(loader);
-        print('No matching document found');
+        log('No matching document found');
       }
     } else {
       NewHelper.hideLoader(loader);
-      print('No user logged in');
+      log('No user logged in');
     }
   }
 
@@ -177,14 +187,17 @@ class _PropertyScreenState extends State<PropertyScreen> {
               const SizedBox(height: 30),
               const Text(
                 'Is there a lift?',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Radio<bool>(
                     value: true,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     groupValue: isLiftAvailable,
                     onChanged: (value) {
                       setState(() {
@@ -200,7 +213,7 @@ class _PropertyScreenState extends State<PropertyScreen> {
                 children: [
                   Radio<bool>(
                     value: false,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     groupValue: isLiftAvailable,
                     onChanged: (value) {
                       setState(() {
@@ -219,14 +232,19 @@ class _PropertyScreenState extends State<PropertyScreen> {
               const SizedBox(height: 10),
               const Text(
                 'How many bedrooms are available?',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               const SizedBox(height: 10),
-              _buildCounterRow('Single Bedrooms', 'singleBadRoom', singleBadRoom),
+              _buildCounterRow(
+                  'Single Bedrooms', 'singleBadRoom', singleBadRoom),
               const SizedBox(height: 5),
               Divider(thickness: 1, color: Colors.grey.shade300),
               const SizedBox(height: 5),
-              _buildCounterRow('Double Bedrooms', 'doubleBadRoom', doubleBadRoom),
+              _buildCounterRow(
+                  'Double Bedrooms', 'doubleBadRoom', doubleBadRoom),
               if (showError && singleBadRoom == 0 && doubleBadRoom == 0)
                 const Text(
                   'Please add at least one bedroom',
@@ -235,7 +253,10 @@ class _PropertyScreenState extends State<PropertyScreen> {
               const SizedBox(height: 20),
               const Text(
                 'How many bathrooms are available?',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               const SizedBox(height: 10),
               _buildCounterRow('Bathrooms', 'bathrooms', bathrooms),
@@ -251,7 +272,10 @@ class _PropertyScreenState extends State<PropertyScreen> {
               const SizedBox(height: 20),
               const Text(
                 'Who is currently living in the property?',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               const SizedBox(height: 10),
               _buildCounterRow('Female', 'livingFemale', livingFemale),
@@ -266,7 +290,7 @@ class _PropertyScreenState extends State<PropertyScreen> {
                 children: [
                   Checkbox(
                     value: livingNonBinary,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     onChanged: (value) {
                       setState(() {
                         livingNonBinary = value!;
@@ -276,7 +300,10 @@ class _PropertyScreenState extends State<PropertyScreen> {
                   const Text('Non-Binary'),
                 ],
               ),
-              if (showError && livingFemale == 0 && livingMale == 0 && !livingNonBinary)
+              if (showError &&
+                  livingFemale == 0 &&
+                  livingMale == 0 &&
+                  !livingNonBinary)
                 const Text(
                   'Please add at least one occupant',
                   style: TextStyle(color: Colors.red),
@@ -284,14 +311,17 @@ class _PropertyScreenState extends State<PropertyScreen> {
               const SizedBox(height: 20),
               const Text(
                 'Is there a bed in the room?',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Radio<bool>(
                     value: true,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     groupValue: isBedInRoom,
                     onChanged: (value) {
                       setState(() {
@@ -307,7 +337,7 @@ class _PropertyScreenState extends State<PropertyScreen> {
                 children: [
                   Radio<bool>(
                     value: false,
-                    activeColor: Color(0xffFF730A),
+                    activeColor: const Color(0xffFF730A),
                     groupValue: isBedInRoom,
                     onChanged: (value) {
                       setState(() {
@@ -326,7 +356,10 @@ class _PropertyScreenState extends State<PropertyScreen> {
               const SizedBox(height: 20),
               const Text(
                 'Room amenities',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               const SizedBox(height: 10),
               Wrap(
@@ -354,7 +387,7 @@ class _PropertyScreenState extends State<PropertyScreen> {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: roomAmenities.contains(amenity)
-                              ? Color(0xffFF730A)
+                              ? const Color(0xffFF730A)
                               : Colors.grey.shade200,
                           borderRadius: BorderRadius.circular(15),
                         ),
@@ -366,7 +399,10 @@ class _PropertyScreenState extends State<PropertyScreen> {
               const SizedBox(height: 20),
               const Text(
                 'Property amenities',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               const SizedBox(height: 10),
               Wrap(
@@ -407,7 +443,7 @@ class _PropertyScreenState extends State<PropertyScreen> {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: propertyAmenities.contains(amenity)
-                              ? Color(0xffFF730A)
+                              ? const Color(0xffFF730A)
                               : Colors.grey.shade200,
                           borderRadius: BorderRadius.circular(15),
                         ),
@@ -419,7 +455,10 @@ class _PropertyScreenState extends State<PropertyScreen> {
               const SizedBox(height: 20),
               const Text(
                 'Are there any house rules',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black),
               ),
               const SizedBox(height: 10),
               Wrap(
@@ -447,7 +486,7 @@ class _PropertyScreenState extends State<PropertyScreen> {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: homeRules.contains(amenity)
-                              ? Color(0xffFF730A)
+                              ? const Color(0xffFF730A)
                               : Colors.grey.shade200,
                           borderRadius: BorderRadius.circular(15),
                         ),
@@ -457,7 +496,10 @@ class _PropertyScreenState extends State<PropertyScreen> {
                 ],
               ),
               const SizedBox(height: 30),
-              if (showError && (roomAmenities.isEmpty || propertyAmenities.isEmpty || homeRules.isEmpty))
+              if (showError &&
+                  (roomAmenities.isEmpty ||
+                      propertyAmenities.isEmpty ||
+                      homeRules.isEmpty))
                 const Text(
                   'Please fill all the fields before continuing',
                   style: TextStyle(color: Colors.red),
@@ -486,7 +528,7 @@ class _PropertyScreenState extends State<PropertyScreen> {
                       if (isFormComplete()) {
                         savePropertyData();
                       } else {
-                        showSnackBar(context,'Please fill all the fields');
+                        showSnackBar(context, 'Please fill all the fields');
                       }
                     },
                   ),

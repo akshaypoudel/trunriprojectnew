@@ -14,7 +14,8 @@ class AddressListScreen extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator(color: Colors.orange)),
+            body:
+                Center(child: CircularProgressIndicator(color: Colors.orange)),
           );
         }
 
@@ -89,7 +90,10 @@ class _AddressListBodyState extends State<AddressListBody> {
               padding: EdgeInsets.only(left: 15, top: 10),
               child: Text(
                 'Native Address',
-                style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600),
               ),
             ),
             FutureBuilder<DocumentSnapshot>(
@@ -99,7 +103,8 @@ class _AddressListBodyState extends State<AddressListBody> {
                   .get(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: Colors.orange));
+                  return const Center(
+                      child: CircularProgressIndicator(color: Colors.orange));
                 }
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
@@ -117,7 +122,10 @@ class _AddressListBodyState extends State<AddressListBody> {
               padding: EdgeInsets.only(left: 15, top: 10),
               child: Text(
                 'Current Address',
-                style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600),
               ),
             ),
             FutureBuilder<DocumentSnapshot>(
@@ -127,7 +135,8 @@ class _AddressListBodyState extends State<AddressListBody> {
                   .get(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: Colors.orange));
+                  return const Center(
+                      child: CircularProgressIndicator(color: Colors.orange));
                 }
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
@@ -168,14 +177,6 @@ class _AddressListBodyState extends State<AddressListBody> {
                 Text('Zipcode: ${userData['zipcode']}'),
                 Text('Country: ${userData['country']}'),
               ],
-            ),
-          ),
-          const Positioned(
-            right: 30,
-            top: 10,
-            child: Text(
-              'Edit',
-              style: TextStyle(fontWeight: FontWeight.w500, color: Colors.red),
             ),
           ),
         ],

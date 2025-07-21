@@ -1,15 +1,12 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:trunriproject/signUpScreen.dart';
 import 'package:trunriproject/signinscreen.dart';
-import 'package:trunriproject/widgets/helper.dart';
+import 'package:trunriproject/widgets/appTheme.dart';
 
 import 'home/bottom_bar.dart';
 import 'home/firestore_service.dart';
@@ -22,24 +19,23 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  next() {
-    Timer(const Duration(seconds: 2), () async {
-      checkLogin();
-    });
-  }
+  bool isCheckingUserLoginData = true;
 
   checkLogin() async {
+    await Future.delayed(const Duration(seconds: 2)); // short delay
     User? currentUser = FirebaseAuth.instance.currentUser;
-    log("qwerty${currentUser.toString()}");
-
     if (currentUser != null) {
       bool userExists = await FirebaseFireStoreService().checkUserProfile();
+
       if (userExists) {
-        showSnackBar(context, 'User Exists');
         Get.offAll(() => const MyBottomNavBar());
       } else {
         Get.offAll(() => const SignInScreen());
       }
+    } else {
+      setState(() {
+        isCheckingUserLoginData = false;
+      });
     }
   }
 
@@ -47,16 +43,27 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      next();
+      checkLogin();
     });
-
-    //next();
-    //checkLogin();
   }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    if (isCheckingUserLoginData) {
+      return Scaffold(
+        body: Center(
+          child: Text(
+            'TruNri',
+            style: GoogleFonts.caveat(
+              color: AppTheme.blackColor,
+              fontSize: 100,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       body: Container(
         color: Colors.white,
@@ -125,7 +132,7 @@ class _SplashScreenState extends State<SplashScreen> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black12.withOpacity(0.05),
+                              color: Colors.black12.withValues(alpha: 0.05),
                               spreadRadius: 1,
                               blurRadius: 7,
                               offset: const Offset(0, -1),
@@ -138,7 +145,7 @@ class _SplashScreenState extends State<SplashScreen> {
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  Navigator.of(context).push(
+                                  Navigator.of(context).pushReplacement(
                                     PageRouteBuilder(
                                       pageBuilder: (context, animation,
                                               secondaryAnimation) =>
@@ -183,7 +190,7 @@ class _SplashScreenState extends State<SplashScreen> {
                               const Spacer(),
                               GestureDetector(
                                 onTap: () {
-                                  Navigator.of(context).push(
+                                  Navigator.of(context).pushReplacement(
                                     PageRouteBuilder(
                                       pageBuilder: (context, animation,
                                               secondaryAnimation) =>

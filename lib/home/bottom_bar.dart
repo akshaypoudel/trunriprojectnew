@@ -1,9 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+import 'package:trunriproject/chat_module/screens/chat_list_screen.dart';
+import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/profile/profileScreen.dart';
-import 'addAccommodationScreen.dart';
+import 'package:trunriproject/subscription/subscription_data.dart';
 import 'explorScreen.dart';
-import 'favoriteRestaurantsScreen.dart';
 import 'home_screen.dart';
 
 class MyBottomNavBar extends StatefulWidget {
@@ -15,80 +18,107 @@ class MyBottomNavBar extends StatefulWidget {
 
 class _MyBottomNavBarState extends State<MyBottomNavBar> {
   int myCurrentIndex = 0;
-  List pages = [
+  List<Widget> pages = [
     const HomeScreen(),
-    FavoriteRestaurantsScreen(),
     const ExplorScreen(),
-    const ProfileScreen(),
+    const ChatListScreen(),
+    const ProfileScreen()
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    // initializeProvider();
+    // Future.microtask(() => );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      initializeProvider();
+    });
+    checkAndUpdateSubscription();
+  }
 
+  void checkAndUpdateSubscription() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final userRef = FirebaseFirestore.instance.collection('User').doc(uid);
+    final snapshot = await userRef.get();
 
-  Widget _buildOption({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.redAccent,
-            child: Icon(icon, color: Colors.white, size: 30),
-          ),
-          const SizedBox(height: 10),
-          Text(label, style: const TextStyle(fontSize: 10)),
-        ],
-      ),
-    );
+    if (snapshot.exists && snapshot.data()!.containsKey('subscriptionExpiry')) {
+      final Timestamp end = snapshot['subscriptionExpiry'];
+      final isExpired = end.toDate().isBefore(DateTime.now());
+
+      await userRef.update({
+        'isSubscribed': !isExpired,
+      });
+    }
+  }
+
+  Future<void> initializeProvider() async {
+    await Provider.of<SubscriptionData>(
+      context,
+      listen: false,
+    ).fetchSubscriptionStatus();
+
+    await Provider.of<LocationData>(
+      context,
+      listen: false,
+    ).fetchUserAddressAndLocation();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white,
       extendBody: true,
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Container(
-          margin: const EdgeInsets.only(left: 20, right: 20, bottom: 0),
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.5),
-                blurRadius: 25,
-                offset: const Offset(8, 20),
-              )
-            ],
+      body: IndexedStack(
+        index: myCurrentIndex,
+        children: pages,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.blueGrey,
+        currentIndex: myCurrentIndex,
+        onTap: (index) {
+          setState(() {
+            myCurrentIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(
+              Icons.home,
+              size: 30,
+            ),
+            label: 'Home',
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(30),
-            child: SizedBox(
-              height: 60,
-              child: BottomNavigationBar(
-                backgroundColor: Colors.transparent,
-                selectedItemColor: Colors.redAccent,
-                unselectedItemColor: Colors.black,
-                currentIndex: myCurrentIndex,
-                onTap: (index) {
-                  setState(() {
-                    myCurrentIndex = index;
-                  });
-                },
-                items: const [
-                  BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-                  BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favorite"),
-                  BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Discover"),
-                  BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Profile"),
-                ],
-              ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.explore_outlined),
+            label: 'Explore',
+            activeIcon: Icon(
+              Icons.explore,
+              size: 30,
             ),
           ),
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.message_outlined),
+            activeIcon: Icon(
+              Icons.message_rounded,
+              size: 30,
+            ),
+            label: 'Messages',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_3_outlined),
+            activeIcon: Icon(
+              Icons.person_3,
+              size: 30,
+            ),
+            label: 'Profile',
+          ),
+        ],
       ),
-      body: pages[myCurrentIndex],
+      // body: pages[myCurrentIndex],
     );
   }
 }

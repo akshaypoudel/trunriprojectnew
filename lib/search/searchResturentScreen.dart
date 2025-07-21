@@ -1,11 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/home/resturentItemListScreen.dart';
 
-
 class SearchResturentField extends StatefulWidget {
-  const SearchResturentField({Key? key}) : super(key: key);
+  const SearchResturentField({super.key});
 
   @override
   _SearchResturentFieldState createState() => _SearchResturentFieldState();
@@ -25,8 +26,9 @@ class _SearchResturentFieldState extends State<SearchResturentField> {
   Future<void> _fetchItems() async {
     try {
       final querySnapshot =
-      await FirebaseFirestore.instance.collection('search').get();
-      final items = querySnapshot.docs.map((doc) => doc['name'] as String).toList();
+          await FirebaseFirestore.instance.collection('search').get();
+      final items =
+          querySnapshot.docs.map((doc) => doc['name'] as String).toList();
       setState(() {
         _allItems = items;
       });
@@ -56,9 +58,9 @@ class _SearchResturentFieldState extends State<SearchResturentField> {
             },
             decoration: InputDecoration(
               filled: true,
-              fillColor: Color(0xFF979797).withOpacity(0.1),
+              fillColor: const Color(0xFF979797).withOpacity(0.1),
               contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -79,8 +81,14 @@ class _SearchResturentFieldState extends State<SearchResturentField> {
                   setState(() {
                     _filteredItems.clear();
                   });
-                  if(index == 0){
-                    Get.to(const ResturentItemListScreen());
+                  if (index == 0) {
+                    Get.to(
+                      ResturentItemListScreen(
+                        restaurant_List:
+                            Provider.of<LocationData>(context, listen: false)
+                                .getRestaurauntList,
+                      ),
+                    );
                   }
                 },
               );
@@ -90,7 +98,6 @@ class _SearchResturentFieldState extends State<SearchResturentField> {
     );
   }
 }
-
 
 const searchOutlineInputBorder = OutlineInputBorder(
   borderRadius: BorderRadius.all(Radius.circular(12)),

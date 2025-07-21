@@ -21,19 +21,26 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const SearchField(),
+        // title: const SearchField(),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 20,),
+            const SizedBox(
+              height: 20,
+            ),
             const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
                   "What kind of property are you seeking?",
-                  style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black, fontSize: 15),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                      fontSize: 15),
                 )),
-            const SizedBox(height: 20,),
+            const SizedBox(
+              height: 20,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -43,7 +50,9 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         height: 80,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.grey.shade200),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.grey.shade200),
                         child: Image.asset('assets/images/room.png'),
                       ),
                       const Padding(
@@ -59,7 +68,9 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         height: 80,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.grey.shade200),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.grey.shade200),
                         child: Image.asset('assets/images/communite.png'),
                       ),
                       const Padding(
@@ -71,7 +82,9 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 10,),
+            const SizedBox(
+              height: 10,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -81,7 +94,9 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         height: 80,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.grey.shade200),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.grey.shade200),
                         child: Image.asset('assets/images/room.png'),
                       ),
                       const Padding(
@@ -97,7 +112,9 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         height: 80,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.grey.shade200),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.grey.shade200),
                         child: Image.asset('assets/images/communite.png'),
                       ),
                       const Padding(
@@ -109,7 +126,9 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 10,),
+            const SizedBox(
+              height: 10,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -119,7 +138,9 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         height: 80,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.grey.shade200),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.grey.shade200),
                         child: Image.asset('assets/images/room.png'),
                       ),
                       const Padding(
@@ -135,7 +156,9 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         height: 80,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.grey.shade200),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.grey.shade200),
                         child: Image.asset('assets/images/communite.png'),
                       ),
                       const Padding(
@@ -147,7 +170,9 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 10,),
+            const SizedBox(
+              height: 10,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -157,7 +182,9 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         height: 80,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.grey.shade200),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.grey.shade200),
                         child: Image.asset('assets/images/room.png'),
                       ),
                       const Padding(
@@ -173,7 +200,9 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         height: 80,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.grey.shade200),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.grey.shade200),
                         child: Image.asset('assets/images/communite.png'),
                       ),
                       const Padding(
@@ -185,15 +214,19 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 10,),
-            Padding(
-              padding: const EdgeInsets.only(left: 15,right: 15),
-              child: const Text(
+            const SizedBox(
+              height: 10,
+            ),
+            const Padding(
+              padding: EdgeInsets.only(left: 15, right: 15),
+              child: Text(
                 "When user click search rooms and houses above optionsds options should appear",
-                style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black, fontSize: 15),
+                style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                    fontSize: 15),
               ),
             ),
-
           ],
         ),
       ),
@@ -224,8 +257,7 @@ class _SearchforroomscreenState extends State<Searchforroomscreen> {
                   ),
                 )
               ],
-            )
-        ),
+            )),
       ),
     );
   }

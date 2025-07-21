@@ -27,18 +27,21 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
 
-    final QuerySnapshot result =
-        await FirebaseFirestore.instance.collection('User').where('email', isEqualTo: emailController.text).get();
+    final QuerySnapshot result = await FirebaseFirestore.instance
+        .collection('User')
+        .where('email', isEqualTo: emailController.text)
+        .get();
 
     if (result.docs.isNotEmpty) {
-      FirebaseAuth.instance.sendPasswordResetEmail(email: emailController.text.trim()).then((value) {
+      FirebaseAuth.instance
+          .sendPasswordResetEmail(email: emailController.text.trim())
+          .then((value) {
         setState(() {
           show = false;
         });
-
       });
     } else {
-      showSnackBar(context,"User is not registered with this email");
+      showSnackBar(context, "User is not registered with this email");
     }
 
     NewHelper.hideLoader(loader);
@@ -63,18 +66,24 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
             .update({"password": passwordController.text.trim()});
 
         NewHelper.hideLoader(loader);
-        showSnackBar(context,"Password changed successfully");
+        showSnackBar(context, "Password changed successfully");
         Get.to(const SignInScreen());
       } else {
         NewHelper.hideLoader(loader);
-        showSnackBar(context,"User is not registered with this email");
+        showSnackBar(context, "User is not registered with this email");
       }
     } catch (e) {
       NewHelper.hideLoader(loader);
-      showSnackBar(context,"Error: ${e.toString()}");
+      showSnackBar(context, "Error: ${e.toString()}");
     }
   }
 
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,13 +105,15 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
                   const Text(
                     "Forget Your Password ?",
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 25, color: Colors.black, height: 1.2),
+                    style: TextStyle(
+                        fontSize: 25, color: Colors.black, height: 1.2),
                   ),
                   SizedBox(height: size.height * 0.04),
                   const Text(
                     "Enter your email address and we'll send you instructions on how to reset your password.",
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.grey, height: 1.2),
+                    style: TextStyle(
+                        fontSize: 16, color: Colors.grey, height: 1.2),
                   ),
                   SizedBox(height: size.height * 0.04),
                   show
@@ -111,25 +122,33 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
                           controller: emailController,
                           labelText: "Email",
                           validator: MultiValidator([
-                            RequiredValidator(errorText: 'Please enter a valid email'),
-                            EmailValidator(errorText: 'Please enter valid email'.tr),
+                            RequiredValidator(
+                                errorText: 'Please enter a valid email'),
+                            EmailValidator(
+                                errorText: 'Please enter valid email'.tr),
                           ]).call,
                           onEditingCompleted: () {
                             FocusScope.of(context).unfocus();
                           },
                         )
                       : CommonTextField(
-                    hintText: 'Password',
-                    controller: passwordController,
-                    validator: MultiValidator([
-                      RequiredValidator(errorText: 'Please enter your password'.tr),
-                      MinLengthValidator(8,
-                          errorText: 'Password must be at least 8 characters, with 1 special character & 1 numerical'.tr),
-                      // MaxLengthValidator(16, errorText: "Password maximum length is 16"),
-                      PatternValidator(r"(?=.*\W)(?=.*?[#?!@()$%^&*-_])(?=.*[0-9])",
-                          errorText: "Password must be at least 8 characters, with 1 special character & 1 numerical".tr),
-                    ]).call,
-                  ),
+                          hintText: 'Password',
+                          controller: passwordController,
+                          validator: MultiValidator([
+                            RequiredValidator(
+                                errorText: 'Please enter your password'.tr),
+                            MinLengthValidator(8,
+                                errorText:
+                                    'Password must be at least 8 characters, with 1 special character & 1 numerical'
+                                        .tr),
+                            // MaxLengthValidator(16, errorText: "Password maximum length is 16"),
+                            PatternValidator(
+                                r"(?=.*\W)(?=.*?[#?!@()$%^&*-_])(?=.*[0-9])",
+                                errorText:
+                                    "Password must be at least 8 characters, with 1 special character & 1 numerical"
+                                        .tr),
+                          ]).call,
+                        ),
                   SizedBox(height: size.height * 0.07),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25),
@@ -145,7 +164,8 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
                                 },
                                 child: Container(
                                   width: size.width,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
                                   decoration: BoxDecoration(
                                     color: const Color(0xffFF730A),
                                     borderRadius: BorderRadius.circular(15),
@@ -170,7 +190,8 @@ class _RecoveryPasswordScreenState extends State<RecoveryPasswordScreen> {
                                 },
                                 child: Container(
                                   width: size.width,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
                                   decoration: BoxDecoration(
                                     color: const Color(0xffFF730A),
                                     borderRadius: BorderRadius.circular(15),

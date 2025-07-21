@@ -19,19 +19,25 @@ class VisaTypeScreen extends StatefulWidget {
 class _VisaTypeScreenState extends State<VisaTypeScreen> {
   int? selectedVisaType;
 
-
-  void visaType(){
+  void visaType() {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
-    FirebaseFirestore.instance.collection('visaType').doc(FirebaseAuth.instance.currentUser!.uid).set({
-      'visaType': selectedVisaType
-    }).then((value) {
-      if(selectedVisaType != null){
-        Get.to(const MyBottomNavBar());
-        showSnackBar(context,'Visa Type Added Successfully');
+    FirebaseFirestore.instance
+        .collection('visaType')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .set({'visaType': selectedVisaType}).then((value) {
+      if (selectedVisaType != null) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MyBottomNavBar(),
+          ),
+          (Route<dynamic> route) => false,
+        );
+        showSnackBar(context, 'Visa Type Added Successfully');
         NewHelper.hideLoader(loader);
-      }else{
-        showSnackBar(context,'please select visa Type');
+      } else {
+        showSnackBar(context, 'please select visa Type');
         NewHelper.hideLoader(loader);
       }
     });
@@ -39,21 +45,22 @@ class _VisaTypeScreenState extends State<VisaTypeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery
-        .of(context)
-        .size;
+    Size size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         titleSpacing: 0,
         leading: GestureDetector(
-          onTap: (){
-            Get.back();
-          },
-            child: Icon(Icons.keyboard_arrow_left_outlined)),
+            onTap: () {
+              Get.back();
+            },
+            child: const Icon(Icons.keyboard_arrow_left_outlined)),
         title: Text(
           'Visa Type'.tr,
-          style: GoogleFonts.poppins(color: const Color(0xff292F45), fontWeight: FontWeight.w600, fontSize: 20),
+          style: GoogleFonts.poppins(
+              color: const Color(0xff292F45),
+              fontWeight: FontWeight.w600,
+              fontSize: 20),
         ),
       ),
       body: SingleChildScrollView(
@@ -64,19 +71,27 @@ class _VisaTypeScreenState extends State<VisaTypeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'We collect visa status to personalize community updates, news, and services according to your residency.'.tr,
-                style: GoogleFonts.poppins(color: const Color(0xff292F45), fontWeight: FontWeight.w400, fontSize: 16),
+                'We collect visa status to personalize community updates, news, and services according to your residency.'
+                    .tr,
+                style: GoogleFonts.poppins(
+                    color: const Color(0xff292F45),
+                    fontWeight: FontWeight.w400,
+                    fontSize: 16),
               ),
-              const SizedBox(height: 10,),
+              const SizedBox(
+                height: 10,
+              ),
               buildRadioButton(1, 'Student visa'),
               buildRadioButton(2, 'Temporary resident'),
               buildRadioButton(3, 'Permanent resident'),
               buildRadioButton(4, 'Tourist visa'),
               buildRadioButton(5, 'Work visa'),
               buildRadioButton(6, 'Others'),
-              const SizedBox(height: 20,),
+              const SizedBox(
+                height: 20,
+              ),
               GestureDetector(
-                onTap: (){
+                onTap: () {
                   visaType();
                 },
                 child: Container(
@@ -98,7 +113,9 @@ class _VisaTypeScreenState extends State<VisaTypeScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 40,)
+              const SizedBox(
+                height: 40,
+              )
             ],
           ),
         ),
@@ -108,12 +125,10 @@ class _VisaTypeScreenState extends State<VisaTypeScreen> {
 
   Widget buildRadioButton(int value, String label) {
     return Container(
-      padding: EdgeInsets.all(10),
-      margin: EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(11),
-       color: Colors.grey.shade300
-      ),
+          borderRadius: BorderRadius.circular(11), color: Colors.grey.shade300),
       child: Row(
         children: [
           Radio(
@@ -121,13 +136,14 @@ class _VisaTypeScreenState extends State<VisaTypeScreen> {
             groupValue: selectedVisaType,
             onChanged: (newValue) {
               setState(() {
-                selectedVisaType = newValue as int?;
+                selectedVisaType = newValue;
               });
             },
           ),
           Text(
             label,
-            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20, color: Colors.black),
+            style: const TextStyle(
+                fontWeight: FontWeight.w500, fontSize: 20, color: Colors.black),
           )
         ],
       ),

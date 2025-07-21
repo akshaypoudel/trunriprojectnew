@@ -35,19 +35,32 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
-  get: ^4.6.6
+  razorpay_flutter: ^1.4.0
+  permission_handler: ^12.0.1
+  flutter_chat_core: ^2.6.2
+  flutter_chat_ui: ^2.6.1
+  get: ^4.7.2
   flutter_pin_code_fields: ^2.2.0
+  flutter_app_badge_control: ^0.0.2
+  flutter_local_notifications_plus: ^17.2.5
+  smooth_page_indicator: ^1.2.1
+  provider: ^6.1.5
+  animate_do: ^4.2.0
+  firebase_messaging: ^15.2.9
   pin_code_fields: ^8.0.1
-  google_fonts: ^6.1.0
+  google_fonts: ^6.2.1
   pinput: ^5.0.1
-  firebase_auth: ^5.6.1
-  firebase_core: ^3.15.0
-  cloud_firestore: ^5.6.10
+  firebase_auth: ^5.6.2
+  firebase_core: ^3.15.1
+  cloud_firestore: ^5.6.11
+  connectivity_plus: ^6.1.4
   form_field_validator: ^1.1.0
   loading_animation_widget: ^1.2.0+4
   flutter_animate: ^4.2.0+1
   google_sign_in: ^6.1.4
-  image_picker: ^1.0.2
+  image_picker: ^1.1.2
+  emoji_picker_flutter: ^4.3.0
+  path: ^1.9.1
   email_otp: ^2.1.2
   sign_in_with_apple: ^6.1.0
   shared_preferences: ^2.2.3

@@ -26,14 +26,28 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
   TextEditingController accommodationNameController = TextEditingController();
   TextEditingController accommodationEmailController = TextEditingController();
   TextEditingController accommodationNumberController = TextEditingController();
-  TextEditingController accommodationAddressController = TextEditingController();
-  TextEditingController accommodationFacilitiesController = TextEditingController();
-  TextEditingController accommodationInformationController = TextEditingController();
+  TextEditingController accommodationAddressController =
+      TextEditingController();
+  TextEditingController accommodationFacilitiesController =
+      TextEditingController();
+  TextEditingController accommodationInformationController =
+      TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final formKey1 = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    accommodationEmailController.dispose();
+    accommodationAddressController.dispose();
+    accommodationFacilitiesController.dispose();
+    accommodationNameController.dispose();
+    accommodationNumberController.dispose();
+    accommodationInformationController.dispose();
+    super.dispose();
+  }
 
   Future<void> uploadImagesAndSaveData() async {
     OverlayEntry loader = NewHelper.overlayLoader(context);
@@ -48,13 +62,13 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
       List<String> imageUrls = [];
       for (File file in selectedFiles) {
         String fileName = path.basename(file.path);
-        Reference storageReference = _storage.ref().child('accommodations/${user.uid}/$fileName');
+        Reference storageReference =
+            _storage.ref().child('accommodations/${user.uid}/$fileName');
         UploadTask uploadTask = storageReference.putFile(file);
         TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
         String downloadUrl = await snapshot.ref.getDownloadURL();
         imageUrls.add(downloadUrl);
       }
-
 
       await _firestore.collection('accommodations').add({
         'name': accommodationNameController.text,
@@ -66,15 +80,14 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
         'information': accommodationInformationController.text,
         'images': imageUrls,
         'created_at': FieldValue.serverTimestamp(),
-        'userID' : user.uid,
+        'userID': user.uid,
       });
 
-      Get.to(MyBottomNavBar());
+      Get.to(const MyBottomNavBar());
       NewHelper.hideLoader(loader);
-      showSnackBar(context,'Accommodation added successfully!');
-
+      showSnackBar(context, 'Accommodation added successfully!');
     } catch (e) {
-          showSnackBar(context,"Error: $e");
+      showSnackBar(context, "Error: $e");
     }
   }
 
@@ -83,7 +96,10 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Confirm Accommodation Details",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
+          title: const Text(
+            "Confirm Accommodation Details",
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+          ),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -95,7 +111,8 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
                 Text("Facilities: ${accommodationFacilitiesController.text}"),
                 Text("Information: ${accommodationInformationController.text}"),
                 // Display selected images
-                const Text('Images:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Images:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -111,22 +128,20 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
                     }).toList(),
                   ),
                 ),
-
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: Text("Edit"),
+              child: const Text("Edit"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text("Save"),
+              child: const Text("Save"),
               onPressed: () async {
                 await uploadImagesAndSaveData();
-
               },
             ),
           ],
@@ -156,44 +171,61 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
                 padding: EdgeInsets.only(left: 30),
                 child: Text(
                   'Enter Your Accommodation Name',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Colors.black),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: Colors.black),
                 ),
               ),
               CommonTextField(
                   hintText: 'Name',
                   controller: accommodationNameController,
-                  validator: MultiValidator([RequiredValidator(errorText: 'Name is required')]).call),
+                  validator: MultiValidator(
+                      [RequiredValidator(errorText: 'Name is required')]).call),
               const SizedBox(height: 5),
               const Padding(
                 padding: EdgeInsets.only(left: 30),
                 child: Text(
                   'Enter Your Email',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Colors.black),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: Colors.black),
                 ),
               ),
               CommonTextField(
                   hintText: 'Email',
                   controller: accommodationEmailController,
-                  validator: MultiValidator([RequiredValidator(errorText: 'Email is required')]).call),
+                  validator: MultiValidator(
+                          [RequiredValidator(errorText: 'Email is required')])
+                      .call),
               const SizedBox(height: 5),
               const Padding(
                 padding: EdgeInsets.only(left: 30),
                 child: Text(
                   'Enter Your Contact Number',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Colors.black),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: Colors.black),
                 ),
               ),
               CommonTextField(
                   hintText: 'Contact Number',
                   controller: accommodationNumberController,
                   keyboardType: TextInputType.number,
-                  validator: MultiValidator([RequiredValidator(errorText: 'Contact Number is required')]).call),
+                  validator: MultiValidator([
+                    RequiredValidator(errorText: 'Contact Number is required')
+                  ]).call),
               const SizedBox(height: 5),
               const Padding(
                 padding: EdgeInsets.only(left: 30),
                 child: Text(
                   'Enter Your Accommodation Type',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Colors.black),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: Colors.black),
                 ),
               ),
               const SizedBox(height: 5),
@@ -206,7 +238,8 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
                       roomType = newValue!;
                     });
                   },
-                  items: roomTypeList.map<DropdownMenuItem<String>>((String value) {
+                  items: roomTypeList
+                      .map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
@@ -216,7 +249,9 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
                     border: InputBorder.none,
                     filled: true,
                     fillColor: const Color(0xffE2E2E2).withOpacity(.35),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10).copyWith(right: 8),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 15, vertical: 10)
+                            .copyWith(right: 8),
                     focusedErrorBorder: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(11)),
                         borderSide: BorderSide(color: AppTheme.secondaryColor)),
@@ -231,8 +266,9 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
                       borderSide: BorderSide(color: AppTheme.secondaryColor),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(11)),
-                      borderSide: BorderSide(color: Color(0xffE2E2E2).withOpacity(.35)),
+                      borderRadius: const BorderRadius.all(Radius.circular(11)),
+                      borderSide: BorderSide(
+                          color: const Color(0xffE2E2E2).withOpacity(.35)),
                     ),
                   ),
                   validator: (value) {
@@ -248,7 +284,10 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
                 padding: EdgeInsets.only(left: 30),
                 child: Text(
                   'Enter Your Address',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Colors.black),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: Colors.black),
                 ),
               ),
               CommonTextField(
@@ -256,13 +295,18 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
                   controller: accommodationAddressController,
                   maxLines: 2,
                   minLines: 2,
-                  validator: MultiValidator([RequiredValidator(errorText: 'Address is required')]).call),
+                  validator: MultiValidator(
+                          [RequiredValidator(errorText: 'Address is required')])
+                      .call),
               const SizedBox(height: 5),
               const Padding(
                 padding: EdgeInsets.only(left: 30),
                 child: Text(
                   'Enter Accommodation facilities',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Colors.black),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: Colors.black),
                 ),
               ),
               CommonTextField(
@@ -270,13 +314,19 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
                   controller: accommodationFacilitiesController,
                   maxLines: 5,
                   minLines: 5,
-                  validator: MultiValidator([RequiredValidator(errorText: 'Accommodation facilities is required')]).call),
+                  validator: MultiValidator([
+                    RequiredValidator(
+                        errorText: 'Accommodation facilities is required')
+                  ]).call),
               const SizedBox(height: 5),
               const Padding(
                 padding: EdgeInsets.only(left: 30),
                 child: Text(
                   'Enter Important Information',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Colors.black),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: Colors.black),
                 ),
               ),
               CommonTextField(
@@ -284,13 +334,15 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
                   controller: accommodationInformationController,
                   maxLines: 5,
                   minLines: 5,
-                  validator: MultiValidator([RequiredValidator(errorText: 'Important Information is required')]).call),
+                  validator: MultiValidator([
+                    RequiredValidator(
+                        errorText: 'Important Information is required')
+                  ]).call),
               const SizedBox(height: 5),
               Padding(
                 padding: const EdgeInsets.only(left: 25, right: 25),
                 child: ImageWidget(
                   files: selectedFiles,
-        
                   validation: true,
                   imageOnly: true,
                   filesPicked: (List<File> pickedFiles) {
@@ -336,4 +388,3 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
     );
   }
 }
-

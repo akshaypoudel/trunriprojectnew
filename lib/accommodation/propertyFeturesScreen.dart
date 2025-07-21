@@ -17,16 +17,13 @@ class Propertyfeturesscreen extends StatefulWidget {
 class _PropertyfeturesscreenState extends State<Propertyfeturesscreen> {
   String selectedValue = '1 week';
 
-  List<String> selectedValueList = [
-    '1 week',
-    '2 weeks'
-  ];
+  List<String> selectedValueList = ['1 week', '2 weeks'];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const SearchField(),
+        // title: const SearchField(),
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -40,7 +37,10 @@ class _PropertyfeturesscreenState extends State<Propertyfeturesscreen> {
               ),
               const Text(
                 "Property Features preferences",
-                style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black, fontSize: 15),
+                style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                    fontSize: 15),
               ),
               const SizedBox(
                 height: 15,
@@ -49,7 +49,10 @@ class _PropertyfeturesscreenState extends State<Propertyfeturesscreen> {
                 padding: EdgeInsets.only(left: 20),
                 child: Text(
                   "Room amenities",
-                  style: TextStyle(fontWeight: FontWeight.w400, color: Colors.black, fontSize: 17),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                      fontSize: 17),
                 ),
               ),
               const SizedBox(
@@ -84,7 +87,10 @@ class _PropertyfeturesscreenState extends State<Propertyfeturesscreen> {
                 padding: EdgeInsets.only(left: 20),
                 child: Text(
                   "Internet",
-                  style: TextStyle(fontWeight: FontWeight.w400, color: Colors.black, fontSize: 17),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                      fontSize: 17),
                 ),
               ),
               const SizedBox(
@@ -119,7 +125,10 @@ class _PropertyfeturesscreenState extends State<Propertyfeturesscreen> {
                 padding: EdgeInsets.only(left: 20),
                 child: Text(
                   "Bath Room",
-                  style: TextStyle(fontWeight: FontWeight.w400, color: Colors.black, fontSize: 17),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                      fontSize: 17),
                 ),
               ),
               const SizedBox(
@@ -154,7 +163,10 @@ class _PropertyfeturesscreenState extends State<Propertyfeturesscreen> {
                 padding: EdgeInsets.only(left: 20),
                 child: Text(
                   "Transport and shopping centers near by ",
-                  style: TextStyle(fontWeight: FontWeight.w400, color: Colors.black, fontSize: 17),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                      fontSize: 17),
                 ),
               ),
               const SizedBox(
@@ -189,7 +201,10 @@ class _PropertyfeturesscreenState extends State<Propertyfeturesscreen> {
                 padding: EdgeInsets.only(left: 20),
                 child: Text(
                   "Number of Houses mates",
-                  style: TextStyle(fontWeight: FontWeight.w400, color: Colors.black, fontSize: 17),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                      fontSize: 17),
                 ),
               ),
               const SizedBox(
@@ -232,7 +247,10 @@ class _PropertyfeturesscreenState extends State<Propertyfeturesscreen> {
                 padding: EdgeInsets.only(left: 20),
                 child: Text(
                   "Weekly budget",
-                  style: TextStyle(fontWeight: FontWeight.w400, color: Colors.black, fontSize: 17),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                      fontSize: 17),
                 ),
               ),
               const SizedBox(
@@ -251,14 +269,17 @@ class _PropertyfeturesscreenState extends State<Propertyfeturesscreen> {
                 padding: EdgeInsets.only(left: 20),
                 child: Text(
                   "Preferred dates",
-                  style: TextStyle(fontWeight: FontWeight.w400, color: Colors.black, fontSize: 17),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                      fontSize: 17),
                 ),
               ),
               const SizedBox(
                 height: 10,
               ),
               Container(
-                margin: EdgeInsets.only(left: 50,right: 50),
+                margin: const EdgeInsets.only(left: 50, right: 50),
                 child: CommonButton(
                   text: '\$${135}',
                   color: AppTheme.primaryColor,
@@ -273,39 +294,43 @@ class _PropertyfeturesscreenState extends State<Propertyfeturesscreen> {
                 padding: EdgeInsets.only(left: 20),
                 child: Text(
                   "Duration of Stay",
-                  style: TextStyle(fontWeight: FontWeight.w400, color: Colors.black, fontSize: 17),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                      fontSize: 17),
                 ),
               ),
               const SizedBox(
                 height: 10,
               ),
-          Container(
-            margin: EdgeInsets.only(left: 50, right: 50),
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor,
-              borderRadius: BorderRadius.circular(25),
-            ),
-         child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: selectedValue,
-              isExpanded: true,
-              dropdownColor: AppTheme.primaryColor,
-              iconEnabledColor: Colors.white,
-              style: const TextStyle(color: Colors.white),
-              items: selectedValueList.map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedValue = newValue!;
-                });
-              },
-            ),
-          ),),
+              Container(
+                margin: const EdgeInsets.only(left: 50, right: 50),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: selectedValue,
+                    isExpanded: true,
+                    dropdownColor: AppTheme.primaryColor,
+                    iconEnabledColor: Colors.white,
+                    style: const TextStyle(color: Colors.white),
+                    items: selectedValueList.map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedValue = newValue!;
+                      });
+                    },
+                  ),
+                ),
+              ),
               const SizedBox(
                 height: 15,
               ),
@@ -313,19 +338,23 @@ class _PropertyfeturesscreenState extends State<Propertyfeturesscreen> {
                 padding: EdgeInsets.only(left: 20),
                 child: Text(
                   "Residential Area",
-                  style: TextStyle(fontWeight: FontWeight.w400, color: Colors.black, fontSize: 17),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                      fontSize: 17),
                 ),
               ),
-                SizedBox(height: 10,),
-                Container(
-                  margin: EdgeInsets.only(left: 15,right: 15),
-                  height: 100,
-                  width: Get.width,
-                  decoration: BoxDecoration(
+              const SizedBox(
+                height: 10,
+              ),
+              Container(
+                margin: const EdgeInsets.only(left: 15, right: 15),
+                height: 100,
+                width: Get.width,
+                decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
-                    color: Colors.grey
-                  ),
-                ),
+                    color: Colors.grey),
+              ),
               const SizedBox(
                 height: 15,
               ),
@@ -333,7 +362,10 @@ class _PropertyfeturesscreenState extends State<Propertyfeturesscreen> {
                 padding: EdgeInsets.only(left: 20),
                 child: Text(
                   "We suggest selecting at least 2 or more areas",
-                  style: TextStyle(fontWeight: FontWeight.w400, color: Colors.black, fontSize: 17),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                      fontSize: 17),
                 ),
               ),
             ],

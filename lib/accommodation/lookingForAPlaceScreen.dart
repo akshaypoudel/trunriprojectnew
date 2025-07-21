@@ -1,13 +1,15 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../home/search_field.dart';
+import 'package:provider/provider.dart';
+import 'package:trunriproject/accommodation/accomodationDetailsScreen.dart';
+import 'package:trunriproject/accommodation/whichYouListScreen.dart';
+import 'package:trunriproject/subscription/subscription_data.dart';
 import 'filterOptionScreen.dart';
 
 class LookingForAPlaceScreen extends StatefulWidget {
-  const LookingForAPlaceScreen({super.key});
+  final List<Map<String, dynamic>> accommodationList;
+
+  const LookingForAPlaceScreen({super.key, required this.accommodationList});
 
   @override
   State<LookingForAPlaceScreen> createState() => _LookingForAPlaceScreenState();
@@ -15,272 +17,324 @@ class LookingForAPlaceScreen extends StatefulWidget {
 
 class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
   final List<String> cityList = [
-    'Queensland',
-    'Victoria',
-    'NSW',
-    'South Australia',
-    'Western Australia',
-    'Northern Territory',
-    'Tasmania'
+    'All',
+    'Delhi',
+    'Mumbai',
+    'Bangalore',
+    'Noida',
+    'Kolkata',
+    'Chennai',
+    'Hyderabad'
   ];
 
-  final List<String> cityImage = [
-    'https://www.shutterstock.com/image-photo/port-douglas-beach-ocean-on-260nw-293091518.jpg',
-    'https://cdn.britannica.com/50/96050-050-8BCE4FFD/Twelve-Apostles-sea-stacks-Port-Campbell-National.jpg',
-    'https://storage.googleapis.com/stateless-www-wotif-com/2019/06/5d275d3c-hero.jpg',
-    'https://cdn.britannica.com/82/94782-050-EB2E817A/Torrens-River-Adelaide-South-Australia.jpg',
-    'https://www.planetware.com/wpimages/2022/02/western-australia-top-attractions-intro-paragraph-ningaloo.jpg',
-    'https://www.aptouring.com/-/media/apt-responsive-website/australia/northern-territory/general-image-16-9/gi-a-au-nt-simpsons-gap-with-water-635020619-s-web-16-9.jpg',
-    'https://a.travel-assets.com/findyours-php/viewfinder/images/res40/46000/46029-Salamanca-Place.jpg'
+  final List<String> cityImages = [
+    'https://cdn.pixabay.com/photo/2019/04/07/07/52/taj-mahal-4109110_1280.jpg',
+    'https://cdn.pixabay.com/photo/2022/08/19/15/21/akshardham-7397135_1280.jpg',
+    'https://cdn.pixabay.com/photo/2010/11/29/india-294_1280.jpg',
+    'https://cdn.pixabay.com/photo/2017/12/17/13/10/architecture-3024174_1280.jpg',
+    'https://cdn.pixabay.com/photo/2023/06/08/05/36/sunset-8048741_1280.jpg',
+    'https://cdn.pixabay.com/photo/2017/06/12/08/29/victoria-memorial-2394784_1280.jpg',
+    'https://cdn.pixabay.com/photo/2018/05/16/10/44/chennai-3405413_1280.jpg',
+    'https://cdn.pixabay.com/photo/2019/02/12/14/53/golconda-fort-3992421_1280.jpg',
   ];
-  String? selectedCity;
-  List<DocumentSnapshot> accommodationList = [];
+
+  List<Map<String, dynamic>> displayedList = [];
+  String? selectedCity = 'All';
+  final TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Optionally set a default city
-    selectedCity = cityList[0];
-    fetchAccommodationData();
+    displayedList = widget.accommodationList;
+    searchController.addListener(searchAccommodations);
   }
 
-  Future<void> fetchAccommodationData() async {
-    if (selectedCity != null) {
-      QuerySnapshot querySnapshot =
-      await FirebaseFirestore.instance.collection('accommodation').where('state', isEqualTo: selectedCity).get();
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
 
-      setState(() {
-        accommodationList = querySnapshot.docs;
-      });
-    }
+  void filterByCity(String city) {
+    selectedCity = city;
+    searchAccommodations();
+  }
+
+  void searchAccommodations() {
+    final query = searchController.text.toLowerCase();
+    setState(() {
+      displayedList = widget.accommodationList.where((item) {
+        final matchesCity = selectedCity == 'All' ||
+            (item['state'] ?? '').toString().toLowerCase() ==
+                selectedCity!.toLowerCase();
+
+        final name = item['fullAddress']?.toString().toLowerCase() ?? '';
+        final city = item['city']?.toString().toLowerCase() ?? '';
+        final state = item['state']?.toString().toLowerCase() ?? '';
+
+        final matchesSearch = name.contains(query) ||
+            city.contains(query) ||
+            state.contains(query);
+
+        return matchesCity && matchesSearch;
+      }).toList();
+    });
   }
 
   void _showFilterBottomSheet() {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return FilterOptionScreen();
+        return const FilterOptionScreen();
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<SubscriptionData>(context, listen: false);
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              top: 10,
-              child: SingleChildScrollView(
-                child: Container(
-                  margin: const EdgeInsets.only(left: 15, right: 15),
-                  child: Column(
-                    children: [
-                      const SizedBox(
-                        height: 50,
+      backgroundColor: Colors.grey.shade100,
+      body: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                TextField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search accommodations...',
+                    prefixIcon: const Icon(Icons.search, color: Colors.orange),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.orange,
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: _showFilterBottomSheet,
+                        icon: const Icon(Icons.filter_list),
+                        label: const Text("Filter"),
                       ),
-                      const SizedBox(
-                        height: 10,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.orange,
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () {},
+                        icon: const Icon(Icons.bookmark),
+                        label: const Text("Saved"),
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: _showFilterBottomSheet,
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: Colors.grey.shade200),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Center(child: Text('Filter')),
-                                    SizedBox(
-                                      width: 10,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        (provider.isUserSubscribed)
+                            ? SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.orange,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                    Icon(Icons.filter_list)
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 15,
-                          ),
-                          Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: Colors.grey.shade200),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Center(child: Text('Saved')),
-                                  SizedBox(
-                                    width: 10,
                                   ),
-                                  Icon(Icons.save)
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      SizedBox(
-                        height: 80,
-                        child: ListView.builder(
-                            itemCount: cityList.length,
-                            shrinkWrap: true,
-                            physics: const AlwaysScrollableScrollPhysics(),
+                                  icon: const Icon(Icons.add_home_outlined),
+                                  label: const Text(
+                                    'Post an Accommodation',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  onPressed: () {
+                                    Get.to(() => const WhichYouListScreen());
+                                  },
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 70,
+                          child: ListView.builder(
                             scrollDirection: Axis.horizontal,
+                            itemCount: cityList.length,
                             itemBuilder: (context, index) {
-                              final imageUrl =
-                              (index < cityImage.length) ? cityImage[index] : 'https://via.placeholder.com/150';
                               return GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    print("objectobjectobjectobjectobjectobject");
-                                    selectedCity = cityList[index];
-                                    fetchAccommodationData();
-                                  });
-                                },
-                                child: Stack(
-                                  children: [
-                                    Container(
-                                      margin: const EdgeInsets.symmetric(horizontal: 5),
-                                      height: 80,
-                                      width: 100,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(11),
-                                        color: selectedCity == cityList[index] ? Colors.orange : Colors.black,
-                                        image: DecorationImage(
-                                          image: NetworkImage(imageUrl),
-                                          fit: BoxFit.fill,
+                                onTap: () => filterByCity(cityList[index]),
+                                child: Container(
+                                  margin: const EdgeInsets.only(right: 10),
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    image: DecorationImage(
+                                      image: NetworkImage(cityImages[index]),
+                                      fit: BoxFit.cover,
+                                    ),
+                                    border: selectedCity == cityList[index]
+                                        ? Border.all(
+                                            color: Colors.orange, width: 2)
+                                        : null,
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      Positioned.fill(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            color:
+                                                Colors.black.withOpacity(0.4),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Positioned(
-                                      bottom: 0,
-                                      left: 0,
-                                      right: 0,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        color: Colors.black54,
-                                        alignment: Alignment.center,
+                                      Center(
                                         child: Text(
                                           cityList[index],
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 13,
+                                            fontSize: 15,
                                           ),
                                           textAlign: TextAlign.center,
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-        
-        
                               );
-                            }),
-                      ),
-                      if (selectedCity != null) ...[
-                        GridView.builder(
-                          itemCount: accommodationList.length,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2, // Number of columns
-                            crossAxisSpacing: 10, // Spacing between columns
-                            mainAxisSpacing: 10, // Spacing between rows
-                            childAspectRatio: 0.72, // Aspect ratio of each grid item
+                            },
                           ),
-                          itemBuilder: (context, index) {
-                            var data = accommodationList[index].data() as Map<String, dynamic>;
-                            String imageUrl = data['images'].toString();
-                            imageUrl = imageUrl.replaceAll('[', '').replaceAll(']', '');
-        
-                            return Card(
-                              color: Colors.white,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Image.network(
-                                    imageUrl,
-                                    height: 130,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Text('Image failed to load');
-                                    },
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(left: 10.0),
-                                          child: Text(
-                                            "City -  ${data['city'] ?? 'No Address'}",
-                                            textAlign: TextAlign.start,
-                                            style: const TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14, // Adjust the font size as needed
-                                            ),
-                                            // overflow: TextOverflow.ellipsis,
-                                            maxLines: 1, // Allow text to wrap to 2 lines if needed
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(left: 10.0),
-                                          child: Text(
-                                            "State -  ${data['state'] ?? 'No Address'}",
-                                            textAlign: TextAlign.start,
-                                            style: const TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: 14, // Adjust the font size as needed
-                                            ),
-                                            // overflow: TextOverflow.ellipsis,
-                                            maxLines: 1, // Allow text to wrap to 2 lines if needed
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(left: 10.0),
-                                          child: Text(
-                                            "FullAddress -  ${data['fullAddress'] ?? 'No Address'}",
-                                            textAlign: TextAlign.start,
-                                            style: const TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: 14, // Adjust the font size as needed
-                                            ),
-                                            // overflow: TextOverflow.ellipsis,
-                                            maxLines: 1, // Allow text to wrap to 2 lines if needed
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
                         ),
+                        const SizedBox(height: 12),
+                        displayedList.isEmpty
+                            ? const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 40),
+                                  child: Text("No accommodations found"),
+                                ),
+                              )
+                            : GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: displayedList.length,
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  childAspectRatio: 0.7,
+                                  crossAxisSpacing: 12,
+                                  mainAxisSpacing: 12,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final data = displayedList[index];
+                                  List images = data['images'] ?? [];
+                                  String imageUrl = images.isNotEmpty
+                                      ? images.first.toString()
+                                      : '';
+
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Get.to(
+                                        () => AccommodationDetailsScreen(
+                                          accommodation: displayedList[index],
+                                        ),
+                                      );
+                                    },
+                                    child: Card(
+                                      elevation: 2,
+                                      color: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius:
+                                                const BorderRadius.vertical(
+                                              top: Radius.circular(14),
+                                            ),
+                                            child: imageUrl.isNotEmpty
+                                                ? Image.network(
+                                                    imageUrl,
+                                                    height: 120,
+                                                    width: double.infinity,
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                : Container(
+                                                    height: 120,
+                                                    color: Colors.grey[300],
+                                                    child: const Center(
+                                                        child:
+                                                            Text("No image")),
+                                                  ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              data['city'] ?? 'Unknown City',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8.0),
+                                            child: Text(
+                                              data['fullAddress'] ??
+                                                  'Address not available',
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.black54,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                        const SizedBox(height: 16),
                       ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-            SearchField()
-          ],
+          ),
         ),
       ),
     );

@@ -1,0 +1,201 @@
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:trunriproject/chat_module/components/show_user_tiles.dart';
+import 'package:trunriproject/chat_module/screens/group_name_screen.dart';
+import 'package:trunriproject/chat_module/services/chat_services.dart';
+
+class GroupChatCreateScreen extends StatefulWidget {
+  const GroupChatCreateScreen({super.key});
+
+  @override
+  State<GroupChatCreateScreen> createState() => _GroupChatCreateScreenState();
+}
+
+class _GroupChatCreateScreenState extends State<GroupChatCreateScreen> {
+  final ChatServices chatService = ChatServices();
+  List<Map<String, dynamic>> userList = [];
+  Set<String> selectedUserEmails = {};
+  Map<String, String> emailToNameMap = {};
+  bool isLoading = true;
+  String? currentUserEmail = '';
+  String? currentUserName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserList();
+  }
+
+  Future<void> fetchUserList() async {
+    try {
+      final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+      final currentUserDoc = await FirebaseFirestore.instance
+          .collection('User')
+          .doc(currentUserId)
+          .get();
+      setState(() {
+        currentUserEmail = currentUserDoc.get('email');
+        currentUserName = currentUserDoc.get('name');
+      });
+
+      final querySnapshot =
+          await FirebaseFirestore.instance.collection('User').get();
+
+      final filteredUsers = querySnapshot.docs
+          .where((doc) => doc.get('email') != currentUserEmail)
+          .map((doc) => {
+                'name': doc.get('name'),
+                'email': doc.get('email'),
+              })
+          .toList();
+
+      emailToNameMap = {
+        for (var user in filteredUsers) user['email']: user['name']
+      };
+
+      setState(() {
+        userList = filteredUsers;
+        isLoading = false;
+      });
+
+      // log('final user list = $userList');
+    } catch (e) {
+      log('Error fetching users: $e');
+    }
+  }
+
+  void toggleUserSelection(String email) {
+    setState(() {
+      if (selectedUserEmails.contains(email)) {
+        selectedUserEmails.remove(email);
+      } else {
+        selectedUserEmails.add(email);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: (selectedUserEmails.isEmpty)
+            ? const Text('New Group')
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Text('New Group'),
+                  const SizedBox(width: 5),
+                  Text(
+                    '(${selectedUserEmails.length} of ${userList.length})',
+                    style: const TextStyle(fontSize: 15),
+                  )
+                ],
+              ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.all(10),
+            child: Icon(Icons.search),
+          ),
+        ],
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(left: 15.0, bottom: 6, top: 10),
+            child: Text(
+              'Add Participant',
+              style: TextStyle(fontSize: 20),
+            ),
+          ),
+          if (selectedUserEmails.isNotEmpty)
+            SizedBox(
+              height: 48,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                children: selectedUserEmails.map((email) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Chip(
+                      label: Text(emailToNameMap[email] ?? email),
+                      onDeleted: () {
+                        setState(() {
+                          selectedUserEmails.remove(email);
+                        });
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          Expanded(
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : userList.isEmpty
+                    ? const Center(child: Text("No users available"))
+                    : ListView.builder(
+                        itemCount: userList.length,
+                        itemBuilder: (context, index) {
+                          final user = userList[index];
+                          final email = user['email'];
+                          final isSelected = selectedUserEmails.contains(email);
+
+                          return GestureDetector(
+                            onTap: () => toggleUserSelection(email),
+                            child: Stack(
+                              alignment: Alignment.centerRight,
+                              children: [
+                                ShowUserTiles(
+                                  userName: user['name'],
+                                  onTap: () => toggleUserSelection(email),
+                                ),
+                                if (isSelected)
+                                  const Padding(
+                                    padding: EdgeInsets.only(right: 25),
+                                    child: Icon(
+                                      Icons.check_circle,
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
+      floatingActionButton: selectedUserEmails.isNotEmpty
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                final userList = selectedUserEmails.toSet();
+                userList.add(currentUserEmail!);
+                final selectedNewUserList = userList.map((email) {
+                  return {
+                    'email': email,
+                    'name': (email == currentUserEmail)
+                        ? "$currentUserName (You)"
+                        : emailToNameMap[email] ?? '',
+                  };
+                }).toList();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GroupNameScreen(
+                      selectedUsers: selectedNewUserList,
+                      selectedUsersSet: userList,
+                    ),
+                  ),
+                );
+              },
+              label: const Text('Next'),
+              icon: const Icon(Icons.arrow_forward),
+            )
+          : null,
+    );
+  }
+}

@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "742206392917-6l8hvi4pt3u28tafodk2pobn14isiotp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.trunriproject.trunriproject",
+            "certificate_hash": "84f8219191a627dc1ef4845bbe890ac827ac07c3"
+          }
+        },
+        {
           "client_id": "742206392917-l5po1ajlfijn80ivmqfosm0olenssur6.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

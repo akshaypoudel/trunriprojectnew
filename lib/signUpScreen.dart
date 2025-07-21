@@ -1,20 +1,16 @@
-import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/widgets.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:trunriproject/google_signin/google_signin.dart';
 import 'package:trunriproject/otpScreen.dart';
 import 'package:trunriproject/signinscreen.dart';
 import 'package:trunriproject/widgets/appTheme.dart';
@@ -25,17 +21,19 @@ import 'nativAddressScreen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
-  static String verify = "";
+  static String verificationOTP = "";
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderStateMixin {
+class _SignUpScreenState extends State<SignUpScreen>
+    with SingleTickerProviderStateMixin {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
+  CustomGoogleSignin googleSignin = CustomGoogleSignin();
   RxBool hide = true.obs;
   RxBool hide1 = true.obs;
   String code = "+91";
@@ -44,17 +42,18 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
   FirebaseAuth auth = FirebaseAuth.instance;
 
   void checkEmailInFirestore() async {
-
     if (phoneController.text.isEmpty) {
-      showSnackBar(context,"Please enter your phone number");
+      showSnackBar(context, "Please enter your phone number");
       return;
     }
     String completePhoneNum = "$code${phoneController.text.trim()}";
-    final QuerySnapshot result =
-    await FirebaseFirestore.instance.collection('User').where('phoneNumber', isEqualTo: completePhoneNum).get();
+    final QuerySnapshot result = await FirebaseFirestore.instance
+        .collection('User')
+        .where('phoneNumber', isEqualTo: completePhoneNum)
+        .get();
 
     if (result.docs.isNotEmpty) {
-      showSnackBar(context,"User is already registered with this phoneNumber");
+      showSnackBar(context, "User is already registered with this phoneNumber");
       return;
     }
 
@@ -65,10 +64,10 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
       phoneNumber: completePhoneNum,
       verificationCompleted: (PhoneAuthCredential credential) async {
         await FirebaseAuth.instance.signInWithCredential(credential);
-        showSnackBar(context,"Phone number verified successfully");
+        showSnackBar(context, "Phone number verified successfully");
       },
       verificationFailed: (FirebaseAuthException e) {
-        showSnackBar(context,"Verification failed: ${e.message}");
+        showSnackBar(context, "Verification failed: ${e.message}");
 
         log("Verification failed: ${e.message}");
         log("Verification failed: ${code.toString()}");
@@ -76,81 +75,83 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
         NewHelper.hideLoader(loader);
       },
       codeSent: (String verificationId, int? resendToken) {
-        SignUpScreen.verify = verificationId;
+        SignUpScreen.verificationOTP = verificationId;
         NewHelper.hideLoader(loader);
-        register();
+        showSnackBar(context, 'OTP sent successfully');
+        NewHelper.hideLoader(loader);
+
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => NewOtpScreen(
+              isSignInScreen: false,
               phoneNumber: completePhoneNum,
               verificationId: verificationId,
+              name: nameController.text.trim(),
+              email: emailController.text.trim(),
+              password: passwordController.text.trim(),
             ),
           ),
         );
       },
       codeAutoRetrievalTimeout: (String verificationId) {
-        SignUpScreen.verify = verificationId;
+        SignUpScreen.verificationOTP = verificationId;
       },
     );
   }
 
-  void register() {
-    OverlayEntry loader = NewHelper.overlayLoader(context);
-    Overlay.of(context).insert(loader);
-    FirebaseFirestore.instance.collection('User').doc().set({
-      'name': nameController.text.trim(),
-      'email': emailController.text.trim(),
-      'phoneNumber': phoneController.text.trim(),
-      'password': passwordController.text.trim(),
-      'confirmPassword': confirmPasswordController.text.trim(),
-      'address': "",
-      'profile': ""
-    }).then((value) {
-      NewHelper.hideLoader(loader);
-      showSnackBar(context,'OTP sent successfully');
-    });
-  }
-
-  Future<dynamic> signInWithGoogle(BuildContext context) async {
-    OverlayEntry loader = NewHelper.overlayLoader(context);
-    Overlay.of(context).insert(loader);
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-
-      final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
-      );
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-      Navigator.of(context).push(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => PickUpAddressScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            var offsetAnimation = animation.drive(tween);
-            return SlideTransition(
-              position: offsetAnimation,
-              child: child,
-            );
-          },
-        ),
-      );
-
-      return userCredential;
-    } on Exception catch (e) {
-      // Handle the exception
-      print('exception->$e');
-    } finally {
-      // Ensure the loader is always removed, even if an error occurs
-      NewHelper.hideLoader(loader);
-    }
-  }
+  // Future<void> signInWithGoogle(BuildContext context) async {
+  //   User? user = FirebaseAuth.instance.currentUser;
+  //   OverlayEntry loader = NewHelper.overlayLoader(context);
+  //   Overlay.of(context).insert(loader);
+  //   try {
+  //     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+  //     final GoogleSignInAuthentication googleAuth =
+  //         await googleUser!.authentication;
+  //     final credential = GoogleAuthProvider.credential(
+  //       accessToken: googleAuth.accessToken,
+  //       idToken: googleAuth.idToken,
+  //     );
+  //     UserCredential userCredential =
+  //         await FirebaseAuth.instance.signInWithCredential(credential);
+  //     Navigator.of(context).push(
+  //       PageRouteBuilder(
+  //         pageBuilder: (context, animation, secondaryAnimation) =>
+  //             (user != null)
+  //                 ? const MyBottomNavBar()
+  //                 : const PickUpAddressScreen(),
+  //         transitionsBuilder: (context, animation, secondaryAnimation, child) {
+  //           const begin = Offset(1.0, 0.0);
+  //           const end = Offset.zero;
+  //           const curve = Curves.ease;
+  //           var tween =
+  //               Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+  //           var offsetAnimation = animation.drive(tween);
+  //           return SlideTransition(
+  //             position: offsetAnimation,
+  //             child: child,
+  //           );
+  //         },
+  //       ),
+  //     );
+  //     if (user != null) {
+  //       showSnackBar(context, "User Log In Successfull");
+  //     } else {
+  //       showSnackBar(context, "User Registered Successfully");
+  //     }
+  //     registerWithGoogle(
+  //       userCredential.user!.displayName!,
+  //       userCredential.user?.email,
+  //     );
+  //   } on Exception catch (e) {
+  //     // Handle the exception
+  //     log('exception-> in google signin = $e');
+  //   } finally {
+  //     // Ensure the loader is always removed, even if an error occurs
+  //     NewHelper.hideLoader(loader);
+  //   }
+  //   return;
+  // }
 
   final formKey1 = GlobalKey<FormState>();
 
@@ -162,7 +163,6 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
     nameController.dispose();
     phoneController.dispose();
     super.dispose();
-
   }
 
   @override
@@ -196,11 +196,11 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
               child: Text(
                 "Ready to explore and connect? Let's create your account!",
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20, color: Color(0xff6F6B7A), height: 1.2),
+                style: TextStyle(
+                    fontSize: 20, color: Color(0xff6F6B7A), height: 1.2),
               ),
             ),
             SizedBox(height: size.height * 0.04),
-            // for username and password
             CommonTextField(
                 hintText: 'Full Name',
                 controller: nameController,
@@ -215,7 +215,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                   EmailValidator(errorText: 'Please enter a valid email'.tr),
                 ]).call),
             Padding(
-              padding: EdgeInsets.only(left: 25, right: 25),
+              padding: const EdgeInsets.only(left: 25, right: 25),
               child: IntlPhoneField(
                 flagsButtonPadding: const EdgeInsets.all(8),
                 dropdownIconPosition: IconPosition.trailing,
@@ -229,25 +229,28 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                 decoration: InputDecoration(
                   fillColor: Colors.grey.shade100,
                   filled: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 15),
-                  hintStyle: const TextStyle(color: Colors.black45, fontSize: 19, fontWeight: FontWeight.w400),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                  hintStyle: const TextStyle(
+                      color: Colors.black45,
+                      fontSize: 19,
+                      fontWeight: FontWeight.w400),
                   hintText: 'Phone Number',
-                  labelStyle: TextStyle(color: AppTheme.textColor),
+                  labelStyle: const TextStyle(color: AppTheme.textColor),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(11),
-                    borderSide: BorderSide(),
+                    borderSide: const BorderSide(),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
+                    borderSide: const BorderSide(color: Colors.white),
                     borderRadius: BorderRadius.circular(11),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
+                    borderSide: const BorderSide(color: Colors.white),
                     borderRadius: BorderRadius.circular(11),
                   ),
                 ),
                 initialCountryCode: "IN", // Set to Australia
-                onCountryChanged: (country){
+                onCountryChanged: (country) {
                   code = '+${country.dialCode}';
                 },
                 validator: (value) {
@@ -258,7 +261,6 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                 },
               ),
             ),
-
             Obx(() {
               return CommonTextField(
                 hintText: 'Password',
@@ -268,15 +270,21 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                   onPressed: () {
                     hide.value = !hide.value;
                   },
-                  icon: hide.value ? const Icon(Icons.visibility_off) : const Icon(Icons.visibility),
+                  icon: hide.value
+                      ? const Icon(Icons.visibility_off)
+                      : const Icon(Icons.visibility),
                 ),
                 validator: MultiValidator([
                   RequiredValidator(errorText: 'Please enter your password'.tr),
                   MinLengthValidator(8,
-                      errorText: 'Password must be at least 8 characters, with 1 special character & 1 numerical'.tr),
+                      errorText:
+                          'Password must be at least 8 characters, with 1 special character & 1 numerical'
+                              .tr),
                   // MaxLengthValidator(16, errorText: "Password maximum length is 16"),
                   PatternValidator(r"(?=.*\W)(?=.*?[#?!@()$%^&*-_])(?=.*[0-9])",
-                      errorText: "Password must be at least 8 characters, with 1 special character & 1 numerical".tr),
+                      errorText:
+                          "Password must be at least 8 characters, with 1 special character & 1 numerical"
+                              .tr),
                 ]).call,
               );
             }),
@@ -289,7 +297,9 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                   onPressed: () {
                     hide1.value = !hide1.value;
                   },
-                  icon: hide1.value ? const Icon(Icons.visibility_off) : const Icon(Icons.visibility),
+                  icon: hide1.value
+                      ? const Icon(Icons.visibility_off)
+                      : const Icon(Icons.visibility),
                 ),
                 validator: (value) {
                   if (value!.trim().isEmpty) {
@@ -310,13 +320,19 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                   Transform.scale(
                     scale: 1.1,
                     child: Theme(
-                      data: ThemeData(unselectedWidgetColor: showValidation == false ? Colors.white : Colors.red),
+                      data: ThemeData(
+                          unselectedWidgetColor: showValidation == false
+                              ? Colors.white
+                              : Colors.red),
                       child: Checkbox(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4)),
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                           value: value,
                           activeColor: Colors.orange,
-                          visualDensity: const VisualDensity(vertical: 0, horizontal: 0),
+                          visualDensity:
+                              const VisualDensity(vertical: 0, horizontal: 0),
                           onChanged: (newValue) {
                             setState(() {
                               value = newValue!;
@@ -335,21 +351,23 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                             title: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
+                                const Text(
                                   'Terms And Conditions',
-                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold),
                                 ),
                                 GestureDetector(
                                     onTap: () {
                                       Navigator.pop(context);
                                     },
-                                    child: Icon(Icons.cancel_outlined))
+                                    child: const Icon(Icons.cancel_outlined))
                               ],
                             ),
-                            content: Text(
+                            content: const Text(
                                 'Terms and conditions are part of a contract that ensure parties understand their contractual rights and obligations. Parties draft them into a legal contract, also called a legal agreement, in accordance with local, state, and federal contract laws. They set important boundaries that all contract principals must uphold.'
                                 'Several contract types utilize terms and conditions. When there is a formal agreement to create with another individual or entity, consider how you would like to structure your deal and negotiate the terms and conditions with the other side before finalizing anything. This strategy will help foster a sense of importance and inclusion on all sides.'),
-                            actions: <Widget>[],
+                            actions: const <Widget>[],
                           );
                         },
                       );
@@ -357,11 +375,16 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                     child: Row(
                       children: [
                         const Text('I Accept',
-                            style: TextStyle(fontWeight: FontWeight.w300, fontSize: 13, color: Colors.black)),
+                            style: TextStyle(
+                                fontWeight: FontWeight.w300,
+                                fontSize: 13,
+                                color: Colors.black)),
                         Text(
                           ' Terms And Conditions?',
                           style: GoogleFonts.poppins(
-                              color: const Color(0xffFF730A), fontWeight: FontWeight.w600, fontSize: 13),
+                              color: const Color(0xffFF730A),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13),
                         ),
                       ],
                     ),
@@ -381,7 +404,8 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                         if (value == true) {
                           checkEmailInFirestore();
                         } else {
-                          showSnackBar(context,'Please select terms & conditions');
+                          showSnackBar(
+                              context, 'Please select terms & conditions');
                         }
                       }
                     },
@@ -434,7 +458,7 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                     children: [
                       GestureDetector(
                         onTap: () {
-                          signInWithGoogle(context);
+                          googleSignin.signInWithGoogle(context);
                         },
                         child: socialIcon(
                           "assets/images/google.png",
@@ -448,24 +472,34 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                         GestureDetector(
                           onTap: () async {
                             try {
-                              final credential = await SignInWithApple.getAppleIDCredential(
+                              final credential =
+                                  await SignInWithApple.getAppleIDCredential(
                                 scopes: [
                                   AppleIDAuthorizationScopes.email,
                                   AppleIDAuthorizationScopes.fullName,
                                 ],
                               );
-                              final OAuthProvider oAuthProvider = OAuthProvider('apple.com');
-                              final OAuthCredential oAuthCredential = oAuthProvider.credential(
+                              final OAuthProvider oAuthProvider =
+                                  OAuthProvider('apple.com');
+                              final OAuthCredential oAuthCredential =
+                                  oAuthProvider.credential(
                                 idToken: credential.identityToken,
                                 accessToken: credential.authorizationCode,
                               );
-                              await FirebaseAuth.instance.signInWithCredential(oAuthCredential);
+                              await FirebaseAuth.instance
+                                  .signInWithCredential(oAuthCredential);
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => PickUpAddressScreen()),
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const PickUpAddressScreen(),
+                                ),
                               );
                             } catch (error) {
-                              print('Error signing in with Apple: $error');
+                              showSnackBar(
+                                context,
+                                'Error signing in with Apple: $error',
+                              );
                             }
                           },
                           child: socialIcon("assets/images/apple.png"),
@@ -473,7 +507,6 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                       const SizedBox(
                         width: 10,
                       ),
-                      //socialIcon("assets/images/facebook.png"),
                     ],
                   ),
                   SizedBox(height: size.height * 0.07),
@@ -496,13 +529,19 @@ class _SignUpScreenState extends State<SignUpScreen> with SingleTickerProviderSt
                                 ..onTap = () {
                                   Navigator.of(context).push(
                                     PageRouteBuilder(
-                                      pageBuilder: (context, animation, secondaryAnimation) => const SignInScreen(),
-                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                      pageBuilder: (context, animation,
+                                              secondaryAnimation) =>
+                                          const SignInScreen(),
+                                      transitionsBuilder: (context, animation,
+                                          secondaryAnimation, child) {
                                         const begin = Offset(1.0, 0.0);
                                         const end = Offset.zero;
                                         const curve = Curves.ease;
-                                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                                        var offsetAnimation = animation.drive(tween);
+                                        var tween = Tween(
+                                                begin: begin, end: end)
+                                            .chain(CurveTween(curve: curve));
+                                        var offsetAnimation =
+                                            animation.drive(tween);
                                         return SlideTransition(
                                           position: offsetAnimation,
                                           child: child,

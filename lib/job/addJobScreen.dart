@@ -22,6 +22,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
   TextEditingController minimumSalaryController = TextEditingController();
   TextEditingController maximunSalaryController = TextEditingController();
   TextEditingController openingsController = TextEditingController();
+  TextEditingController categoryController = TextEditingController();
   TextEditingController roleController = TextEditingController();
   TextEditingController industryTypeController = TextEditingController();
   TextEditingController departmentController = TextEditingController();
@@ -36,7 +37,12 @@ class _AddJobScreenState extends State<AddJobScreen> {
 
   String? experience;
 
-  final List<String> experienceOptions = ['0-1 years', '1-3 years', '3-5 years', '5+ years'];
+  final List<String> experienceOptions = [
+    '0-1 years',
+    '1-3 years',
+    '3-5 years',
+    '5+ years'
+  ];
   String? employmentType;
 
   final List<String> employmentTypeOption = [
@@ -96,7 +102,34 @@ class _AddJobScreenState extends State<AddJobScreen> {
   ];
   String salaryType = 'Hourly';
 
-  final List<String> salaryTypes = ['Daily', 'Hourly', 'Monthly', 'Weekly', 'Yearly'];
+  final List<String> salaryTypes = [
+    'Daily',
+    'Hourly',
+    'Monthly',
+    'Weekly',
+    'Yearly'
+  ];
+
+  @override
+  void dispose() {
+    positionNameController.dispose();
+    categoryController.dispose();
+    companyNameController.dispose();
+    salaryController.dispose();
+    minimumSalaryController.dispose();
+    maximunSalaryController.dispose();
+    openingsController.dispose();
+    roleController.dispose();
+    industryTypeController.dispose();
+    departmentController.dispose();
+    employmentTypeController.dispose();
+    roleCategoryController.dispose();
+    eductionController.dispose();
+    keySkillsController.dispose();
+    jobDescriptionController.dispose();
+    aboutCompanyController.dispose();
+    super.dispose();
+  }
 
   void addJobs() {
     FirebaseFirestore.instance.collection('jobs').doc().set({
@@ -105,8 +138,10 @@ class _AddJobScreenState extends State<AddJobScreen> {
       'positionName': positionNameController.text,
       'companyName': companyNameController.text,
       'experience': experience,
-      'salary': '$salaryType: \$${minimumSalaryController.text} - \$${maximunSalaryController.text}',
+      'salary':
+          '$salaryType: \$${minimumSalaryController.text} - \$${maximunSalaryController.text}',
       'openings': openingsController.text,
+      'category': categoryController.text,
       'role': roleController.text,
       'industryType': industryType,
       'department': departmentController.text,
@@ -118,8 +153,14 @@ class _AddJobScreenState extends State<AddJobScreen> {
       'aboutCompany': aboutCompanyController.text,
       'timeOfAdd': timeOfAdd
     }).then((value) {
-      showSnackBar(context,'Add Jobs Successfully');
-      Get.to(const JobHomePageScreen());
+      showSnackBar(context, 'Job Added Successfully');
+      // Get.to(const JobHomePageScreen());
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (c) => const JobHomePageScreen(),
+        ),
+      );
     });
   }
 
@@ -186,7 +227,9 @@ class _AddJobScreenState extends State<AddJobScreen> {
                     labelText: 'Work Experience',
                     border: OutlineInputBorder(),
                   ),
-                  validator: RequiredValidator(errorText: 'Experience is required'),
+                  validator:
+                      RequiredValidator(errorText: 'Experience is required')
+                          .call,
                 ),
               ),
               const SizedBox(
@@ -219,7 +262,8 @@ class _AddJobScreenState extends State<AddJobScreen> {
                     labelText: 'schedule',
                     border: OutlineInputBorder(),
                   ),
-                  validator: RequiredValidator(errorText: 'schedule is required'),
+                  validator:
+                      RequiredValidator(errorText: 'schedule is required').call,
                 ),
               ),
               const SizedBox(
@@ -265,20 +309,24 @@ class _AddJobScreenState extends State<AddJobScreen> {
                 children: [
                   Expanded(
                     child: CommonTextField(
-                        hintText: 'AU\$0.00',
+                        hintText: 'IND ₹0.00',
                         labelText: 'Min Salary',
+                        keyboardType: const TextInputType.numberWithOptions(),
                         controller: minimumSalaryController,
                         validator: MultiValidator([
-                          RequiredValidator(errorText: 'minimum Salary is required'),
+                          RequiredValidator(
+                              errorText: 'minimum Salary is required'),
                         ]).call),
                   ),
                   Expanded(
                     child: CommonTextField(
-                        hintText: 'AU\$0.00',
+                        hintText: 'IND ₹0.00',
                         labelText: 'Max Salary',
+                        keyboardType: const TextInputType.numberWithOptions(),
                         controller: maximunSalaryController,
                         validator: MultiValidator([
-                          RequiredValidator(errorText: 'maximun Salary is required'),
+                          RequiredValidator(
+                              errorText: 'maximun Salary is required'),
                         ]).call),
                   ),
                 ],
@@ -294,7 +342,20 @@ class _AddJobScreenState extends State<AddJobScreen> {
                   hintText: '10',
                   controller: openingsController,
                   validator: MultiValidator([
-                    RequiredValidator(errorText: 'How many positions are open is required'),
+                    RequiredValidator(
+                        errorText: 'How many positions are open is required'),
+                  ]).call),
+              const Padding(
+                padding: EdgeInsets.only(left: 25),
+                child: Text('What is the Job Category?'),
+              ),
+              CommonTextField(
+                  hintText: 'eg. Developer/Analyst',
+                  controller: categoryController,
+                  validator: MultiValidator([
+                    RequiredValidator(
+                      errorText: 'Please Enter a Job Category',
+                    ),
                   ]).call),
               const Padding(
                 padding: EdgeInsets.only(left: 25),
@@ -336,7 +397,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
                     labelText: 'Industry Type',
                     border: OutlineInputBorder(),
                   ),
-                  validator: RequiredValidator(errorText: 'Industry Type'),
+                  validator: RequiredValidator(errorText: 'Industry Type').call,
                 ),
               ),
               const SizedBox(
@@ -379,7 +440,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
                     labelText: 'Job Type',
                     border: OutlineInputBorder(),
                   ),
-                  validator: RequiredValidator(errorText: 'Job Type'),
+                  validator: RequiredValidator(errorText: 'Job Type').call,
                 ),
               ),
               const SizedBox(
@@ -455,7 +516,9 @@ class _AddJobScreenState extends State<AddJobScreen> {
                   maxLines: 5,
                   validator: MultiValidator([
                     RequiredValidator(errorText: 'Job description is required'),
-                    MinLengthValidator(30, errorText: 'Job description must be at least 30 characters'),
+                    MinLengthValidator(30,
+                        errorText:
+                            'Job description must be at least 30 characters'),
                   ]).call),
               const Padding(
                 padding: EdgeInsets.only(left: 25),

@@ -53,8 +53,20 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
       'specialInstruction': specialInstructionController.text.trim()
     }).then((value) {
       if (formKey1.currentState!.validate()) {
-        Get.to(CurrentAddress());
-        log("qwerty${FirebaseAuth.instance.currentUser!.uid}");
+        // Get.to(CurrentAddress());
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const CurrentAddress(
+              isProfileScreen: false,
+              savedAddress: '',
+              latitude: '',
+              longitude: '',
+              radiusFilter: 50,
+            ),
+          ),
+          (Route<dynamic> route) => false,
+        );
         showSnackBar(context, 'Native Address saved Successfully');
         NewHelper.hideLoader(loader);
       } else {
