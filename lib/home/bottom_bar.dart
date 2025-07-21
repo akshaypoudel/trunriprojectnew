@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/chat_module/screens/chat_list_screen.dart';
@@ -31,6 +33,22 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initializeProvider();
     });
+    checkAndUpdateSubscription();
+  }
+
+  void checkAndUpdateSubscription() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final userRef = FirebaseFirestore.instance.collection('User').doc(uid);
+    final snapshot = await userRef.get();
+
+    if (snapshot.exists && snapshot.data()!.containsKey('subscriptionExpiry')) {
+      final Timestamp end = snapshot['subscriptionExpiry'];
+      final isExpired = end.toDate().isBefore(DateTime.now());
+
+      await userRef.update({
+        'isSubscribed': !isExpired,
+      });
+    }
   }
 
   Future<void> initializeProvider() async {

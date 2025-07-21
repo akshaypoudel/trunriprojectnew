@@ -49,6 +49,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   @override
   void dispose() {
     _razorpay.clear();
+
     super.dispose();
   }
 
@@ -251,14 +252,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   void startRazorpayTransaction() async {
     final list = await getUserPhoneNumber();
-    final phoneNumber = list[0];
-    log('phonenum = $list');
+    String? number = list[0];
     // ignore: unnecessary_null_comparison
-    if (phoneNumber!.isEmpty || phoneNumber == null) {
+    if (number!.isEmpty || number == null) {
       Get.to(() => const PhoneNumberVerification());
       return;
     }
     final email = list[1];
+    final result = number.replaceFirst('+91', '');
+    log('phonenum = $result');
     log('email..... = $email');
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -274,13 +276,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
     amount *= 100; //amount in paise
 
+    log('my pone number = $result');
+
     var options = {
       'key': Constants.RAZORPAY_KEY,
       'amount': amount,
       'name': 'TruNri',
       'description': 'Pro Subscription',
       'prefill': {
-        'contact': phoneNumber,
+        'contact': result,
         'email': email,
       },
       'external': {

@@ -361,51 +361,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Get.to(const AddressListScreen());
                               },
                             ),
-                            const Divider(
-                              height: 10,
-                            ),
-                            ListTile(
-                              onTap: () {
-                                Get.to(const RecoveryPasswordScreen());
-                              },
-                              leading: Image.asset(
-                                'assets/images/password.png',
-                                height: 30,
-                              ),
-                              title: const Text('Change Password'),
-                              trailing: const Icon(
-                                Icons.arrow_forward_ios_outlined,
-                                size: 15,
-                              ),
-                            ),
-                            const Divider(
-                              height: 10,
-                            ),
-                            ListTile(
-                              leading: Image.asset(
-                                'assets/images/language.png',
-                                height: 30,
-                              ),
-                              title: const Text('Change Language'),
-                              trailing: const Icon(
-                                Icons.arrow_forward_ios_outlined,
-                                size: 15,
-                              ),
-                            ),
-                            const Divider(
-                              height: 10,
-                            ),
-                            ListTile(
-                              leading: Image.asset(
-                                'assets/images/notification.png',
-                                height: 30,
-                              ),
-                              title: const Text('Notification preferences'),
-                              trailing: const Icon(
-                                Icons.arrow_forward_ios_outlined,
-                                size: 15,
-                              ),
-                            ),
+                            // const Divider(
+                            //   height: 10,
+                            // ),
+                            // ListTile(
+                            //   onTap: () {
+                            //     Get.to(const RecoveryPasswordScreen());
+                            //   },
+                            //   leading: Image.asset(
+                            //     'assets/images/password.png',
+                            //     height: 30,
+                            //   ),
+                            //   title: const Text('Change Password'),
+                            //   trailing: const Icon(
+                            //     Icons.arrow_forward_ios_outlined,
+                            //     size: 15,
+                            //   ),
+                            // ),
+                            // const Divider(
+                            //   height: 10,
+                            // ),
+                            // ListTile(
+                            //   leading: Image.asset(
+                            //     'assets/images/language.png',
+                            //     height: 30,
+                            //   ),
+                            //   title: const Text('Change Language'),
+                            //   trailing: const Icon(
+                            //     Icons.arrow_forward_ios_outlined,
+                            //     size: 15,
+                            //   ),
+                            // ),
+                            // const Divider(
+                            //   height: 10,
+                            // ),
+                            // ListTile(
+                            //   leading: Image.asset(
+                            //     'assets/images/notification.png',
+                            //     height: 30,
+                            //   ),
+                            //   title: const Text('Notification preferences'),
+                            //   trailing: const Icon(
+                            //     Icons.arrow_forward_ios_outlined,
+                            //     size: 15,
+                            //   ),
+                            // ),
                             const Divider(
                               height: 10,
                             ),

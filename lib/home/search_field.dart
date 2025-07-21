@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/accommodation/accommodationHomeScreen.dart';
+import 'package:trunriproject/accommodation/lookingForAPlaceScreen.dart';
 import 'package:trunriproject/events/eventHomeScreen.dart';
 import 'package:trunriproject/home/groceryStoreListScreen.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
@@ -101,7 +102,12 @@ class _SearchFieldState extends State<SearchField> {
         ),
       );
     } else if (item.contains("accommodation")) {
-      Get.to(const Accommodationhomescreen());
+      Get.to(
+        LookingForAPlaceScreen(
+          accommodationList: Provider.of<LocationData>(context, listen: false)
+              .getAccomodationList,
+        ),
+      );
     } else if (item.contains("temple")) {
       Get.to(
         TempleHomePageScreen(

@@ -19,7 +19,6 @@ class ChatListScreen extends StatefulWidget {
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
-  // final ChatServices _chatService = ChatServices();
   List<Map<String, dynamic>>? cachedChatList;
   String? currentEmail;
   bool isLoading = true;
@@ -28,7 +27,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
   void initState() {
     super.initState();
     _loadChats();
-    // listenToAllMessages();
   }
 
   Future<void> _loadChats() async {
@@ -125,150 +123,157 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<SubscriptionData>(context, listen: false);
-    if (!provider.isUserSubscribed) {
-      return Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: Colors.white.withOpacity(0.5),
-          elevation: 0,
-          title: const Text('Messages'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-        body: Stack(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(
-                    'assets/images/chatbackground.jpg',
-                  ),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
-              child: Container(
-                color: Colors.white.withValues(alpha: 0.8),
-              ),
-            ),
 
-            // Foreground content
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+    return Consumer<SubscriptionData>(
+      builder: (context, subscriptionProvider, _) {
+        return (!subscriptionProvider.isUserSubscribed)
+            ? Scaffold(
+                extendBodyBehindAppBar: true,
+                appBar: AppBar(
+                  backgroundColor: Colors.white.withOpacity(0.5),
+                  elevation: 0,
+                  title: const Text('Messages'),
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                body: Stack(
                   children: [
-                    const Icon(Icons.lock_outline,
-                        size: 100, color: Colors.orangeAccent),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Upgrade to Pro',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange.shade700,
+                    Container(
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage(
+                            'assets/images/chatbackground.jpg',
+                          ),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Subscribe to unlock one-on-one and group chat features,\nalong with other premium tools!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Colors.black87),
+                    BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                      child: Container(
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
                     ),
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Navigator.pushNamed(context, '/subscriptionScreen');
-                          Get.to(() => const SubscriptionScreen());
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          backgroundColor: Colors.transparent,
-                          elevation: 0,
-                        ).copyWith(
-                          backgroundColor:
-                              WidgetStateProperty.resolveWith((states) {
-                            return null; // Gradient handled below
-                          }),
-                        ),
-                        child: Ink(
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Colors.orange, Colors.deepOrange],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: Container(
-                            alignment: Alignment.center,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: const Text(
-                              'Subscribe Now',
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.lock_outline,
+                                size: 100, color: Colors.orangeAccent),
+                            const SizedBox(height: 24),
+                            Text(
+                              'Upgrade to Pro',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 28,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: Colors.orange.shade700,
                               ),
                             ),
-                          ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Subscribe to unlock one-on-one and group chat features,\nalong with other premium tools!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 16, color: Colors.black87),
+                            ),
+                            const SizedBox(height: 32),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  // Navigator.pushNamed(context, '/subscriptionScreen');
+                                  Get.to(() => const SubscriptionScreen());
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  backgroundColor: Colors.transparent,
+                                  elevation: 0,
+                                ).copyWith(
+                                  backgroundColor:
+                                      WidgetStateProperty.resolveWith((states) {
+                                    return null; // Gradient handled below
+                                  }),
+                                ),
+                                child: Ink(
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Colors.orange,
+                                        Colors.deepOrange
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
+                                    child: const Text(
+                                      'Subscribe Now',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
+                    )
                   ],
                 ),
-              ),
-            )
-          ],
-        ),
-      );
-    } else {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: const Text('Messages'),
-          backgroundColor: Colors.white,
-          actions: [
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: Colors.black),
-              onSelected: (v) {
-                if (v == 'new_group') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const GroupChatCreateScreen(),
-                    ),
-                  ).then((_) => _loadChats());
-                }
-              },
-              itemBuilder: (_) => [
-                const PopupMenuItem(
-                  value: 'new_group',
-                  child: Row(
-                    children: [
-                      Icon(Icons.group_add),
-                      SizedBox(width: 8),
-                      Text('Create New Group'),
-                    ],
-                  ),
+              )
+            : Scaffold(
+                backgroundColor: Colors.white,
+                appBar: AppBar(
+                  title: const Text('Messages'),
+                  backgroundColor: Colors.white,
+                  actions: [
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert, color: Colors.black),
+                      onSelected: (v) {
+                        if (v == 'new_group') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const GroupChatCreateScreen(),
+                            ),
+                          ).then((_) => _loadChats());
+                        }
+                      },
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(
+                          value: 'new_group',
+                          child: Row(
+                            children: [
+                              Icon(Icons.group_add),
+                              SizedBox(width: 8),
+                              Text('Create New Group'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
                 ),
-              ],
-            )
-          ],
-        ),
-        body: _buildChatList(),
-      );
-    }
+                body: _buildChatList(),
+              );
+      },
+    );
   }
 
   Widget _buildChatList() {
