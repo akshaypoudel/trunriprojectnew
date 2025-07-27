@@ -1,9 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:trunriproject/accommodation/subscribed_user/message_owner_for_non_subscribed.dart';
+import 'package:trunriproject/chat_module/context_chats/screens/context_chat_screen.dart';
 
 class AccommodationDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> accommodation;
@@ -19,11 +21,18 @@ class _AccommodationDetailsScreenState
     extends State<AccommodationDetailsScreen> {
   final PageController _pageController = PageController();
   int currentPageIndex = 0;
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
     final data = widget.accommodation;
     final List<dynamic> images = data['images'] ?? [];
+
+    final String postId = data['formID'] as String;
+    const String postType = 'accommodation';
+    final String posterId = data['uid'] as String; // host’s user ID
+    final String seekerId = _firebaseAuth.currentUser!.uid;
+    final String postTitle = data['Give your listing a title'] as String;
 
     Widget buildInfoCard(String label, String value, {IconData? icon}) {
       return Card(
@@ -191,6 +200,15 @@ class _AccommodationDetailsScreenState
                 ),
                 onPressed: () {
                   // Get.to(()=>MessageOwnerScreen(ownerId: , ownerName: ownerName, propertyTitle: data['Give your listing a title'],),);
+                  Get.to(
+                    () => ContextChatScreen(
+                      postId: postId,
+                      postType: postType,
+                      posterId: posterId,
+                      seekerId: seekerId,
+                      postTitle: postTitle,
+                    ),
+                  );
                 },
                 icon: const Icon(Icons.message_outlined),
                 label: const Text(

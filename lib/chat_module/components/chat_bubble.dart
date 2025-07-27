@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:trunriproject/chat_module/components/useronline_status_title.dart';
 
@@ -75,6 +76,7 @@ class GroupChatBubble extends StatelessWidget {
   final bool isMe;
   final String senderID;
   final String userName;
+  final String? profileImageUrl;
 
   const GroupChatBubble({
     super.key,
@@ -83,6 +85,7 @@ class GroupChatBubble extends StatelessWidget {
     required this.time,
     required this.senderID,
     required this.userName,
+    this.profileImageUrl,
   });
 
   @override
@@ -94,11 +97,29 @@ class GroupChatBubble extends StatelessWidget {
           children: [
             (!isMe)
                 ? UserOnlineStatusTitleForGroups(
-                    userId: senderID, userName: userName)
+                    userId: senderID,
+                    userName: userName,
+                  )
                 : const SizedBox.shrink(),
             customContainer(context),
           ],
         ));
+  }
+
+  Widget buildProfileAvatar(String? url) {
+    if (url == null || url.isEmpty) {
+      return const CircleAvatar(
+        radius: 16,
+        backgroundColor: Colors.grey,
+        child: Icon(Icons.person, size: 18, color: Colors.white),
+      );
+    } else {
+      return CircleAvatar(
+        radius: 16,
+        backgroundImage: CachedNetworkImageProvider(url),
+        backgroundColor: Colors.grey.shade200,
+      );
+    }
   }
 
   Widget customContainer(BuildContext context) {

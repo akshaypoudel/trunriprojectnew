@@ -1,15 +1,11 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart' as path;
-
 import '../widgets/helper.dart';
-import '../profile/modelProfileData.dart';
 
 enum UpdateType { set, update }
 
@@ -61,12 +57,7 @@ class FirebaseFireStoreService {
     try {
       if (allowChange) {
         Overlay.of(context).insert(loader);
-
-        final fileName = path.basename(profileImage.path);
-        final storageRef =
-            FirebaseStorage.instance.ref().child('user_images/$fileName');
-        final uploadTask = await storageRef.putFile(profileImage);
-        imageUrl = await storageRef.getDownloadURL();
+        imageUrl = await getProfileImageUrl(profileImage);
 
         // final userProfileImageRef = storageRef.child("user_images/$userId");
 
@@ -90,6 +81,28 @@ class FirebaseFireStoreService {
       return false;
     } finally {
       NewHelper.hideLoader(loader);
+    }
+  }
+
+  Future<String> getProfileImageUrl(File profileImage) async {
+    final fileName = path.basename(profileImage.path);
+    final storageRef =
+        FirebaseStorage.instance.ref().child('user_images/$fileName');
+    final uploadTask = await storageRef.putFile(profileImage);
+
+    return await storageRef.getDownloadURL();
+  }
+
+  Future<void> updateProfilePictureForCommunity(
+      File profileImageFilePath) async {
+    String newProfileUrl = await getProfileImageUrl(profileImageFilePath);
+    final postsQuery = await FirebaseFirestore.instance
+        .collection('community_posts')
+        .where('uid', isEqualTo: userId)
+        .get();
+
+    for (var doc in postsQuery.docs) {
+      await doc.reference.update({'profileUrl': newProfileUrl});
     }
   }
 }

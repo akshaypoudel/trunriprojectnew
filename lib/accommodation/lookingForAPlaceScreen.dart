@@ -95,6 +95,23 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
     final provider = Provider.of<SubscriptionData>(context, listen: false);
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        backgroundColor: Colors.grey.shade100,
+        title: TextField(
+          controller: searchController,
+          decoration: InputDecoration(
+            hintText: 'Search accommodations...',
+            prefixIcon: const Icon(Icons.search, color: Colors.orange),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ),
       body: GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: SafeArea(
@@ -102,20 +119,6 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
             padding: const EdgeInsets.all(12),
             child: Column(
               children: [
-                TextField(
-                  controller: searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search accommodations...',
-                    prefixIcon: const Icon(Icons.search, color: Colors.orange),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
                 Row(
                   children: [
                     Expanded(
@@ -155,30 +158,27 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        (provider.isUserSubscribed)
-                            ? SizedBox(
-                                width: double.infinity,
-                                height: 48,
-                                child: ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.orange,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  icon: const Icon(Icons.add_home_outlined),
-                                  label: const Text(
-                                    'Post an Accommodation',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  onPressed: () {
-                                    Get.to(() => const WhichYouListScreen());
-                                  },
-                                ),
-                              )
-                            : const SizedBox.shrink(),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            icon: const Icon(Icons.add_home_outlined),
+                            label: const Text(
+                              'Post an Accommodation',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            onPressed: () {
+                              Get.to(() => const WhichYouListScreen());
+                            },
+                          ),
+                        ),
                         const SizedBox(height: 12),
                         SizedBox(
                           height: 70,

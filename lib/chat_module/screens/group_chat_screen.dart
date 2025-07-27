@@ -10,7 +10,6 @@ import 'package:trunriproject/chat_module/components/date_bubble.dart';
 import 'package:trunriproject/chat_module/screens/display_group_members.dart';
 import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/chat_module/services/chat_services.dart';
-import 'package:trunriproject/widgets/helper.dart';
 
 class GroupChatScreen extends StatefulWidget {
   final String groupId;
@@ -40,17 +39,36 @@ class _GroupChatScreenState extends State<GroupChatScreen>
   String? currentUserName = '';
   final Map<String, String> _nameCache = {};
 
+  String? groupCreatorEmail;
+  Timestamp? groupCreatedAt;
+  List<String> groupMembers = [];
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     fetchCurrentUserEmail();
+    fetchGroupInfo();
 
     _messageFocusNode.addListener(() => _onFocusChange());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       scrollToBottom();
     });
+  }
+
+  Future<void> fetchGroupInfo() async {
+    final doc = await FirebaseFirestore.instance
+        .collection('groups')
+        .doc(widget.groupId)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+      groupCreatorEmail = data['createdBy'];
+      groupCreatedAt = data['createdAt'];
+      groupMembers = List<String>.from(data['members'] ?? []);
+    }
   }
 
   @override
@@ -103,7 +121,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
   void scrollToBottom() {
     if (scrollController.hasClients) {
       scrollController.animateTo(
-        scrollController.position.minScrollExtent,
+        scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
@@ -141,6 +159,8 @@ class _GroupChatScreenState extends State<GroupChatScreen>
         .collection('messages')
         .orderBy('timestamp', descending: false)
         .snapshots();
+    // .get();
+    // .get();
   }
 
   String formatTimestamp(Timestamp timestamp) {
@@ -160,25 +180,31 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     return DateFormat('d MMMM yyyy').format(messageDate);
   }
 
-  // Widget buildMessageItem(DocumentSnapshot doc) {
-  //   final data = doc.data() as Map<String, dynamic>;
-  //   final timestamp = (data['timestamp'] as Timestamp?)?.toDate();
-  //   final time =
-  //       timestamp != null ? formatTimestamp(data['timestamp']) : '--:--';
-  //   return FutureBuilder<String>(
-  //     future: fetchNameByEmail(data['senderID']),
-  //     builder: (context, snapshot) {
-  //       final senderName = snapshot.data ?? '...';
-  //       return GroupChatBubble(
-  //         senderID: currentUserEmail!,
-  //         userName: senderName,
-  //         text: data['message'] ?? '',
-  //         time: time,
-  //         isMe: data['senderID'] == currentUserEmail,
-  //       );
-  //     },
-  //   );
-  // }
+  String formatFullDateWithSuffixFromString(String dateString) {
+    final date = DateTime.tryParse(dateString);
+    if (date == null) return '';
+
+    final day = date.day;
+    final suffix = getDaySuffix(day);
+    final month = DateFormat('MMMM').format(date);
+    final year = date.year;
+
+    return '$day$suffix $month, $year';
+  }
+
+  String getDaySuffix(int day) {
+    if (day >= 11 && day <= 13) return 'th';
+    switch (day % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
+    }
+  }
 
   Future<String> fetchNameByEmail(String email) async {
     if (_nameCache.containsKey(email)) return _nameCache[email]!;
@@ -194,44 +220,6 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     _nameCache[email] = name;
     return name;
   }
-
-  // Widget buildMessageList1() {
-  //   String? lastDateLabel = '';
-  //   return StreamBuilder(
-  //     stream: getGroupMessages(),
-  //     builder: (context, snapshot) {
-  //       if (snapshot.hasError) {
-  //         return const Center(child: Text('Error loading messages'));
-  //       }
-  //       if (!snapshot.hasData) {
-  //         return const Center(child: CircularProgressIndicator());
-  //       }
-  //       final docs = snapshot.data!.docs;
-  //       final List<Widget> messageWidgets = [];
-  //       for (var doc in docs) {
-  //         final data = doc.data() as Map<String, dynamic>;
-  //         final messageDate = (data['timestamp'] as Timestamp?)?.toDate();
-  //         if (messageDate != null) {
-  //           final currentLabel = getDateLabel(messageDate);
-  //           if (lastDateLabel != currentLabel) {
-  //             messageWidgets.add(DateBubble(date: currentLabel));
-  //             lastDateLabel = currentLabel;
-  //           }
-  //         }
-  //         messageWidgets.add(buildMessageItem(doc));
-  //       }
-  //       WidgetsBinding.instance.addPostFrameCallback((_) {
-  //         scrollToBottom();
-  //       });
-  //       return ListView(
-  //         reverse: true,
-  //         controller: scrollController,
-  //         padding: const EdgeInsets.only(bottom: 10),
-  //         children: messageWidgets.reversed.toList(),
-  //       );
-  //     },
-  //   );
-  // }
 
   Widget buildMessageList() {
     return StreamBuilder(
@@ -274,13 +262,35 @@ class _GroupChatScreenState extends State<GroupChatScreen>
 
               log('sender name map = $nameMap, sender email = $senderEmail and Sender name = $senderName');
 
-              messageWidgets.add(GroupChatBubble(
-                senderID: senderEmail,
-                userName: senderName,
-                text: data['message'] ?? '',
-                time: time,
-                isMe: senderEmail == currentUserEmail,
-              ));
+              messageWidgets.add(
+                GroupChatBubble(
+                  senderID: senderEmail,
+                  userName: senderName,
+                  text: data['message'] ?? '',
+                  time: time,
+                  isMe: senderEmail == currentUserEmail,
+                ),
+              );
+            }
+
+            if (groupCreatorEmail != null && groupCreatedAt != null) {
+              final groupCreatedDate = formatFullDateWithSuffixFromString(
+                groupCreatedAt!.toDate().toString(),
+              );
+              final creatorName =
+                  nameMap[groupCreatorEmail] ?? groupCreatorEmail!;
+              final memberNames = groupMembers
+                  .where((e) => e != groupCreatorEmail)
+                  .map((e) => nameMap[e] ?? e)
+                  .toList();
+              messageWidgets.insert(
+                0,
+                _buildGroupCreatedBubble(
+                  createdBy: creatorName,
+                  groupCreatedDate: groupCreatedDate,
+                  members: memberNames,
+                ),
+              );
             }
 
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -288,38 +298,16 @@ class _GroupChatScreenState extends State<GroupChatScreen>
             });
 
             return ListView(
-              reverse: true,
+              // reverse: true,
               controller: scrollController,
               padding: const EdgeInsets.only(bottom: 10),
-              children: messageWidgets.reversed.toList(),
+              children: messageWidgets,
             );
           },
         );
       },
     );
   }
-
-  // Future<Map<String, String>> prefetchAllNames1() async {
-  //   final Map<String, String> nameMap = {};
-  //   for (var doc in docs) {
-  //     final data = doc.data() as Map<String, dynamic>;
-  //     final email = data['senderID'];
-  //     if (_nameCache.containsKey(email)) {
-  //       nameMap[email] = _nameCache[email]!;
-  //     } else {
-  //       final snapshot = await FirebaseFirestore.instance
-  //           .collection('User')
-  //           .where('email', isEqualTo: email)
-  //           .limit(1)
-  //           .get();
-  //       final name =
-  //           snapshot.docs.isNotEmpty ? snapshot.docs.first.get('name') : '';
-  //       _nameCache[email] = name;
-  //       nameMap[email] = name;
-  //     }
-  //   }
-  //   return nameMap;
-  // }
 
   Future<Map<String, String>> prefetchAllNames(
       List<DocumentSnapshot> docs) async {
@@ -345,7 +333,69 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       }
     }
 
+    for (final email in [...groupMembers, groupCreatorEmail]) {
+      if (email != null && !_nameCache.containsKey(email)) {
+        final snapshot = await FirebaseFirestore.instance
+            .collection('User')
+            .where('email', isEqualTo: email)
+            .limit(1)
+            .get();
+
+        final name =
+            snapshot.docs.isNotEmpty ? snapshot.docs.first.get('name') : '';
+        _nameCache[email] = name;
+        nameMap[email] = name;
+      }
+    }
+
     return nameMap;
+  }
+
+  Widget _buildGroupCreatedBubble({
+    required String createdBy,
+    required String groupCreatedDate,
+    required List<String> members,
+  }) {
+    final others = members.where((m) => m != createdBy).toList();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(Icons.group, size: 32, color: Colors.grey),
+            const SizedBox(height: 8),
+            Text(
+              '$createdBy created this group',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Group · ${members.length} members',
+              style: const TextStyle(color: Colors.black54),
+            ),
+            const SizedBox(height: 10),
+            if (others.isNotEmpty)
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: others
+                    .map((m) => Chip(
+                          label: Text(m, style: const TextStyle(fontSize: 12)),
+                          backgroundColor: Colors.orange.shade50,
+                        ))
+                    .toList(),
+              )
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -355,7 +405,6 @@ class _GroupChatScreenState extends State<GroupChatScreen>
         title: RawMaterialButton(
           splashColor: Colors.transparent,
           onPressed: () {
-            // showSnackBar(context, "Appbar clicked");
             Navigator.push(
               context,
               MaterialPageRoute(

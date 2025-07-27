@@ -31,64 +31,55 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const Text('Jobs'),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 18),
-          onPressed: () => Get.back(),
+        title: TextField(
+          controller: _searchController,
+          decoration: InputDecoration(
+            hintText: '🔍 Search for jobs...',
+            filled: true,
+            fillColor: Colors.white,
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () {
+                _searchController.clear();
+                setState(() => _searchQuery = '');
+              },
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          onChanged: (value) => setState(() {
+            _searchQuery = value.toLowerCase().trim();
+          }),
         ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           child: Column(
             children: [
-              TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: '🔍 Search for jobs...',
-                  filled: true,
-                  fillColor: Colors.white,
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() => _searchQuery = '');
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                onChanged: (value) => setState(() {
-                  _searchQuery = value.toLowerCase().trim();
-                }),
-              ),
-              const SizedBox(height: 10),
               Row(
                 children: [
                   const SizedBox(width: 10),
-                  (provider.isUserSubscribed)
-                      ? Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () => Get.to(const AddJobScreen()),
-                            icon: const Icon(Icons.add_circle_outline),
-                            label: const Text(
-                              'Post a Job',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange.shade50,
-                              foregroundColor: Colors.deepOrangeAccent,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => Get.to(const AddJobScreen()),
+                      icon: const Icon(Icons.add_circle_outline),
+                      label: const Text(
+                        'Post a Job',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange.shade50,
+                        foregroundColor: Colors.deepOrangeAccent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),

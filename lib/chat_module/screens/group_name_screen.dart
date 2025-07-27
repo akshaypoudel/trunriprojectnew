@@ -121,6 +121,10 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
         'imageUrl': imageUrl,
         'createdAt': Timestamp.now(),
         'createdBy': currentUserEmail,
+        'senderID': 'system', // use this as an identifier
+        'message': 'created',
+        'timestamp': FieldValue.serverTimestamp(),
+        'type': 'system',
       });
 
       Navigator.pop(context); // close AlertDialog
@@ -147,23 +151,6 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
     }
   }
 
-  // Future<String> uploadGroupImage(File imageFile) async {
-  //   try {
-  //     final fileName = path.basename(imageFile.path);
-  //     final storageRef = FirebaseStorage.instance
-  //         .ref()
-  //         .child('group_icons/$fileName'); // Folder in Firebase Storage
-
-  //     final uploadTask = await storageRef.putFile(imageFile);
-
-  //     final downloadUrl = await storageRef.getDownloadURL();
-
-  //     return downloadUrl;
-  //   } catch (e) {
-  //     throw Exception('Failed to upload image: $e');
-  //   }
-  // }
-
   @override
   void dispose() {
     _groupNameController.dispose();
@@ -175,91 +162,102 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Create Group")),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: _pickGroupImage,
-                  child: CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.grey.shade300,
-                    backgroundImage:
-                        _groupImage != null ? FileImage(_groupImage!) : null,
-                    child: _groupImage == null
-                        ? const Icon(Icons.camera_alt, size: 28)
-                        : null,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: GroupNameInputField(
-                    controller: _groupNameController,
-                    focusNode: focusNode,
-                    onTap: () {
-                      if (_showEmojiKeyboard) {
-                        setState(() => _showEmojiKeyboard = false);
-                      }
-                    },
-                  ),
-                ),
-                IconButton(
-                  icon: (_showEmojiKeyboard)
-                      ? const Icon(Icons.emoji_emotions_outlined)
-                      : const Icon(Icons.keyboard),
-                  onPressed: _toggleEmojiKeyboard,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Text('Selected Participant: ${widget.selectedUsers.length}'),
-          ),
-
-          if (widget.selectedUsers.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Wrap(
-                direction: Axis.vertical,
-                spacing: 8,
-                runSpacing: 8,
-                children: widget.selectedUsers.map((user) {
-                  return Chip(
-                    elevation: 10,
-                    label: Text(user['name']),
-                    avatar: const CircleAvatar(
-                      child: Icon(
-                        Icons.person,
-                        size: 20,
-                        color: Colors.blueGrey,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: _pickGroupImage,
+                      child: CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.grey.shade300,
+                        backgroundImage: _groupImage != null
+                            ? FileImage(_groupImage!)
+                            : null,
+                        child: _groupImage == null
+                            ? const Icon(Icons.camera_alt, size: 28)
+                            : null,
                       ),
                     ),
-                  );
-                }).toList(),
-              ),
-            ),
-
-          const Spacer(),
-          // Emoji Picker (if shown)
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Offstage(
-              offstage: !_showEmojiKeyboard,
-              child: SizedBox(
-                height: 300,
-                child: EmojiPicker(
-                  onEmojiSelected: (category, emoji) => _onEmojiSelected(emoji),
-                  config: const Config(),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GroupNameInputField(
+                        controller: _groupNameController,
+                        focusNode: focusNode,
+                        onTap: () {
+                          if (_showEmojiKeyboard) {
+                            setState(() => _showEmojiKeyboard = false);
+                          }
+                        },
+                      ),
+                    ),
+                    IconButton(
+                      icon: (_showEmojiKeyboard)
+                          ? const Icon(Icons.emoji_emotions_outlined)
+                          : const Icon(Icons.keyboard),
+                      onPressed: _toggleEmojiKeyboard,
+                    ),
+                  ],
                 ),
               ),
-            ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
+                    'Selected Participant: ${widget.selectedUsers.length}'),
+              ),
+
+              if (widget.selectedUsers.isNotEmpty)
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: Wrap(
+                    direction: Axis.vertical,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: widget.selectedUsers.map((user) {
+                      return Chip(
+                        elevation: 10,
+                        label: Text(user['name']),
+                        avatar: const CircleAvatar(
+                          child: Icon(
+                            Icons.person,
+                            size: 20,
+                            color: Colors.blueGrey,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              const SizedBox(
+                width: 10,
+                height: 20,
+              ),
+              // const Spacer(),
+              // Emoji Picker (if shown)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Offstage(
+                  offstage: !_showEmojiKeyboard,
+                  child: SizedBox(
+                    height: 300,
+                    child: EmojiPicker(
+                      onEmojiSelected: (category, emoji) =>
+                          _onEmojiSelected(emoji),
+                      config: const Config(),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
 
       // FAB to navigate

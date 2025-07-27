@@ -2,7 +2,11 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:trunriproject/chat_module/context_chats/models/context_chats.dart';
 import 'package:trunriproject/chat_module/models/message.dart';
+import 'package:trunriproject/subscription/subscription_screen.dart';
 
 class ChatServices {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -77,5 +81,95 @@ class ChatServices {
         .collection("messages")
         .orderBy("timestamp", descending: false)
         .snapshots();
+  }
+
+  ///////////////////////////////
+  ///Context Based Chat Services.
+  ///
+
+  Future<ContextChat> openContextChat({
+    required String postId,
+    required String postType,
+    required String posterId,
+    required String seekerId,
+  }) async {
+    final query = await _firestore
+        .collection('contextChats')
+        .where('postId', isEqualTo: postId)
+        .where('seekerId', isEqualTo: seekerId)
+        .limit(1)
+        .get();
+
+    if (query.docs.isNotEmpty) {
+      return ContextChat.fromDoc(query.docs.first);
+    }
+
+    final docRef = await _firestore.collection('contextChats').add({
+      'postId': postId,
+      'postType': postType,
+      'posterId': posterId,
+      'seekerId': seekerId,
+      'createdAt': FieldValue.serverTimestamp(),
+      'isClosed': false,
+    });
+
+    final doc = await docRef.get();
+    return ContextChat.fromDoc(doc);
+  }
+
+  Future<bool> canSendMessage({
+    required String chatId,
+    required String userId,
+  }) async {
+    final chatDoc =
+        await _firestore.collection('contextChats').doc(chatId).get();
+    final data = chatDoc.data()!;
+    final isSeeker = data['seekerId'] == userId;
+
+    if (!isSeeker) return true; // Poster always allowed
+
+    final counterRef = _firestore
+        .collection('contextChats')
+        .doc(chatId)
+        .collection('counters')
+        .doc('messageCount');
+
+    final counterDoc = await counterRef.get();
+    final sent = counterDoc.exists ? counterDoc.data()!['count'] as int : 0;
+
+    if (sent < 2) {
+      await counterRef.set({'count': sent + 1});
+      return true;
+    }
+    return false;
+  }
+
+  Stream<QuerySnapshot> messagesStream(String chatId) {
+    return _firestore
+        .collection('contextChats')
+        .doc(chatId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+  }
+
+  Future<void> sendContextMessage({
+    required String chatId,
+    required String senderId,
+    required String text,
+  }) async {
+    final allowed = await canSendMessage(chatId: chatId, userId: senderId);
+    if (!allowed) {
+      throw 'SUBSCRIPTION_REQUIRED';
+    }
+    await _firestore
+        .collection('contextChats')
+        .doc(chatId)
+        .collection('messages')
+        .add({
+      'senderId': senderId,
+      'text': text,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
   }
 }

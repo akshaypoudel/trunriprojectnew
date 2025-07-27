@@ -93,12 +93,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
+      backgroundColor: Colors.orange.shade50,
       appBar: AppBar(
         title: UserOnlineStatusTitle(
           userId: widget.receiversID,
           userName: widget.receiversName,
         ),
-        backgroundColor: Colors.orange.shade100,
+        backgroundColor: Colors.orange.shade50,
       ),
       body: SafeArea(
         child: Column(
@@ -134,7 +135,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   void scrollToBottom() {
     if (scrollController.hasClients) {
       scrollController.animateTo(
-        scrollController.position.minScrollExtent,
+        scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 300),
         curve: Curves.fastOutSlowIn,
       );
@@ -205,8 +206,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         } else {
           return ListView(
             controller: scrollController,
-            reverse: true,
-            children: messageWidgets.reversed.toList(),
+            // reverse: true,
+            children: messageWidgets,
           );
         }
       },

@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/currentLocation.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
@@ -78,6 +79,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
         },
       );
+      if (userImageFile != File("")) {
+        await fireStoreService.updateProfilePictureForCommunity(userImageFile);
+      }
     } catch (e) {
       showSnackBar(context, "Error updating profile: $e");
       print("Error updating profile: $e");
@@ -100,6 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       newEmail = snapshot.get('email') ?? '';
       phone = snapshot.get('phoneNumber') ?? '';
       imageUrl = snapshot.get('profile') ?? '';
+      // userImageUrl = imageUrl;
     }
     addressText = provider.getUsersAddress;
     addressController.text = provider.getShortFormAddress;
@@ -143,6 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<LocationData>(context, listen: false)
           .fetchUserAddressAndLocation();
+      Provider.of<ChatProvider>(context, listen: false).fetchUserProfileImage();
     });
 
     initialize();

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:trunriproject/events/eventDetailsScreen.dart';
 import 'package:trunriproject/events/postEventScreen.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
+import 'package:trunriproject/subscription/subscription_screen.dart';
 
 class EventDiscoveryScreen extends StatefulWidget {
   final List<Map<String, dynamic>> eventList;
@@ -98,39 +99,40 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                         ),
                       ),
                     ),
-                    (provider.isUserSubscribed)
-                        ? Padding(
-                            padding: const EdgeInsets.only(right: 10),
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                Get.to(() => const PostEventScreen());
-                              },
-                              icon:
-                                  const Icon(Icons.event, color: Colors.white),
-                              label: const Text(
-                                'Post an Event',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors
-                                    .orangeAccent.shade200, // Button color
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 10),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      20), // Rounded corners
-                                ),
-                                elevation: 4,
-                                shadowColor:
-                                    Colors.orangeAccent.withValues(alpha: 0.5),
-                              ),
-                            ),
-                          )
-                        : const SizedBox.shrink(),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          if (provider.isUserSubscribed) {
+                            Get.to(() => const PostEventScreen());
+                          } else {
+                            Get.to(() => const SubscriptionScreen());
+                          }
+                        },
+                        icon: const Icon(Icons.event, color: Colors.white),
+                        label: const Text(
+                          'Post an Event',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Colors.orangeAccent.shade200, // Button color
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(20), // Rounded corners
+                          ),
+                          elevation: 4,
+                          shadowColor:
+                              Colors.orangeAccent.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),

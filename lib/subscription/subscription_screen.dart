@@ -260,8 +260,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     }
     final email = list[1];
     final result = number.replaceFirst('+91', '');
-    log('phonenum = $result');
-    log('email..... = $email');
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final firestore = FirebaseFirestore.instance;
@@ -275,8 +273,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         (selectedPlan == annualPlan) ? annualPriceAmount : monthlyPriceAmount;
 
     amount *= 100; //amount in paise
-
-    log('my pone number = $result');
 
     var options = {
       'key': Constants.RAZORPAY_KEY,

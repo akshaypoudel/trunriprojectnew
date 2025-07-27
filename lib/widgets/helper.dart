@@ -30,7 +30,8 @@ class NewHelper {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              LoadingAnimationWidget.threeArchedCircle(color: const Color(0xffFF730A), size: 40),
+              LoadingAnimationWidget.threeArchedCircle(
+                  color: const Color(0xffFF730A), size: 40),
             ],
           ),
         ),
@@ -42,13 +43,11 @@ class NewHelper {
   static hideLoader(OverlayEntry loader) {
     try {
       loader.remove();
-      // ignore: empty_catches
+      // ignore: empty_catches3
     } catch (e) {}
   }
 
-
   Future<File?> addFilePicker({List<String>? allowedExtensions}) async {
-
     try {
       final item = await FilePicker.platform.pickFiles(
         type: allowedExtensions != null ? FileType.custom : FileType.any,
@@ -64,9 +63,12 @@ class NewHelper {
     }
   }
 
-  Future<File?> addImagePicker({ImageSource imageSource = ImageSource.gallery, int imageQuality = 80}) async {
+  Future<File?> addImagePicker(
+      {ImageSource imageSource = ImageSource.gallery,
+      int imageQuality = 80}) async {
     try {
-      final item = await ImagePicker().pickImage(source: imageSource, imageQuality: imageQuality);
+      final item = await ImagePicker()
+          .pickImage(source: imageSource, imageQuality: imageQuality);
       if (item == null) {
         return null;
       } else {
@@ -79,8 +81,10 @@ class NewHelper {
 
   Future<List<File>?> multiImagePicker({int imageQuality = 80}) async {
     try {
-      final item = await ImagePicker().pickMultiImage(imageQuality: imageQuality);
-      return List.generate(min(5, item.length), (index) => File(item[index].path));
+      final item =
+          await ImagePicker().pickMultiImage(imageQuality: imageQuality);
+      return List.generate(
+          min(5, item.length), (index) => File(item[index].path));
     } on PlatformException catch (e) {
       throw Exception(e);
     }
@@ -97,7 +101,10 @@ class NewHelper {
       builder: (BuildContext context) => CupertinoActionSheet(
         title: Text(
           'Select Image',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.deepPurpleAccent),
+          style: GoogleFonts.poppins(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: Colors.deepPurpleAccent),
         ),
         // message: Text('Message'),
         cancelButton: CupertinoActionSheetAction(
@@ -110,9 +117,10 @@ class NewHelper {
           CupertinoActionSheetAction(
             child: const Text('Gallery'),
             onPressed: () {
-              // pickImage(
-              //     ImageSource.gallery);
-              NewHelper().addImagePicker(imageSource: ImageSource.gallery, imageQuality: 60).then((value) {
+              NewHelper()
+                  .addImagePicker(
+                      imageSource: ImageSource.gallery, imageQuality: 60)
+                  .then((value) {
                 if (value == null) return;
                 gotImage(value);
                 Get.back();
@@ -122,7 +130,10 @@ class NewHelper {
           CupertinoActionSheetAction(
             child: const Text('Camera'),
             onPressed: () {
-              NewHelper().addImagePicker(imageSource: ImageSource.camera, imageQuality: 60).then((value) {
+              NewHelper()
+                  .addImagePicker(
+                      imageSource: ImageSource.camera, imageQuality: 60)
+                  .then((value) {
                 if (value == null) return;
                 gotImage(value);
                 Get.back();
@@ -157,19 +168,19 @@ class NewHelper {
 //       fontSize: 15);
 // }
 
-
 void showSnackBar(
-    BuildContext context,
-    dynamic message, {
-      SnackBarBehavior? behavior,
-      bool? center,
-    }) {
+  BuildContext context,
+  dynamic message, {
+  SnackBarBehavior? behavior,
+  bool? center,
+}) {
   // Remove any existing SnackBar
   ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
   // Determine SnackBar position and behavior
   final isCenter = center == true;
-  final snackBarBehavior = behavior ?? (isCenter ? SnackBarBehavior.floating : SnackBarBehavior.fixed);
+  final snackBarBehavior = behavior ??
+      (isCenter ? SnackBarBehavior.floating : SnackBarBehavior.fixed);
 
   final snackBar = SnackBar(
     content: Text(
@@ -181,7 +192,7 @@ void showSnackBar(
       ),
     ),
     duration: const Duration(seconds: 4),
-    backgroundColor: const Color(0xff0FF730A),
+    backgroundColor: const Color(0xff0ff730a),
     behavior: snackBarBehavior,
     margin: isCenter
         ? const EdgeInsets.symmetric(horizontal: 40, vertical: 20)
@@ -193,8 +204,6 @@ void showSnackBar(
 
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
-
-
 
 extension ConvertToNum on String {
   num? get convertToNum {
@@ -244,11 +253,11 @@ extension GetTotal on List<num> {
 
 extension Spacing on num {
   SizedBox get spaceX => SizedBox(
-    width: toDouble(),
-  );
+        width: toDouble(),
+      );
   SizedBox get spaceY => SizedBox(
-    height: toDouble(),
-  );
+        height: toDouble(),
+      );
 
   Duration get inSecond {
     return Duration(seconds: toInt());
@@ -263,10 +272,10 @@ extension GetContext on BuildContext {
   Size get getSize => MediaQuery.of(this).size;
 
   void get navigate {
-    Scrollable.ensureVisible(this, alignment: .25, duration: const Duration(milliseconds: 600));
+    Scrollable.ensureVisible(this,
+        alignment: .25, duration: const Duration(milliseconds: 600));
   }
 }
-
 
 extension ConvertToDateon on Duration {
   DateTime get fromTodayStart {
@@ -285,4 +294,3 @@ extension ChangeFont on TextStyle {
     return GoogleFonts.urbanist().merge(this);
   }
 }
-

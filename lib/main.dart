@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/SplashScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/notifications/notification_services.dart';
@@ -110,12 +111,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       providers: [
         ChangeNotifierProvider(create: (_) => SubscriptionData()),
         ChangeNotifierProvider(create: (_) => LocationData()),
+        ChangeNotifierProvider(create: (_) => ChatProvider()),
       ],
       child: GetMaterialApp(
         title: 'TruNri',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.orangeAccent),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
           useMaterial3: true,
         ),
         routingCallback: (routing) {

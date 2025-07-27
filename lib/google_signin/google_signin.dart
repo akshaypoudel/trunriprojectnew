@@ -88,6 +88,11 @@ class CustomGoogleSignin {
       'lastSeen': Timestamp.now(),
       'isSubscribed': false,
       'subscriptionExpiry': DateTime.now(),
+      'friends': [],
+      'friendRequests': {
+        'sent': [],
+        'received': [],
+      }
     }).then((value) {
       NewHelper.hideLoader(loader);
     });
