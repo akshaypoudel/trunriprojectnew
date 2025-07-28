@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:trunriproject/chat_module/context_chats/screens/context_chat_screen.dart';
+import 'package:trunriproject/chat_module/services/auth_service.dart';
+import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:trunriproject/job/uploadResumeScreen.dart';
 
 class JobDetailsScreen extends StatelessWidget {
@@ -12,15 +15,20 @@ class JobDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final companyName = data['companyName'];
     Timestamp jobPostDate = data['postDate'];
-
-    final size = MediaQuery.of(context).size;
+    final postId = data['postID'];
+    final posterName = data['posterName'];
+    final postTitle = data['positionName'];
+    final postCity = data['city'];
+    final postState = data['state'];
+    final posterID = data['uid'];
+    final seekerID = AuthServices().getCurrentUser()!.uid;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F8F8),
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         title: Text(data['positionName'] ?? 'Job Details'),
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.grey.shade100,
+        foregroundColor: Colors.black,
       ),
       body: Column(
         children: [
@@ -48,7 +56,8 @@ class JobDetailsScreen extends StatelessWidget {
                       const SizedBox(width: 5),
                       Expanded(
                         child: Text(
-                          data['address'] ?? 'No Address Available',
+                          '${data['city']}, ${data['state']}' ??
+                              'No Address Available',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black54,
@@ -74,7 +83,6 @@ class JobDetailsScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-
                   // Details Section
                   _infoCard(
                     icon: Icons.badge_outlined,
@@ -84,7 +92,7 @@ class JobDetailsScreen extends StatelessWidget {
                   _infoCard(
                     icon: Icons.category_outlined,
                     title: "Category",
-                    value: data['roleCategory'] ?? 'No Category Available',
+                    value: data['category'] ?? 'No Category Available',
                   ),
                   _infoCard(
                     icon: Icons.work_outline,
@@ -181,28 +189,110 @@ class JobDetailsScreen extends StatelessWidget {
           ),
 
           // Apply Button
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.all(16),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Get.to(() => const UploadResumeScreen());
-              },
-              icon: const Icon(Icons.upload_file_rounded),
-              label: const Text("Apply Now"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                textStyle: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+          (posterID != AuthServices().getCurrentUser()!.uid)
+              ? Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Get.to(
+                              () => ContextChatScreen(
+                                postId: postId,
+                                postType: 'job',
+                                posterId: posterID,
+                                seekerId: seekerID,
+                                postTitle: postTitle,
+                                city: postCity,
+                                state: postState,
+                                posterName: posterName,
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.question_answer_outlined,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            "Inquire Now",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            textStyle: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12), // space between buttons
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Get.to(() => const UploadResumeScreen());
+                          },
+                          icon: const Icon(
+                            Icons.upload_file_rounded,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            "Apply Now",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            textStyle: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    height: 50,
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Get.to(() => const MyBottomNavBar(index: 2));
+                      },
+                      icon: const Icon(
+                        Icons.upload_file_rounded,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        "See Who Inquired",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          )
         ],
       ),
     );

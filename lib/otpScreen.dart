@@ -55,10 +55,16 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
   }
 
   void register(
-      String completePhoneNum, String name, String email, String password) {
+    String completePhoneNum,
+    String name,
+    String email,
+    String password,
+  ) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
+
+    await updateUserName(name);
     FirebaseFirestore.instance.collection('User').doc(uid).set({
       'name': name,
       'email': email,
@@ -78,6 +84,23 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
     }).then((value) {
       NewHelper.hideLoader(loader);
     });
+  }
+
+  Future<void> updateUserName(String newName) async {
+    User? user = FirebaseAuth.instance.currentUser; // 1. Get the current user
+
+    if (user != null) {
+      try {
+        await user.updateDisplayName(newName); // 2. Call updateDisplayName()
+        showSnackBar(context,
+            "Display name updated successfully to: ${user.displayName}");
+      } on FirebaseAuthException catch (e) {
+        // 3. Handle errors
+        showSnackBar(context, "Error updating display name: ${e.message}");
+      }
+    } else {
+      showSnackBar(context, "No user is currently signed in.");
+    }
   }
 
   void verifyOTP() async {

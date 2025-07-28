@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:get/get.dart';
+import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/widgets/helper.dart';
+import 'package:uuid/uuid.dart';
 
 import '../widgets/customTextFormField.dart';
 import 'jobHomePageScreen.dart';
@@ -32,8 +34,11 @@ class _AddJobScreenState extends State<AddJobScreen> {
   TextEditingController keySkillsController = TextEditingController();
   TextEditingController jobDescriptionController = TextEditingController();
   TextEditingController aboutCompanyController = TextEditingController();
+  TextEditingController cityController = TextEditingController();
+  TextEditingController stateController = TextEditingController();
 
   final formKey1 = GlobalKey<FormState>();
+  final uuid = const Uuid();
 
   String? experience;
 
@@ -128,13 +133,18 @@ class _AddJobScreenState extends State<AddJobScreen> {
     keySkillsController.dispose();
     jobDescriptionController.dispose();
     aboutCompanyController.dispose();
+    cityController.dispose();
+    stateController.dispose();
     super.dispose();
   }
 
   void addJobs() {
+    final postID = uuid.v4();
     FirebaseFirestore.instance.collection('jobs').doc().set({
       'uid': FirebaseAuth.instance.currentUser!.uid,
+      'postID': postID,
       'postDate': DateTime.now(),
+      'posterName': AuthServices().getCurrentUserDisplayName()!,
       'positionName': positionNameController.text,
       'companyName': companyNameController.text,
       'experience': experience,
@@ -151,16 +161,13 @@ class _AddJobScreenState extends State<AddJobScreen> {
       'keySkills': keySkillsController.text,
       'jobDescription': jobDescriptionController.text,
       'aboutCompany': aboutCompanyController.text,
-      'timeOfAdd': timeOfAdd
+      'timeOfAdd': timeOfAdd,
+      'city': cityController.text,
+      'state': stateController.text,
     }).then((value) {
       showSnackBar(context, 'Job Added Successfully');
       // Get.to(const JobHomePageScreen());
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (c) => const JobHomePageScreen(),
-        ),
-      );
+      Get.to(() => const JobHomePageScreen());
     });
   }
 
@@ -195,11 +202,32 @@ class _AddJobScreenState extends State<AddJobScreen> {
                 child: Text('Company Name'),
               ),
               CommonTextField(
-                  hintText: 'Company Name',
-                  controller: companyNameController,
-                  validator: MultiValidator([
-                    RequiredValidator(errorText: 'Company Name is required'),
-                  ]).call),
+                hintText: 'Company Name',
+                controller: companyNameController,
+                validator: MultiValidator([
+                  RequiredValidator(errorText: 'Company Name is required'),
+                ]).call,
+              ),
+              const Padding(
+                padding: EdgeInsets.only(left: 25),
+                child: Text('City'),
+              ),
+              CommonTextField(
+                hintText: 'Enter City',
+                controller: cityController,
+                validator:
+                    RequiredValidator(errorText: 'City is required').call,
+              ),
+              const Padding(
+                padding: EdgeInsets.only(left: 25),
+                child: Text('State'),
+              ),
+              CommonTextField(
+                hintText: 'Enter State',
+                controller: stateController,
+                validator:
+                    RequiredValidator(errorText: 'State is required').call,
+              ),
               const Padding(
                 padding: EdgeInsets.only(left: 25),
                 child: Text('Required Work Experience'),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/accommodation/accomodationDetailsScreen.dart';
 import 'package:trunriproject/accommodation/whichYouListScreen.dart';
+import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 import 'filterOptionScreen.dart';
 
@@ -41,6 +42,7 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
   List<Map<String, dynamic>> displayedList = [];
   String? selectedCity = 'All';
   final TextEditingController searchController = TextEditingController();
+  bool showOnlyMyPost = false;
 
   @override
   void initState() {
@@ -61,6 +63,32 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
   }
 
   void searchAccommodations() {
+    final query = searchController.text.toLowerCase();
+    final currentUserId = AuthServices().getCurrentUser()!.uid;
+
+    setState(() {
+      displayedList = widget.accommodationList.where((item) {
+        final matchesCity = selectedCity == 'All' ||
+            (item['state'] ?? '').toString().toLowerCase() ==
+                selectedCity!.toLowerCase();
+
+        final name = item['fullAddress']?.toString().toLowerCase() ?? '';
+        final city = item['city']?.toString().toLowerCase() ?? '';
+        final state = item['state']?.toString().toLowerCase() ?? '';
+
+        final matchesSearch = name.contains(query) ||
+            city.contains(query) ||
+            state.contains(query);
+
+        final matchesUser =
+            !showOnlyMyPost || item['uid']?.toString() == currentUserId;
+
+        return matchesCity && matchesSearch && matchesUser;
+      }).toList();
+    });
+  }
+
+  void searchAccommodations1() {
     final query = searchController.text.toLowerCase();
     setState(() {
       displayedList = widget.accommodationList.where((item) {
@@ -158,26 +186,61 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: SizedBox(
+                                // width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.orange,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.add_home_outlined),
+                                  label: const Text(
+                                    'Post an Accommodation',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  onPressed: () {
+                                    Get.to(() => const WhichYouListScreen());
+                                  },
+                                ),
                               ),
                             ),
-                            icon: const Icon(Icons.add_home_outlined),
-                            label: const Text(
-                              'Post an Accommodation',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: SizedBox(
+                                height: 48,
+                                child: ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.orange,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.home_sharp),
+                                  label: Text(
+                                    showOnlyMyPost ? 'Show All' : 'My Posts',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      showOnlyMyPost = !showOnlyMyPost;
+                                    });
+                                    searchAccommodations();
+                                  },
+                                ),
+                              ),
                             ),
-                            onPressed: () {
-                              Get.to(() => const WhichYouListScreen());
-                            },
-                          ),
+                          ],
                         ),
                         const SizedBox(height: 12),
                         SizedBox(
@@ -209,8 +272,8 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
                                           decoration: BoxDecoration(
                                             borderRadius:
                                                 BorderRadius.circular(12),
-                                            color:
-                                                Colors.black.withOpacity(0.4),
+                                            color: Colors.black
+                                                .withValues(alpha: 0.4),
                                           ),
                                         ),
                                       ),

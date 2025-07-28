@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:trunriproject/accommodation/subscribed_user/message_owner_for_non_subscribed.dart';
 import 'package:trunriproject/chat_module/context_chats/screens/context_chat_screen.dart';
+import 'package:trunriproject/chat_module/services/auth_service.dart';
+import 'package:trunriproject/home/bottom_bar.dart';
 
 class AccommodationDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> accommodation;
@@ -33,6 +33,9 @@ class _AccommodationDetailsScreenState
     final String posterId = data['uid'] as String; // host’s user ID
     final String seekerId = _firebaseAuth.currentUser!.uid;
     final String postTitle = data['Give your listing a title'] as String;
+    final String postCity = data['city'];
+    final String postState = data['state'];
+    final String posterName = data['posterName'];
 
     Widget buildInfoCard(String label, String value, {IconData? icon}) {
       return Card(
@@ -183,41 +186,68 @@ class _AccommodationDetailsScreenState
               ),
             ),
           ),
-
-          // 📩 Message Owner Button
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+          (posterId != AuthServices().getCurrentUser()!.uid)
+              ? Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      onPressed: () {
+                        Get.to(
+                          () => ContextChatScreen(
+                            postId: postId,
+                            postType: postType,
+                            posterId: posterId,
+                            seekerId: seekerId,
+                            postTitle: postTitle,
+                            city: postCity,
+                            state: postState,
+                            posterName: posterName,
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.message_outlined),
+                      label: const Text(
+                        "Inquire Now",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ),
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      onPressed: () {
+                        Get.to(() => const MyBottomNavBar(index: 2));
+                      },
+                      icon: const Icon(Icons.message_outlined),
+                      label: const Text(
+                        "See Who Inquired",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ),
                   ),
                 ),
-                onPressed: () {
-                  // Get.to(()=>MessageOwnerScreen(ownerId: , ownerName: ownerName, propertyTitle: data['Give your listing a title'],),);
-                  Get.to(
-                    () => ContextChatScreen(
-                      postId: postId,
-                      postType: postType,
-                      posterId: posterId,
-                      seekerId: seekerId,
-                      postTitle: postTitle,
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.message_outlined),
-                label: const Text(
-                  "Message the Property Owner",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );

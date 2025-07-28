@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trunriproject/chat_module/screens/tabs/community_chat_page.dart';
 import 'package:trunriproject/chat_module/screens/tabs/groups_chat_list_page.dart';
+import 'package:trunriproject/chat_module/screens/tabs/inquiry_details_page.dart';
 import 'package:trunriproject/chat_module/screens/tabs/people_chats_list_page.dart';
 
 class ChatListScreen extends StatefulWidget {
@@ -16,7 +17,7 @@ class _ChatListScreenState extends State<ChatListScreen>
 
   @override
   void initState() {
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     super.initState();
   }
 
@@ -39,6 +40,7 @@ class _ChatListScreenState extends State<ChatListScreen>
           labelColor: Colors.orange,
           unselectedLabelColor: Colors.grey,
           tabs: const [
+            Tab(text: 'Inquiry'),
             Tab(text: 'People'),
             Tab(text: 'Groups'),
             Tab(text: 'Community'),
@@ -49,6 +51,7 @@ class _ChatListScreenState extends State<ChatListScreen>
         controller: _tabController,
         physics: const BouncingScrollPhysics(),
         children: const [
+          InquiryDetailsPage(),
           PeopleChatsPage(),
           GroupsChatPage(),
           CommunityPage(),

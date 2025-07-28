@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
 import '../widgets/commomButton.dart';
 import '../widgets/helper.dart';
@@ -86,6 +87,7 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
               'start': _currentRangeValues.start,
               'end': _currentRangeValues.end,
             },
+            'posterName': AuthServices().getCurrentUserDisplayName(),
           });
         }
         Get.to(const MyBottomNavBar());

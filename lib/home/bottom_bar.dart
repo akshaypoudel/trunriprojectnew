@@ -10,7 +10,8 @@ import 'explorScreen.dart';
 import 'home_screen.dart';
 
 class MyBottomNavBar extends StatefulWidget {
-  const MyBottomNavBar({super.key});
+  const MyBottomNavBar({super.key, this.index});
+  final int? index;
 
   @override
   State<MyBottomNavBar> createState() => _MyBottomNavBarState();
@@ -30,6 +31,9 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
     super.initState();
     // initializeProvider();
     // Future.microtask(() => );
+    if (widget.index != null) {
+      myCurrentIndex = 2;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initializeProvider();
     });

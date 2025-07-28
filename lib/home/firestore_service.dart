@@ -31,17 +31,6 @@ class FirebaseFireStoreService {
     return false;
   }
 
-  // Future<ModelProfileData?> getProfileDetails() async {
-  //   final response =
-  //       await fireStore.collection(profileCollection).doc(userId).get();
-  //   if (response.exists) {
-  //     log("Api Repsponse.....    ${jsonEncode(response.data())}");
-  //     if (response.data() == null) return null;
-  //     return ModelProfileData.fromJson(response.data()!);
-  //   }
-  //   return null;
-  // }
-
   Future<bool> updateProfile({
     required String name,
     required String email,
@@ -51,21 +40,14 @@ class FirebaseFireStoreService {
     required BuildContext context,
     required Function(bool gg) updated,
   }) async {
-    String profileUrl = profileImage.path;
     String? imageUrl;
     OverlayEntry loader = NewHelper.overlayLoader(context);
     try {
       if (allowChange) {
         Overlay.of(context).insert(loader);
         imageUrl = await getProfileImageUrl(profileImage);
-
-        // final userProfileImageRef = storageRef.child("user_images/$userId");
-
-        // UploadTask task6 = userProfileImageRef.putFile(profileImage);
-        // profileUrl = await (await task6).ref.getDownloadURL();
       }
       await fireStore.collection(profileCollection).doc(userId).update({
-        // "email": email,
         "name": name,
         "address": address,
         "profile": imageUrl,
@@ -88,7 +70,6 @@ class FirebaseFireStoreService {
     final fileName = path.basename(profileImage.path);
     final storageRef =
         FirebaseStorage.instance.ref().child('user_images/$fileName');
-    final uploadTask = await storageRef.putFile(profileImage);
 
     return await storageRef.getDownloadURL();
   }

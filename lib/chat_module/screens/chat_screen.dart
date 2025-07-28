@@ -214,52 +214,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget buildMessageList1() {
-    String senderID = availableEmailInDB ?? '';
-    return StreamBuilder(
-      stream: chatServices.getMessages(senderID, widget.receiversID),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Text('Error');
-        }
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        final docs = snapshot.data!.docs;
-        final List<Widget> messageWidgets = [];
-
-        String? lastDateLabel;
-
-        for (var doc in docs) {
-          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          DateTime messageDate = (data['timestamp'] as Timestamp).toDate();
-
-          String currentDateLabel = getDateLabel(messageDate);
-
-          if (lastDateLabel != currentDateLabel) {
-            messageWidgets.add(DateBubble(date: currentDateLabel));
-            lastDateLabel = currentDateLabel;
-          }
-
-          messageWidgets.add(buildMessageItem(doc));
-        }
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          scrollToBottom();
-        });
-
-        return ListView(
-          controller: scrollController,
-          reverse: true,
-          children: messageWidgets.reversed.toList(),
-        );
-      },
-    );
-  }
-
   Widget buildMessageItem(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     String formattedTime = formatTimestamp(data['timestamp']);

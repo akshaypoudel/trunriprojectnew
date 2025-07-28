@@ -1,12 +1,10 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:trunriproject/chat_module/context_chats/models/context_chats.dart';
 import 'package:trunriproject/chat_module/models/message.dart';
-import 'package:trunriproject/subscription/subscription_screen.dart';
+import 'package:trunriproject/subscription/subscription_data.dart';
 
 class ChatServices {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -92,6 +90,11 @@ class ChatServices {
     required String postType,
     required String posterId,
     required String seekerId,
+    required String postTitle,
+    required String postCity,
+    required String postState,
+    required String seekerName,
+    required String posterName,
   }) async {
     final query = await _firestore
         .collection('contextChats')
@@ -104,6 +107,8 @@ class ChatServices {
       return ContextChat.fromDoc(query.docs.first);
     }
 
+    // final userName = await fetchUserName();
+
     final docRef = await _firestore.collection('contextChats').add({
       'postId': postId,
       'postType': postType,
@@ -111,6 +116,11 @@ class ChatServices {
       'seekerId': seekerId,
       'createdAt': FieldValue.serverTimestamp(),
       'isClosed': false,
+      'postTitle': postTitle,
+      'city': postCity,
+      'state': postState,
+      'seekerName': seekerName,
+      'posterName': posterName,
     });
 
     final doc = await docRef.get();
@@ -157,10 +167,53 @@ class ChatServices {
     required String chatId,
     required String senderId,
     required String text,
+    required BuildContext context,
   }) async {
-    final allowed = await canSendMessage(chatId: chatId, userId: senderId);
-    if (!allowed) {
-      throw 'SUBSCRIPTION_REQUIRED';
+    final provider = Provider.of<SubscriptionData>(context, listen: false);
+
+    final chatDoc =
+        await _firestore.collection('contextChats').doc(chatId).get();
+    final data = chatDoc.data()!;
+    final isSeeker = data['seekerId'] == senderId;
+
+    if (isSeeker && !provider.isUserSubscribed) {
+      final counterRef = _firestore
+          .collection('contextChats')
+          .doc(chatId)
+          .collection('counters')
+          .doc('messageCount');
+
+      final counterDoc = await counterRef.get();
+      final sent = counterDoc.exists ? counterDoc.data()!['count'] as int : 0;
+
+      if (sent < 2) {
+        await counterRef.set({'count': sent + 1});
+      }
+    }
+
+    await _firestore
+        .collection('contextChats')
+        .doc(chatId)
+        .collection('messages')
+        .add({
+      'senderId': senderId,
+      'text': text,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> sendContextMessage1({
+    required String chatId,
+    required String senderId,
+    required String text,
+    required BuildContext context,
+  }) async {
+    final provider = Provider.of<SubscriptionData>(context, listen: false);
+    if (!provider.isUserSubscribed) {
+      final allowed = await canSendMessage(chatId: chatId, userId: senderId);
+      if (!allowed) {
+        throw 'SUBSCRIPTION_REQUIRED';
+      }
     }
     await _firestore
         .collection('contextChats')

@@ -6,4 +6,8 @@ class AuthServices {
   User? getCurrentUser() {
     return _auth.currentUser;
   }
+
+  String? getCurrentUserDisplayName() {
+    return _auth.currentUser!.displayName;
+  }
 }

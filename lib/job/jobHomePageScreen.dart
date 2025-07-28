@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/job/addJobScreen.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 import 'jobDetailsScreen.dart';
@@ -17,6 +18,7 @@ class JobHomePageScreen extends StatefulWidget {
 class _JobHomePageScreenState extends State<JobHomePageScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  bool showOnlyMyJobs = false;
 
   @override
   void dispose() {
@@ -61,7 +63,6 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
             children: [
               Row(
                 children: [
-                  const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () => Get.to(const AddJobScreen()),
@@ -81,6 +82,29 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
                     ),
                   ),
                 ],
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      showOnlyMyJobs = !showOnlyMyJobs;
+                    });
+                  },
+                  icon: const Icon(Icons.list_alt),
+                  label: Text(
+                    showOnlyMyJobs ? 'Show All Jobs' : 'Jobs I Have Posted',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange.shade200,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    textStyle: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
               StreamBuilder(
@@ -116,17 +140,13 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
                       ),
                     );
                   }
-
-                  // var filtered1 = snapshot.data!.docs.where((doc) {
-                  //   var data = doc.data() as Map<String, dynamic>;
-                  //   var position =
-                  //       data['positionName']?.toString().toLowerCase() ?? '';
-                  //   var desc =
-                  //       data['jobDescription']?.toString().toLowerCase() ?? '';
-                  //   return position.contains(_searchQuery) ||
-                  //       desc.contains(_searchQuery);
-                  // }).toList();
-
+                  if (showOnlyMyJobs) {
+                    filtered = filtered.where((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      return data['uid'] ==
+                          AuthServices().getCurrentUser()!.uid;
+                    }).toList();
+                  }
                   return ListView.builder(
                     itemCount: filtered.length,
                     shrinkWrap: true,
@@ -168,8 +188,10 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
                                       ),
                                     ),
                                   ),
-                                  const Icon(Icons.bookmark_border,
-                                      color: Colors.deepOrange),
+                                  const Icon(
+                                    Icons.bookmark_border,
+                                    color: Colors.deepOrange,
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -249,13 +271,18 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
                                       backgroundColor: Colors.orangeAccent,
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 8),
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
                                       shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
-                                    onPressed: () =>
-                                        Get.to(JobDetailsScreen(data: data)),
+                                    onPressed: () => Get.to(
+                                      () => JobDetailsScreen(
+                                        data: data,
+                                      ),
+                                    ),
                                     child: const Text("View Details"),
                                   ),
                                 ],
