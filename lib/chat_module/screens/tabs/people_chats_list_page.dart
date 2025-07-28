@@ -2,8 +2,13 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/route_manager.dart';
+import 'package:provider/provider.dart';
 import 'package:trunriproject/chat_module/components/user_tiles.dart';
 import 'package:trunriproject/chat_module/screens/chat_screen.dart';
+import 'package:trunriproject/subscription/subscription_data.dart';
+import 'package:trunriproject/subscription/subscription_screen.dart';
 
 class PeopleChatsPage extends StatefulWidget {
   const PeopleChatsPage({super.key});
@@ -136,6 +141,11 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
   }
 
   Future<void> _sendFriendRequest(String receiverEmail) async {
+    final provider = Provider.of<SubscriptionData>(context, listen: false);
+    if (!provider.isUserSubscribed) {
+      _showSubscriptionDialog();
+      return;
+    }
     _showLoadingDialog();
 
     try {
@@ -482,5 +492,127 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
 
   void _hideLoadingDialog() {
     Navigator.of(context, rootNavigator: true).pop();
+  }
+
+  void _showSubscriptionDialog({bool isGroup = false}) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Premium Icon or Image
+              const Icon(Icons.lock_outline_rounded,
+                  size: 48, color: Colors.deepOrange),
+
+              const SizedBox(height: 12),
+
+              // Title
+              const Text(
+                'Premium Feature',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Description
+              (isGroup)
+                  ? const Text(
+                      'Creating Group is a premium feature.\nSubscribe now to unlock this and more!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.black87),
+                    )
+                  : const Text(
+                      'Adding friends is a premium feature.\nSubscribe now to unlock this and more!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.black87),
+                    ),
+
+              const SizedBox(height: 16),
+
+              // Feature Highlights
+              const Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.person_add_alt_1_rounded,
+                          color: Colors.orange, size: 22),
+                      SizedBox(width: 8),
+                      Text('Send Friend Requests'),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.group_add_sharp,
+                          color: Colors.orange, size: 22),
+                      SizedBox(width: 8),
+                      Text('Create Groups with your friends'),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.star_rounded, color: Colors.orange, size: 22),
+                      SizedBox(width: 8),
+                      Text('Post & Promote Listings'),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.stars_sharp, color: Colors.orange, size: 22),
+                      SizedBox(width: 8),
+                      Text('And More...'),
+                    ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Maybe Later'),
+                  ),
+                  // const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.workspace_premium, size: 20),
+                    label: const Text('Subscribe Now'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange.shade100,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Get.to(() => const SubscriptionScreen());
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

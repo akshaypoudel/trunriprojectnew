@@ -81,30 +81,30 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          showOnlyMyJobs = !showOnlyMyJobs;
+                        });
+                      },
+                      icon: const Icon(Icons.list_alt),
+                      label: Text(
+                        showOnlyMyJobs ? 'Show All' : 'My Posts',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange.shade50,
+                        foregroundColor: Colors.deepOrangeAccent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      showOnlyMyJobs = !showOnlyMyJobs;
-                    });
-                  },
-                  icon: const Icon(Icons.list_alt),
-                  label: Text(
-                    showOnlyMyJobs ? 'Show All Jobs' : 'Jobs I Have Posted',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange.shade200,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    textStyle: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
               ),
               const SizedBox(height: 10),
               StreamBuilder(
@@ -128,7 +128,6 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
                           return position.contains(_searchQuery);
                         }).toList();
 
-                  // 🟠 Show message if no jobs match
                   if (filtered.isEmpty) {
                     return const Padding(
                       padding: EdgeInsets.all(40),
@@ -225,8 +224,6 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-
-                              // Experience & Salary
                               Row(
                                 children: [
                                   const Icon(Icons.badge_outlined,
@@ -255,8 +252,6 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 12),
-
-                              // Footer Row
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,

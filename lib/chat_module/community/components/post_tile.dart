@@ -111,7 +111,7 @@ class PostTile extends StatelessWidget {
 
   Widget _layoutShortText(String message, BuildContext context) {
     const textStyle = TextStyle(fontSize: 16);
-    const maxLines = 6;
+    const maxLines = 12;
     final textSpan = TextSpan(text: message, style: textStyle);
     final textPainter = TextPainter(
       text: textSpan,

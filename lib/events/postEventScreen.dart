@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:map_location_picker/map_location_picker.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:get/get.dart';
@@ -10,6 +12,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:trunriproject/home/constants.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
 import '../multiImageWidget.dart';
 import '../widgets/appTheme.dart';
@@ -43,6 +46,8 @@ class _PostEventScreenState extends State<PostEventScreen> {
   List<String> selectedCategories = [];
   List<String> selectedEventTypes = [];
   String selectedEventTypePrice = 'Paid';
+  double? selectedLat;
+  double? selectedLng;
 
   @override
   void dispose() {
@@ -72,6 +77,44 @@ class _PostEventScreenState extends State<PostEventScreen> {
   }
 
   void showAddressModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => GestureDetector(
+        onVerticalDragDown: (_) {}, // 🔒 Prevent drag to avoid conflict
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.75,
+          child: const MapLocationPicker(
+            config: MapLocationPickerConfig(
+              apiKey: Constants.API_KEY,
+              initialMapType: MapType.normal,
+              zoomControlsEnabled: true,
+              liteModeEnabled: false, // ensure full interactivity
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void showAddressModal2(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => SizedBox(
+        height: MediaQuery.of(context).size.height * 0.75,
+        child: const MapLocationPicker(
+          config: MapLocationPickerConfig(
+            apiKey: Constants.API_KEY,
+            initialMapType: MapType.normal,
+            zoomControlsEnabled: true,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void showAddressModal1(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,

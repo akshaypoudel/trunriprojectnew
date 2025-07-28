@@ -8,6 +8,7 @@ import 'package:trunriproject/chat_module/screens/group_chat_create_screen.dart'
 import 'package:trunriproject/chat_module/screens/group_chat_screen.dart';
 import 'package:trunriproject/chat_module/components/user_tiles.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
+import 'package:trunriproject/subscription/subscription_screen.dart';
 
 class GroupsChatPage extends StatefulWidget {
   const GroupsChatPage({super.key});
@@ -26,6 +27,122 @@ class _GroupsChatPageState extends State<GroupsChatPage>
   void initState() {
     super.initState();
     _loadChats();
+  }
+
+  void _showSubscriptionDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Premium Icon or Image
+              const Icon(Icons.lock_outline_rounded,
+                  size: 48, color: Colors.deepOrange),
+
+              const SizedBox(height: 12),
+
+              // Title
+              const Text(
+                'Premium Feature',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Description
+              const Text(
+                'Creating Group is a premium feature.\nSubscribe now to unlock this and more!',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.black87),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Feature Highlights
+              const Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.person_add_alt_1_rounded,
+                          color: Colors.orange, size: 22),
+                      SizedBox(width: 8),
+                      Text('Send Friend Requests'),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.group_add_sharp,
+                          color: Colors.orange, size: 22),
+                      SizedBox(width: 8),
+                      Text('Create Groups with your friends'),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.star_rounded, color: Colors.orange, size: 22),
+                      SizedBox(width: 8),
+                      Text('Post & Promote Listings'),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.stars_sharp, color: Colors.orange, size: 22),
+                      SizedBox(width: 8),
+                      Text('And More...'),
+                    ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Maybe Later'),
+                  ),
+                  // const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.workspace_premium, size: 20),
+                    label: const Text('Subscribe Now'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange.shade100,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Get.to(() => const SubscriptionScreen());
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _loadChats() async {
@@ -96,23 +213,25 @@ class _GroupsChatPageState extends State<GroupsChatPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final provider = Provider.of<SubscriptionData>(context, listen: false);
     return Consumer<SubscriptionData>(
       builder: (context, subscriptionProvider, _) {
         return Scaffold(
           backgroundColor: Colors.white,
           body: _buildChatList(),
-          floatingActionButton: Padding(
-            padding: const EdgeInsets.only(bottom: 70),
-            child: FloatingActionButton(
-              backgroundColor: Colors.orange.shade50,
-              onPressed: () {
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: Colors.orange.shade50,
+            onPressed: () {
+              if (provider.isUserSubscribed) {
                 Get.to(() => const GroupChatCreateScreen());
-              },
-              child: const Icon(
-                Icons.add,
-                size: 30,
-                color: Colors.orange,
-              ),
+              } else {
+                _showSubscriptionDialog();
+              }
+            },
+            child: const Icon(
+              Icons.add,
+              size: 30,
+              color: Colors.orange,
             ),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

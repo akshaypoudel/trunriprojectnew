@@ -88,9 +88,12 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
         return const PopScope(
           canPop: false,
           child: AlertDialog(
+            backgroundColor: Colors.white,
             content: Row(
               children: [
-                CircularProgressIndicator(),
+                CircularProgressIndicator(
+                  color: Colors.deepOrange,
+                ),
                 SizedBox(width: 16),
                 Expanded(child: Text("Creating your Group...")),
               ],

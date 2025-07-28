@@ -121,12 +121,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        buildFeatureRow("Post Jobs", true),
+                        buildFeatureRow("Post Events & Restauraunts", true),
                         buildFeatureRow("Promote Business Ads", true),
-                        buildFeatureRow("Direct Replies to Jobs", true),
-                        buildFeatureRow("Control Job Visibility", true),
+                        // buildFeatureRow("", true),
+                        buildFeatureRow("Control Posts Visibility", true),
                         buildFeatureRow(
                           "One-on-One and Group Chat Feature",
+                          true,
+                        ),
+                        buildFeatureRow(
+                          "Send Friend Requests",
                           true,
                         ),
                         buildFeatureRow("Basic App Access", false),

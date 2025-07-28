@@ -17,7 +17,7 @@ class _ChatListScreenState extends State<ChatListScreen>
 
   @override
   void initState() {
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 4, vsync: this, initialIndex: 1);
     super.initState();
   }
 
@@ -31,31 +31,35 @@ class _ChatListScreenState extends State<ChatListScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Messages'),
-        backgroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.orange,
-          labelColor: Colors.orange,
-          unselectedLabelColor: Colors.grey,
-          tabs: const [
-            Tab(text: 'Inquiry'),
-            Tab(text: 'People'),
-            Tab(text: 'Groups'),
-            Tab(text: 'Community'),
+      body: SafeArea(
+        child: Column(
+          children: [
+            TabBar(
+              controller: _tabController,
+              indicatorColor: Colors.orange,
+              labelColor: Colors.orange,
+              unselectedLabelColor: Colors.grey,
+              tabs: const [
+                Tab(icon: Icon(Icons.question_answer), text: 'Inquiry'),
+                Tab(icon: Icon(Icons.person_2_rounded), text: 'People'),
+                Tab(icon: Icon(Icons.people_alt_sharp), text: 'Groups'),
+                Tab(icon: Icon(Icons.forum), text: 'Forum'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                physics: const BouncingScrollPhysics(),
+                children: const [
+                  InquiryDetailsPage(),
+                  PeopleChatsPage(),
+                  GroupsChatPage(),
+                  CommunityPage(),
+                ],
+              ),
+            ),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        physics: const BouncingScrollPhysics(),
-        children: const [
-          InquiryDetailsPage(),
-          PeopleChatsPage(),
-          GroupsChatPage(),
-          CommunityPage(),
-        ],
       ),
     );
   }

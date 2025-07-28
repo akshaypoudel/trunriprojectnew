@@ -41,6 +41,18 @@ class LocationData extends ChangeNotifier {
   List<Map<String, dynamic>> get getEventList => _eventList;
   List<Map<String, dynamic>> get getAccomodationList => _accomodationList;
 
+  ////////////////////////////////////////////////////
+
+  int? _tempEventRadiusFilter; // null by default
+
+  int? get getTempEventRadiusFilter => _tempEventRadiusFilter;
+
+  void setTempEventRadiusFilter(int? value) {
+    _tempEventRadiusFilter = value;
+    notifyListeners();
+  }
+
+////////////////////////////////////////////////////////
   void setIsLocationFetched(bool val) {
     _isLocationFetched = val;
     notifyListeners();

@@ -110,7 +110,7 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
               Icons.message_rounded,
               size: 30,
             ),
-            label: 'Messages',
+            label: 'Chats',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_3_outlined),

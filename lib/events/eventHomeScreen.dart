@@ -21,6 +21,9 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
   final TextEditingController searchController = TextEditingController();
   late List<Map<String, dynamic>> filteredEvents;
   List<String> selectedCategories = [];
+  String? selectedCityGlobal;
+  double selectedRadiusGlobal = 50;
+
   final List<String> categories = [
     'Music',
     'Traditional',
@@ -43,6 +46,162 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
     super.dispose();
   }
 
+  void _applyLocationFilter(String city, double radius) {
+    setState(() {
+      selectedCityGlobal = city;
+      selectedRadiusGlobal = radius;
+
+      filteredEvents = widget.eventList.where((event) {
+        final eventCity = event['city']?.toString().toLowerCase() ?? '';
+        return eventCity.contains(city.toLowerCase());
+      }).toList();
+    });
+  }
+
+  void _showLocationFilterDialog() {
+    String selectedCity = selectedCityGlobal ?? 'Sydney';
+    double selectedRadius = selectedRadiusGlobal ?? 50;
+
+    final List<String> australianCities = [
+      'Sydney',
+      'Melbourne',
+      'Brisbane',
+      'Perth',
+      'Adelaide',
+      'Gold Coast',
+      'Canberra',
+      'Hobart',
+      'Darwin',
+      'Newcastle'
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.location_on, color: Colors.orange),
+                      SizedBox(width: 8),
+                      Text(
+                        'Filter by Location',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // City Dropdown
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.orange),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedCity,
+                        icon: const Icon(Icons.arrow_drop_down),
+                        items: australianCities.map((city) {
+                          return DropdownMenuItem<String>(
+                            value: city,
+                            child: Text(city),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedCity = value!;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Radius Slider
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Select Radius (in km)',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      Slider(
+                        value: selectedRadius,
+                        min: 1,
+                        max: 100,
+                        divisions: 10,
+                        activeColor: Colors.orange,
+                        label: '${selectedRadius.round()} km',
+                        onChanged: (value) {
+                          setState(() {
+                            selectedRadius = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Buttons Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          setState(() {
+                            selectedCityGlobal = null;
+                            selectedRadiusGlobal = 50;
+                            filteredEvents = widget.eventList;
+                          });
+                        },
+                        icon: const Icon(Icons.clear, color: Colors.red),
+                        label: const Text('Clear Filter',
+                            style: TextStyle(color: Colors.red)),
+                      ),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.filter_alt, color: Colors.white),
+                        label: const Text('Apply Filter',
+                            style: TextStyle(color: Colors.white)),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _applyLocationFilter(selectedCity, selectedRadius);
+                          selectedCityGlobal = selectedCity;
+                          selectedRadiusGlobal = selectedRadius;
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<SubscriptionData>(context, listen: false);
@@ -55,30 +214,30 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
           backgroundColor: Colors.white,
           appBar: AppBar(
             backgroundColor: Colors.white,
-            title: TextField(
-              controller: searchController,
-              onChanged: (value) {
-                final query = value.toLowerCase();
-                setState(() {
-                  filteredEvents = widget.eventList.where((event) {
-                    final name =
-                        event['eventName']?.toString().toLowerCase() ?? '';
-                    final matchesQuery = name.contains(query);
-                    final matchesCategory = selectedCategories.isEmpty ||
-                        (event['category'] != null &&
-                            (event['category'] as List).any(
-                                (cat) => selectedCategories.contains(cat)));
-                    return matchesQuery && matchesCategory;
-                  }).toList();
-                });
-              },
-              decoration: const InputDecoration(
-                hintText: 'Search Event',
-                hintStyle: TextStyle(color: Colors.black54),
-                prefixIcon: Icon(Icons.search, color: Colors.black54),
-                border: InputBorder.none,
-              ),
-              style: const TextStyle(color: Colors.black),
+            title: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: searchController,
+                    // your search logic
+                    decoration: const InputDecoration(
+                      hintText: 'Search Event',
+                      hintStyle: TextStyle(color: Colors.black54),
+                      prefixIcon: Icon(Icons.search, color: Colors.black54),
+                      border: InputBorder.none,
+                    ),
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.location_on_sharp,
+                    color: Colors.orange,
+                    size: 30,
+                  ),
+                  onPressed: () => _showLocationFilterDialog(),
+                )
+              ],
             ),
           ),
           body: SingleChildScrollView(
@@ -106,7 +265,8 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                           if (provider.isUserSubscribed) {
                             Get.to(() => const PostEventScreen());
                           } else {
-                            Get.to(() => const SubscriptionScreen());
+                            // Get.to(() => const SubscriptionScreen());
+                            _showSubscriptionDialog();
                           }
                         },
                         icon: const Icon(Icons.event, color: Colors.white),
@@ -301,6 +461,123 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                       ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSubscriptionDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Premium Icon or Image
+              const Icon(Icons.lock_outline_rounded,
+                  size: 48, color: Colors.deepOrange),
+
+              const SizedBox(height: 12),
+
+              // Title
+              const Text(
+                'Premium Feature',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Description
+              const Text(
+                'Posting Events is a premium feature.\nSubscribe now to unlock this and more!',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.black87),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Feature Highlights
+              const Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.event_available_outlined,
+                          color: Colors.orange, size: 22),
+                      SizedBox(width: 8),
+                      Text('Post Events and Restauraunts'),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.star_rounded, color: Colors.orange, size: 22),
+                      SizedBox(width: 8),
+                      Text('Post & Promote Listings'),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.group_add_sharp,
+                          color: Colors.orange, size: 22),
+                      SizedBox(width: 8),
+                      Text(
+                          'Send Friend Requests & \nCreate Groups with your friends'),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.stars_sharp, color: Colors.orange, size: 22),
+                      SizedBox(width: 8),
+                      Text('And More...'),
+                    ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Maybe Later'),
+                  ),
+                  // const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.workspace_premium, size: 20),
+                    label: const Text('Subscribe Now'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange.shade100,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Get.to(() => const SubscriptionScreen());
+                    },
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

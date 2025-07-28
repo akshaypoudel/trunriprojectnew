@@ -13,6 +13,7 @@ import 'package:get/get.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:trunriproject/home/constants.dart';
 import 'package:trunriproject/visaTypeScreen.dart';
 import 'package:trunriproject/widgets/addSize.dart';
 import 'package:trunriproject/widgets/appTheme.dart';
@@ -50,7 +51,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
 
   String? street, city, state, country, zipcode, town;
 
-  String googleApikey = "AIzaSyAP9njE_z7lH2tii68WLoQGju0DF8KryXA";
+  // String googleApikey = "AIzaSyAP9njE_z7lH2tii68WLoQGju0DF8KryXA";
   CameraPosition? cameraPosition;
   String location = "Enter Your Address Here";
   final Set<Marker> markers = {};
@@ -416,7 +417,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
                 onTap: () async {
                   var place = await PlacesAutocomplete.show(
                       context: context,
-                      apiKey: googleApikey,
+                      apiKey: Constants.API_KEY,
                       mode: Mode.overlay,
                       types: [],
                       strictbounds: false,
@@ -432,7 +433,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
                       // final a = place.description.
                     });
                     final plist = GoogleMapsPlaces(
-                      apiKey: googleApikey,
+                      apiKey: Constants.API_KEY,
                       apiHeaders: await const GoogleApiHeaders().getHeaders(),
                     );
                     //print(plist);
@@ -680,15 +681,14 @@ class _CurrentAddressState extends State<CurrentAddress> {
                           activeColor: AppTheme.primaryColor,
                           onChanged: (int? value) {
                             if (value != null) {
-                              // You must call setState of outer widget:
-                              Navigator.of(context).pop(); // close dialog
+                              Navigator.of(context).pop();
                               setState(() {
                                 radiusFilter = value;
                               });
-                              // Provider.of<LocationData>(context, listen: false)
-                              //     .setRadiusFilter(radiusFilter);
-                              showSnackBar(context,
-                                  'Radius set to ${value.toString()}km');
+                              showSnackBar(
+                                context,
+                                'Radius set to ${value.toString()}km',
+                              );
                             }
                           },
                         );

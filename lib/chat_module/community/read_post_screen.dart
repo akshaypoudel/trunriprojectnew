@@ -263,6 +263,7 @@ class _ReadPostScreenState extends State<ReadPostScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         title: const Text("Reply to Post"),
         content: TextField(
           controller: replyController,
@@ -293,6 +294,7 @@ class _ReadPostScreenState extends State<ReadPostScreen> {
               }
               Navigator.pop(context);
             },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
             child: const Text("Post"),
           ),
         ],
@@ -328,6 +330,7 @@ class _ReadPostScreenState extends State<ReadPostScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
+        backgroundColor: Colors.white,
         title: const Text("Delete Post"),
         content: const Text("Are you sure you want to delete this post?"),
         actions: [
@@ -345,7 +348,10 @@ class _ReadPostScreenState extends State<ReadPostScreen> {
               Navigator.of(context).pop();
               Navigator.of(context).pop();
             },
-            child: const Text('Delete'),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
