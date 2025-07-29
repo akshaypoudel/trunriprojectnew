@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/chat_module/screens/chat_list_screen.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
@@ -23,14 +25,12 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
     const HomeScreen(),
     const ExplorScreen(),
     const ChatListScreen(),
-    const ProfileScreen()
+    const ProfileScreen(),
   ];
 
   @override
   void initState() {
     super.initState();
-    // initializeProvider();
-    // Future.microtask(() => );
     if (widget.index != null) {
       myCurrentIndex = 2;
     }
@@ -64,7 +64,21 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
     await Provider.of<LocationData>(
       context,
       listen: false,
-    ).fetchUserAddressAndLocation();
+    ).fetchUserAddressAndLocation(isInAustralia: await _handleLocationSource());
+  }
+
+  Future<bool> _handleLocationSource() async {
+    final position = await Geolocator.getCurrentPosition();
+    final placemarks =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
+
+    final country = placemarks.first.country;
+
+    if (country == "Australia") {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   @override
@@ -122,7 +136,6 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
           ),
         ],
       ),
-      // body: pages[myCurrentIndex],
     );
   }
 }

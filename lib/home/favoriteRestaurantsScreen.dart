@@ -115,6 +115,7 @@ class _FavoriteRestaurantsScreenState extends State<FavoriteRestaurantsScreen> {
                               closingTime: restaurant.closetime,
                               address: restaurant.address,
                               image: restaurant.image,
+                              isOpenNow: restaurant.opentime.isEmpty,
                             ),
                           );
                         },

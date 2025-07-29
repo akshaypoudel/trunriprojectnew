@@ -10,7 +10,8 @@ import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/home/section_title.dart';
 
 class NearbyAccomodationVisual extends StatelessWidget {
-  const NearbyAccomodationVisual({super.key});
+  const NearbyAccomodationVisual({super.key, required this.isInAustralia});
+  final bool isInAustralia;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +42,9 @@ class NearbyAccomodationVisual extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: SectionTitle(
-                title: "Near By Accommodations",
+                title: (isInAustralia)
+                    ? "Near By Accommodations"
+                    : "Accomodations",
                 press: () {
                   Get.to(() => LookingForAPlaceScreen(
                         accommodationList: accommodationList,

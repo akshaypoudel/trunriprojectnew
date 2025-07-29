@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/route_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -108,6 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     addressText = provider.getUsersAddress;
     addressController.text = provider.getShortFormAddress;
+    log('address controlle text = ${addressController.text}');
     latitude = provider.getLatitude.toString();
     longitude = provider.getLongitude.toString();
 
@@ -145,9 +148,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       Provider.of<LocationData>(context, listen: false)
-          .fetchUserAddressAndLocation();
+          .fetchUserAddressAndLocation(
+        isInAustralia: await _handleLocationSource(),
+      );
       Provider.of<ChatProvider>(context, listen: false).fetchUserProfileImage();
     });
 
@@ -157,6 +162,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initialize() async {
     await fetchUserData();
     setState(() {});
+  }
+
+  Future<bool> _handleLocationSource() async {
+    final position = await Geolocator.getCurrentPosition();
+    final placemarks =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
+
+    final country = placemarks.first.country;
+
+    if (country == "Australia") {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   @override
@@ -470,7 +489,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 FirebaseAuth.instance.signOut().then((value) {
                                   Get.offAll(const SignInScreen());
                                   showSnackBar(
-                                      context, "Logged Out Successfully");
+                                    context,
+                                    "Logged Out Successfully",
+                                  );
                                 });
                               },
                               child: ListTile(
@@ -665,7 +686,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void onLocationChanged(
-      String address, int radiusFilter, String lat, lng) async {
+    String address,
+    int radiusFilter,
+    String lat,
+    lng,
+  ) async {
+    bool isInAustralia = await _handleLocationSource();
     Map<String, dynamic> selectedAddress = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -675,6 +701,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           latitude: lat,
           longitude: lng,
           radiusFilter: radiusFilter,
+          isInAustralia: isInAustralia,
         ),
       ),
     );

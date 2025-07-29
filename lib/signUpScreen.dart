@@ -36,7 +36,7 @@ class _SignUpScreenState extends State<SignUpScreen>
   CustomGoogleSignin googleSignin = CustomGoogleSignin();
   RxBool hide = true.obs;
   RxBool hide1 = true.obs;
-  String code = "+91";
+  String code = "+61";
   bool value = false;
   bool showValidation = false;
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -99,59 +99,6 @@ class _SignUpScreenState extends State<SignUpScreen>
       },
     );
   }
-
-  // Future<void> signInWithGoogle(BuildContext context) async {
-  //   User? user = FirebaseAuth.instance.currentUser;
-  //   OverlayEntry loader = NewHelper.overlayLoader(context);
-  //   Overlay.of(context).insert(loader);
-  //   try {
-  //     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-  //     final GoogleSignInAuthentication googleAuth =
-  //         await googleUser!.authentication;
-  //     final credential = GoogleAuthProvider.credential(
-  //       accessToken: googleAuth.accessToken,
-  //       idToken: googleAuth.idToken,
-  //     );
-  //     UserCredential userCredential =
-  //         await FirebaseAuth.instance.signInWithCredential(credential);
-  //     Navigator.of(context).push(
-  //       PageRouteBuilder(
-  //         pageBuilder: (context, animation, secondaryAnimation) =>
-  //             (user != null)
-  //                 ? const MyBottomNavBar()
-  //                 : const PickUpAddressScreen(),
-  //         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-  //           const begin = Offset(1.0, 0.0);
-  //           const end = Offset.zero;
-  //           const curve = Curves.ease;
-  //           var tween =
-  //               Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-  //           var offsetAnimation = animation.drive(tween);
-  //           return SlideTransition(
-  //             position: offsetAnimation,
-  //             child: child,
-  //           );
-  //         },
-  //       ),
-  //     );
-  //     if (user != null) {
-  //       showSnackBar(context, "User Log In Successfull");
-  //     } else {
-  //       showSnackBar(context, "User Registered Successfully");
-  //     }
-  //     registerWithGoogle(
-  //       userCredential.user!.displayName!,
-  //       userCredential.user?.email,
-  //     );
-  //   } on Exception catch (e) {
-  //     // Handle the exception
-  //     log('exception-> in google signin = $e');
-  //   } finally {
-  //     // Ensure the loader is always removed, even if an error occurs
-  //     NewHelper.hideLoader(loader);
-  //   }
-  //   return;
-  // }
 
   final formKey1 = GlobalKey<FormState>();
 
@@ -249,7 +196,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                     borderRadius: BorderRadius.circular(11),
                   ),
                 ),
-                initialCountryCode: "IN", // Set to Australia
+                initialCountryCode: "AU", // Set to Australia
                 onCountryChanged: (country) {
                   code = '+${country.dialCode}';
                 },
@@ -397,7 +344,6 @@ class _SignUpScreenState extends State<SignUpScreen>
               padding: const EdgeInsets.symmetric(horizontal: 25),
               child: Column(
                 children: [
-                  // for sign in button
                   GestureDetector(
                     onTap: () {
                       if (formKey1.currentState!.validate()) {

@@ -8,8 +8,13 @@ import 'package:trunriproject/home/resturentItemListScreen.dart';
 import 'package:trunriproject/home/section_title.dart';
 
 class NearbyRestaurauntsVisual extends StatelessWidget {
-  const NearbyRestaurauntsVisual({super.key, required this.restaurants});
+  const NearbyRestaurauntsVisual({
+    super.key,
+    required this.restaurants,
+    required this.isInAustralia,
+  });
   final List<dynamic> restaurants;
+  final bool isInAustralia;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +24,7 @@ class NearbyRestaurauntsVisual extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: SectionTitle(
-            title: "Near By Restaurants",
+            title: (isInAustralia) ? "Near By Restaurants" : "Restaurants",
             press: () {
               Get.to(
                 ResturentItemListScreen(restaurant_List: restaurants),
@@ -71,6 +76,7 @@ class NearbyRestaurauntsVisual extends StatelessWidget {
                       closingTime: closingTime.toString(),
                       address: address.toString(),
                       image: photoUrl.toString(),
+                      isOpenNow: restaurant['opening_hours']['open_now'],
                     ),
                     arguments: [lat, lng],
                   );

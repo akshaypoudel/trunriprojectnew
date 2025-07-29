@@ -50,8 +50,8 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
     setState(() {
       selectedCityGlobal = city;
       selectedRadiusGlobal = radius;
-
-      filteredEvents = widget.eventList.where((event) {
+      final list = widget.eventList;
+      filteredEvents = list.where((event) {
         final eventCity = event['city']?.toString().toLowerCase() ?? '';
         return eventCity.contains(city.toLowerCase());
       }).toList();
@@ -161,15 +161,15 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                     children: [
                       TextButton.icon(
                         onPressed: () {
-                          Navigator.pop(context);
                           setState(() {
                             selectedCityGlobal = null;
                             selectedRadiusGlobal = 50;
-                            filteredEvents = widget.eventList;
+                            filteredEvents = List.from(widget.eventList);
                           });
+                          Navigator.pop(context);
                         },
                         icon: const Icon(Icons.clear, color: Colors.red),
-                        label: const Text('Clear Filter',
+                        label: const Text('Cancel',
                             style: TextStyle(color: Colors.red)),
                       ),
                       ElevatedButton.icon(
@@ -250,7 +250,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                     const Padding(
                       padding: EdgeInsets.all(16.0),
                       child: Text(
-                        'Events Near You',
+                        'Events\nNear You',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -293,6 +293,43 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                         ),
                       ),
                     ),
+                    if (selectedCategories.isNotEmpty ||
+                        selectedCityGlobal != null ||
+                        searchController.text.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              searchController.clear();
+                              selectedCategories.clear();
+                              selectedCityGlobal = null;
+                              selectedRadiusGlobal = 50;
+                              filteredEvents = List.from(widget.eventList);
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.clear,
+                            size: 18,
+                            color: Colors.red,
+                          ),
+                          label: const Text(
+                            'Clear\nFilters',
+                            style: TextStyle(
+                              color: Colors.red,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(
+                              color: Colors.red,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 20),

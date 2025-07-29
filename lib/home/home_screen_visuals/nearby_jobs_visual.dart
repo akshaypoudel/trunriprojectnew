@@ -5,7 +5,8 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:trunriproject/job/jobDetailsScreen.dart';
 
 class NearbyJobsVisual extends StatelessWidget {
-  const NearbyJobsVisual({super.key});
+  const NearbyJobsVisual({super.key, required this.isInAustralia});
+  final bool isInAustralia;
 
   @override
   Widget build(BuildContext context) {

@@ -32,7 +32,7 @@ class _SignInScreenState extends State<SignInScreen> {
   EmailOTP myauth = EmailOTP();
   bool showOtpField = false;
 
-  String code = "+91";
+  String code = "+61";
 
   Future<bool> doesPhoneExist(String phone) async {
     final query = await FirebaseFirestore.instance
@@ -137,7 +137,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   borderRadius: BorderRadius.circular(11),
                 ),
               ),
-              initialCountryCode: "IN",
+              initialCountryCode: "AU",
               onCountryChanged: (country) {
                 code = '+${country.dialCode}';
               },

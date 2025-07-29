@@ -8,8 +8,10 @@ import 'package:trunriproject/home/resturentDetailsScreen.dart';
 import 'package:trunriproject/home/section_title.dart';
 
 class NearbyGroceryStoresVisual extends StatelessWidget {
-  const NearbyGroceryStoresVisual({super.key, required this.groceryStores});
+  const NearbyGroceryStoresVisual(
+      {super.key, required this.groceryStores, required this.isInAustralia});
   final List<dynamic> groceryStores;
+  final bool isInAustralia;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +22,8 @@ class NearbyGroceryStoresVisual extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: SectionTitle(
-            title: "Near By Grocery Stores",
+            title:
+                (isInAustralia) ? "Near By Grocery Stores" : "Grocery Stores",
             press: () {
               Get.to(GroceryStoreListScreen(groceryStores: groceryStores));
             },
@@ -70,6 +73,7 @@ class NearbyGroceryStoresVisual extends StatelessWidget {
                         closingTime: closingTime.toString(),
                         address: address.toString(),
                         image: photoUrl.toString(),
+                        isOpenNow: groceryStore['opening_hours']['open_now'],
                       ),
                       arguments: [lat, lng]);
                 },

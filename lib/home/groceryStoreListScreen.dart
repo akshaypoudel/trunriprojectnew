@@ -88,6 +88,7 @@ class GroceryStoreListScreen extends StatelessWidget {
                               openingHours['closing'] ?? 'Not Available',
                           address: address,
                           image: photoUrl,
+                          isOpenNow: openingHours['open_now'],
                         ),
                         arguments: [
                           store['geometry']['location']['lat'],

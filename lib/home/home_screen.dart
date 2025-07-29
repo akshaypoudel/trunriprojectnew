@@ -1,9 +1,13 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/home/constants.dart';
 import 'package:trunriproject/home/home_screen_visuals/get_banners_visual.dart';
@@ -16,7 +20,6 @@ import 'package:trunriproject/home/home_screen_visuals/nearby_restauraunts_visua
 import 'package:trunriproject/home/home_screen_visuals/nearby_temples_visual.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/widgets/helper.dart';
-import '../accommodation/lookingForAPlaceScreen.dart';
 import '../job/jobHomePageScreen.dart';
 import '../temple/templeHomePageScreen.dart';
 import 'Controller.dart';
@@ -38,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FocusNode _focusNode = FocusNode();
+  bool isInAustralia = false;
 
   String usersLatitude = '';
   String usersLongitude = '';
@@ -56,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+    _handleLocationSource();
     fetchImageData();
   }
 
@@ -64,6 +68,55 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _focusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleLocationSource() async {
+    final position = await Geolocator.getCurrentPosition();
+    final placemarks =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
+
+    final country = placemarks.first.country;
+
+    if (country == "Australia") {
+      isInAustralia = true;
+      _showLocationInfoDialog(isInAustralia: isInAustralia);
+      _getCurrentLocation();
+    } else {
+      isInAustralia = false;
+      _showLocationInfoDialog(isInAustralia: isInAustralia);
+      getCurrentLocationByAddress();
+    }
+  }
+
+  void _showLocationInfoDialog({required bool isInAustralia}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            title: Text(isInAustralia
+                ? 'You are in Australia'
+                : 'You are outside Australia'),
+            content: Text(
+              isInAustralia
+                  ? 'You are in Australia. You will get all the listings (restaurants, grocery stores, events, temples, jobs, accommodations) based on your current location.'
+                  : 'You are outside Australia. All listings will be shown based on your saved address. You can change your address from the profile screen.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    });
   }
 
   void _fetchBasedOn(
@@ -77,6 +130,39 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchIndianRestaurants(lat, long, radiusFilter);
     _fetchGroceryStores(lat, long, radiusFilter);
     _fetchTemples(lat, long, radiusFilter);
+  }
+
+  Future<void> getCurrentLocationByAddress() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final doc = await FirebaseFirestore.instance
+        .collection('nativeAddress')
+        .doc(uid)
+        .get();
+
+    final nativeAddress = doc.data()?['nativeAddress'];
+    final lat = nativeAddress['latitude'];
+    final lng = nativeAddress['longitude'];
+    final radiusFilter = nativeAddress['radiusFilter'];
+
+    double latitude = 0;
+    double longitude = 0;
+
+    if (lat is double || lng is double) {
+      latitude = lat;
+      longitude = lng;
+    } else if (lat is String || lng is String) {
+      // latitude = lat.toNum.toDouble();
+      // longitude = lng.toNum.toDouble();
+      latitude = double.parse(lat);
+      longitude = double.parse(lng);
+    }
+
+    log("latitude = $lat, longitude = $lng, radiusFilter = $radiusFilter");
+    if (radiusFilter is int) {
+      _fetchBasedOn(latitude, longitude, radiusFilter);
+    } else if (radiusFilter is double) {
+      _fetchBasedOn(latitude, longitude, radiusFilter.toInt());
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -139,22 +225,26 @@ class _HomeScreenState extends State<HomeScreen> {
     double longitude,
     int radiusFilter,
   ) async {
-    final provider = Provider.of<LocationData>(context, listen: false);
-    final radiusInMeters = radiusFilter * 1000;
-    final url =
-        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radiusInMeters&type=restaurant&keyword=indian&key=${Constants.API_KEY}';
+    try {
+      final provider = Provider.of<LocationData>(context, listen: false);
+      final radiusInMeters = radiusFilter * 1000;
+      final url =
+          'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radiusInMeters&type=restaurant&keyword=indian&key=${Constants.API_KEY}';
 
-    final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse(url));
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      setState(() {
-        _restaurants = data['results'];
-        provider.setRestaurauntList(_restaurants);
-      });
-    } else {
-      // throw Exception('Failed to fetch data');
-      showSnackBar(context, 'Failed to Fetch Restauraunt Data');
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          _restaurants = data['results'];
+          provider.setRestaurauntList(_restaurants);
+        });
+      } else {
+        // throw Exception('Failed to fetch data');
+        showSnackBar(context, 'Failed to Fetch Restauraunt Data');
+      }
+    } catch (e) {
+      log('error ====== $e');
     }
   }
 
@@ -230,6 +320,22 @@ class _HomeScreenState extends State<HomeScreen> {
     return imageUrls;
   }
 
+  Future<void> isUserinAustraliaOrNot() async {
+    final position = await Geolocator.getCurrentPosition();
+    final placemarks =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
+
+    final country = placemarks.first.country;
+
+    if (country == "Australia") {
+      isInAustralia = true;
+      _getCurrentLocation();
+    } else {
+      isInAustralia = false;
+      getCurrentLocationByAddress();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final locationData = Provider.of<LocationData>(context, listen: false);
@@ -259,7 +365,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 top: 90,
                 child: RefreshIndicator.adaptive(
                   onRefresh: () async {
-                    _getCurrentLocation();
+                    // _getCurrentLocation();
+                    isUserinAustraliaOrNot();
                   },
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(vertical: 5),
@@ -302,15 +409,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           eventList: locationData.getEventList,
                           accomodationList: locationData.getAccomodationList,
                         ),
-                        const NearbyEventsVisual(),
+                        NearbyEventsVisual(isInAustralia: isInAustralia),
                         const SizedBox(height: 20),
-                        NearbyRestaurauntsVisual(restaurants: _restaurants),
+                        NearbyRestaurauntsVisual(
+                            restaurants: _restaurants,
+                            isInAustralia: isInAustralia),
                         const SizedBox(height: 20),
                         NearbyGroceryStoresVisual(
                           groceryStores: _groceryStores,
+                          isInAustralia: isInAustralia,
                         ),
                         const SizedBox(height: 20),
-                        const NearbyAccomodationVisual(),
+                        NearbyAccomodationVisual(isInAustralia: isInAustralia),
                         const SizedBox(height: 20),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -321,7 +431,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                           ),
                         ),
-                        const NearbyJobsVisual(),
+                        NearbyJobsVisual(isInAustralia: isInAustralia),
                         const SizedBox(height: 20),
                         Column(
                           children: [
@@ -329,7 +439,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 20),
                               child: SectionTitle(
-                                title: "Near By Temples",
+                                title: (isInAustralia)
+                                    ? "Near By Temples"
+                                    : "Temples",
                                 press: () {
                                   Get.to(
                                     TempleHomePageScreen(
@@ -339,7 +451,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 },
                               ),
                             ),
-                            NearbyTemplesVisual(templesList: _temples),
+                            NearbyTemplesVisual(
+                              templesList: _temples,
+                              isInAustralia: isInAustralia,
+                            ),
                           ],
                         ),
                         const SizedBox(height: 60),

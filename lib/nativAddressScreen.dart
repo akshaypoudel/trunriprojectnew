@@ -1,282 +1,259 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:form_field_validator/form_field_validator.dart';
-import 'package:get/get.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:trunriproject/visaTypeScreen.dart';
+import 'package:trunriproject/widgets/commomButton.dart';
 import 'package:trunriproject/widgets/customTextFormField.dart';
 import 'package:trunriproject/widgets/helper.dart';
-
-import 'currentLocation.dart';
+import 'package:trunriproject/home/provider/location_data.dart'; // <-- You must create this
 
 class PickUpAddressScreen extends StatefulWidget {
-  const PickUpAddressScreen({
-    super.key,
-  });
+  const PickUpAddressScreen({super.key});
 
   @override
   State<PickUpAddressScreen> createState() => _PickUpAddressScreenState();
 }
 
 class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
-  final TextEditingController streetController = TextEditingController();
-  final TextEditingController cityController = TextEditingController();
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController stateController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
+  final TextEditingController suburbController = TextEditingController();
   final TextEditingController countryController = TextEditingController();
-  final TextEditingController zipcodeController = TextEditingController();
-  final TextEditingController townController = TextEditingController();
-  final TextEditingController specialInstructionController =
-      TextEditingController();
-  RxBool hide = true.obs;
-  RxBool hide1 = true.obs;
-  bool showValidation = false;
-  final formKey1 = GlobalKey<FormState>();
+  final TextEditingController pincodeController = TextEditingController();
+  double _radiusFilter = 50.0;
 
-  void addNativeAddress() {
-    OverlayEntry loader = NewHelper.overlayLoader(context);
-    Overlay.of(context).insert(loader);
-    FirebaseFirestore.instance
-        .collection('nativeAddress')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .set({
-      'Street': streetController.text.trim(),
-      'city': cityController.text.trim(),
-      'state': stateController.text.trim(),
-      'country': 'India',
-      'zipcode': zipcodeController.text.trim(),
-      'town': townController.text.trim(),
-      'userId': FirebaseAuth.instance.currentUser!.uid,
-      'specialInstruction': specialInstructionController.text.trim()
-    }).then((value) {
-      if (formKey1.currentState!.validate()) {
-        // Get.to(CurrentAddress());
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const CurrentAddress(
-              isProfileScreen: false,
-              savedAddress: '',
-              latitude: '',
-              longitude: '',
-              radiusFilter: 50,
-            ),
-          ),
-          (Route<dynamic> route) => false,
-        );
-        showSnackBar(context, 'Native Address saved Successfully');
-        NewHelper.hideLoader(loader);
-      } else {
-        NewHelper.hideLoader(loader);
-      }
-    });
-  }
+  final List<String> australianStates = [
+    'New South Wales',
+    'Victoria',
+    'Queensland',
+    'Western Australia',
+    'South Australia',
+    'Tasmania',
+    'Northern Territory',
+    'Australian Capital Territory',
+  ];
+
+  final Map<String, List<String>> citiesByState = {
+    'New South Wales': ['Sydney', 'Newcastle', 'Wollongong'],
+    'Victoria': ['Melbourne', 'Geelong', 'Ballarat'],
+    'Queensland': ['Brisbane', 'Gold Coast', 'Cairns'],
+    'Western Australia': ['Perth', 'Fremantle', 'Albany'],
+    'South Australia': ['Adelaide', 'Mount Gambier', 'Whyalla'],
+    'Tasmania': ['Hobart', 'Launceston', 'Devonport'],
+    'Northern Territory': ['Darwin', 'Alice Springs'],
+    'Australian Capital Territory': ['Canberra'],
+  };
 
   @override
   void dispose() {
-    streetController.dispose();
-    cityController.dispose();
     stateController.dispose();
+    cityController.dispose();
+    suburbController.dispose();
     countryController.dispose();
-    zipcodeController.dispose();
-    townController.dispose();
-    specialInstructionController.dispose();
+    pincodeController.dispose();
     super.dispose();
+  }
+
+  Future<void> addNativeAddress() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      final fullAddress =
+          "${suburbController.text}, ${cityController.text}, ${stateController.text}, Australia";
+      final location = await locationFromAddress(fullAddress);
+      final latitude = location.first.latitude;
+      final longitude = location.first.longitude;
+
+      await FirebaseFirestore.instance
+          .collection('nativeAddress')
+          .doc(uid)
+          .set({
+        'nativeAddress': {
+          'state': stateController.text,
+          'city': cityController.text,
+          'suburb': suburbController.text,
+          'country': countryController.text,
+          'pincode': pincodeController.text,
+          'latitude': latitude,
+          'longitude': longitude,
+          'radiusFilter': _radiusFilter,
+        },
+        'uid': uid,
+      }, SetOptions(merge: true));
+
+      Provider.of<LocationData>(context, listen: false).setNativeLocation(
+        state: stateController.text,
+        city: cityController.text,
+        suburb: suburbController.text,
+        zipcode: pincodeController.text,
+        radiusFilter: _radiusFilter,
+      );
+
+      Get.offAll(() => const VisaTypeScreen());
+      showSnackBar(context, "Address updated successfully");
+    } catch (e) {
+      showSnackBar(context, "Error: ${e.toString()}");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
+    countryController.text = 'Australia';
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        elevation: 3,
-        automaticallyImplyLeading: false,
-        titleSpacing: 0,
+        elevation: 0,
         backgroundColor: Colors.white,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 25),
-              child: Text(
-                'Native Address'.tr,
-                style: GoogleFonts.poppins(
-                    color: const Color(0xff292F45),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 20),
-              ),
-            ),
-            // Image.asset(
-            //   "assets/images/location.gif",
-            //   height: 200.0,
-            //   width: 50.0,
-            // ),
-          ],
+        iconTheme: const IconThemeData(color: Colors.black),
+        title: Text(
+          "Native Address",
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
         ),
       ),
-      body: Form(
-        key: formKey1,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: size.height * .02,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 25),
-                child: Text(
-                  "Can you tell us where you're from?".tr,
-                  style: GoogleFonts.poppins(
-                      color: const Color(0xff292F45),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Form(
+            key: formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 30),
+                Text("State", style: GoogleFonts.poppins(fontSize: 14)),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: stateController.text.isNotEmpty
+                      ? stateController.text
+                      : null,
+                  decoration:
+                      const InputDecoration(border: OutlineInputBorder()),
+                  items: australianStates
+                      .map((state) =>
+                          DropdownMenuItem(value: state, child: Text(state)))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      stateController.text = value!;
+                      cityController.clear();
+                    });
+                  },
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'State is required'
+                      : null,
                 ),
-              ),
-              SizedBox(
-                height: size.height * .02,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 25),
-                child: Text(
-                  'Street'.tr,
-                  style: GoogleFonts.poppins(
-                      color: const Color(0xff1F1F1F),
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14),
+                const SizedBox(height: 20),
+                Text("City", style: GoogleFonts.poppins(fontSize: 14)),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: cityController.text.isNotEmpty
+                      ? cityController.text
+                      : null,
+                  decoration:
+                      const InputDecoration(border: OutlineInputBorder()),
+                  items: (citiesByState[stateController.text] ?? [])
+                      .map((city) =>
+                          DropdownMenuItem(value: city, child: Text(city)))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      cityController.text = value!;
+                    });
+                  },
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'City is required'
+                      : null,
                 ),
-              ),
-              CommonTextField(
-                hintText: 'Ex: Shivaji Road',
-                controller: streetController,
-                validator: MultiValidator([
-                  RequiredValidator(errorText: 'Street is required'),
-                ]).call,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 25),
-                child: Text(
-                  'City'.tr,
-                  style: GoogleFonts.poppins(
-                      color: const Color(0xff1F1F1F),
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14),
+                const SizedBox(height: 20),
+                Text("Suburb", style: GoogleFonts.poppins(fontSize: 14)),
+                const SizedBox(height: 8),
+                CommonTextField(
+                  hintText: 'Enter suburb',
+                  controller: suburbController,
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Suburb is required'
+                      : null,
                 ),
-              ),
-              CommonTextField(
-                hintText: 'Ex: Mumbai,Delhi,Chennai',
-                controller: cityController,
-                validator: MultiValidator([
-                  RequiredValidator(errorText: 'City is required'),
-                ]).call,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 25),
-                child: Text(
-                  'Town'.tr,
-                  style: GoogleFonts.poppins(
-                      color: const Color(0xff1F1F1F),
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14),
-                ),
-              ),
-              CommonTextField(
-                hintText: 'Town',
-                controller: townController,
-                validator: MultiValidator([
-                  RequiredValidator(errorText: 'Town is required'),
-                ]).call,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 25),
-                child: Text(
-                  'State'.tr,
-                  style: GoogleFonts.poppins(
-                      color: const Color(0xff1F1F1F),
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14),
-                ),
-              ),
-              CommonTextField(
-                hintText: 'Ex: Bihar, Rajasthan, Karnataka',
-                controller: stateController,
-                validator: MultiValidator([
-                  RequiredValidator(errorText: 'State is required'),
-                ]).call,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 25),
-                child: Text(
-                  'Country'.tr,
-                  style: GoogleFonts.poppins(
-                      color: const Color(0xff1F1F1F),
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14),
-                ),
-              ),
-              CommonTextField(
-                hintText: 'India',
-                controller: countryController,
-                readOnly: true,
-                prefixicon: Padding(
-                  padding: const EdgeInsets.only(left: 5, right: 5),
-                  child: Image.asset(
-                    'assets/images/flag1png.png',
-                    height: 15,
-                    width: 15,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 25),
-                child: Text(
-                  'Special Instruction'.tr,
-                  style: GoogleFonts.poppins(
-                      color: const Color(0xff1F1F1F),
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14),
-                ),
-              ),
-              CommonTextField(
-                hintText: 'Special Instruction (Optional)',
-                controller: specialInstructionController,
-              ),
-              SizedBox(
-                height: size.height * .02,
-              ),
-              GestureDetector(
-                onTap: () {
-                  addNativeAddress();
-                },
-                child: Container(
-                  margin: const EdgeInsets.only(left: 25, right: 25),
-                  width: size.width,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xffFF730A),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      "Confirm Your Address",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                        fontSize: 20,
-                      ),
+                const SizedBox(height: 20),
+                Text("Country", style: GoogleFonts.poppins(fontSize: 14)),
+                const SizedBox(height: 8),
+                CommonTextField(
+                  hintText: 'Australia',
+                  controller: countryController,
+                  readOnly: true,
+                  prefixicon: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Image.asset(
+                      'assets/images/aus_flag.png',
+                      height: 20,
+                      width: 20,
                     ),
                   ),
                 ),
-              ),
-              SizedBox(
-                height: size.height * .02,
-              ),
-            ],
+                const SizedBox(height: 20),
+                Text("Pincode", style: GoogleFonts.poppins(fontSize: 14)),
+                const SizedBox(height: 8),
+                CommonTextField(
+                  hintText: 'Enter pincode',
+                  controller: pincodeController,
+                  keyboardType: TextInputType.number,
+                ),
+                Text(
+                  "Radius Filter (km)",
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Slider(
+                  value: _radiusFilter,
+                  min: 1,
+                  max: 100,
+                  activeColor: Colors.orange,
+                  inactiveColor: Colors.deepOrange.shade100,
+                  divisions: 20,
+                  label: "${_radiusFilter.round()}",
+                  onChanged: (value) {
+                    setState(() {
+                      _radiusFilter = value;
+                    });
+                  },
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("1 km"),
+                    Text("${_radiusFilter.round()} km",
+                        style:
+                            GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                    const Text("100 km"),
+                  ],
+                ),
+                const SizedBox(height: 40),
+                CommonButton(
+                  text: "Save",
+                  onPressed: () {
+                    if (formKey.currentState!.validate()) {
+                      addNativeAddress();
+                    }
+                  },
+                  color: Colors.orange,
+                  textColor: Colors.white,
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

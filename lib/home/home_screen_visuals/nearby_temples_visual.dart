@@ -6,8 +6,10 @@ import 'package:trunriproject/home/constants.dart';
 import 'package:trunriproject/home/resturentDetailsScreen.dart';
 
 class NearbyTemplesVisual extends StatelessWidget {
-  const NearbyTemplesVisual({super.key, required this.templesList});
+  const NearbyTemplesVisual(
+      {super.key, required this.templesList, required this.isInAustralia});
   final List<dynamic> templesList;
+  final bool isInAustralia;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +61,7 @@ class NearbyTemplesVisual extends StatelessWidget {
                   closingTime: closingTime.toString(),
                   address: address.toString(),
                   image: photoUrl.toString(),
+                  isOpenNow: openingHours['open_now'],
                 ),
                 arguments: [lat, lng],
               );

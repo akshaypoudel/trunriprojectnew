@@ -5,7 +5,8 @@ import 'package:trunriproject/chat_module/screens/tabs/inquiry_details_page.dart
 import 'package:trunriproject/chat_module/screens/tabs/people_chats_list_page.dart';
 
 class ChatListScreen extends StatefulWidget {
-  const ChatListScreen({super.key});
+  const ChatListScreen({super.key, this.index});
+  final int? index;
 
   @override
   State<ChatListScreen> createState() => _ChatListScreenState();
@@ -17,7 +18,10 @@ class _ChatListScreenState extends State<ChatListScreen>
 
   @override
   void initState() {
-    _tabController = TabController(length: 4, vsync: this, initialIndex: 1);
+    _tabController = TabController(
+        length: 4,
+        vsync: this,
+        initialIndex: (widget.index != null) ? widget.index! : 1);
     super.initState();
   }
 

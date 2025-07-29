@@ -84,12 +84,12 @@ class ResturentItemListScreen extends StatelessWidget {
                           name: name,
                           rating: rating,
                           desc: 'No Description Available',
-                          openingTime:
-                              openingHours['opening'] ?? 'Not Available',
+                          openingTime: 'Not Available',
                           closingTime:
                               openingHours['closing'] ?? 'Not Available',
                           address: address,
                           image: photoUrl,
+                          isOpenNow: openingHours['open_now'],
                         ),
                       );
                     },

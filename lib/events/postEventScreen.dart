@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -12,6 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:trunriproject/events/event_location_picker.dart';
 import 'package:trunriproject/home/constants.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
 import '../multiImageWidget.dart';
@@ -48,6 +50,9 @@ class _PostEventScreenState extends State<PostEventScreen> {
   String selectedEventTypePrice = 'Paid';
   double? selectedLat;
   double? selectedLng;
+  String? selectedAddress;
+  String? selectedCity;
+  String? selectedState;
 
   @override
   void dispose() {
@@ -76,121 +81,56 @@ class _PostEventScreenState extends State<PostEventScreen> {
     }
   }
 
-  void showAddressModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => GestureDetector(
-        onVerticalDragDown: (_) {}, // 🔒 Prevent drag to avoid conflict
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.75,
-          child: const MapLocationPicker(
-            config: MapLocationPickerConfig(
-              apiKey: Constants.API_KEY,
-              initialMapType: MapType.normal,
-              zoomControlsEnabled: true,
-              liteModeEnabled: false, // ensure full interactivity
-            ),
-          ),
-        ),
+  void showAddressModal(BuildContext context) async {
+    Map<String, dynamic> result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const LocationPickerScreen(),
       ),
     );
-  }
+    setState(() {
+      selectedLat = result['lat'];
+      selectedLng = result['lng'];
+      selectedAddress = result['address'];
+      selectedCity = result['city'];
+      selectedState = result['state'];
+      locationController.text = selectedAddress!;
+    });
 
-  void showAddressModal2(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => SizedBox(
-        height: MediaQuery.of(context).size.height * 0.75,
-        child: const MapLocationPicker(
-          config: MapLocationPickerConfig(
-            apiKey: Constants.API_KEY,
-            initialMapType: MapType.normal,
-            zoomControlsEnabled: true,
-          ),
-        ),
-      ),
-    );
-  }
-
-  void showAddressModal1(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      isScrollControlled: true,
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 16,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text("Enter Address",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-
-                // Country (Fixed: Australia)
-                TextFormField(
-                  initialValue: "India",
-                  enabled: false,
-                  decoration: const InputDecoration(labelText: "Country"),
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  // initialValue: "India",
-                  controller: stateController,
-                  enabled: true,
-                  decoration: const InputDecoration(labelText: "State"),
-                ),
-                const SizedBox(height: 10),
-
-                TextFormField(
-                  controller: addressController,
-                  decoration: const InputDecoration(labelText: "Address"),
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 10),
-
-                TextFormField(
-                  controller: pincodeController,
-                  decoration: const InputDecoration(labelText: "Pincode"),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-                const SizedBox(height: 20),
-
-                ElevatedButton(
-                  onPressed: () {
-                    locationController.text =
-                        "Country: India\nState: ${stateController.text.trim().toString()}\nAddress: ${addressController.text}\nPincode: ${pincodeController.text}";
-
-                    Get.back(); // Close modal
-                  },
-                  child: const Text("Save Address"),
-                ),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+    log("Selected Location: $selectedLat, $selectedLng, $selectedAddress, $selectedCity, $selectedState");
   }
 
   Future<void> _selectDate(BuildContext context) async {
+    // DateTime? picked = await showDatePicker(
+    //   context: context,
+    //   initialDate: DateTime.now(),
+    //   firstDate: DateTime(2000),
+    //   lastDate: DateTime(2101),
+    // );
     DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+      lastDate: DateTime(2100),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Colors.orange, // Header background & selected date
+              onPrimary: Colors.white, // Header text color
+              onSurface: Colors.black, // Default text color
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.orange, // Button text color
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
+
     if (picked != null) {
       setState(() {
         selectedDate = DateFormat('EEE yyyy-MM-dd').format(picked);
@@ -202,7 +142,28 @@ class _PostEventScreenState extends State<PostEventScreen> {
     TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            timePickerTheme: const TimePickerThemeData(
+                dayPeriodColor: Colors.deepOrangeAccent,
+                backgroundColor: Colors.white),
+            colorScheme: const ColorScheme.light(
+              primary: Colors.orange, // Clock dial and selected time
+              onPrimary: Colors.white, // Text color on selected time
+              onSurface: Colors.black, // Default text color
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.orange, // Button text color
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
+
     if (picked != null) {
       setState(() {
         selectedTime = picked.format(context);
@@ -238,6 +199,10 @@ class _PostEventScreenState extends State<PostEventScreen> {
         'eventDate': selectedDate,
         'eventTime': selectedTime,
         'location': locationController.text.trim(),
+        'city': selectedCity,
+        'state': selectedState,
+        'latitude': selectedLat,
+        'longitude': selectedLng,
         'contactInformation': contactInformationController.text.trim(),
         'photo': imageUrls, // Sending multiple images
       }).then((value) async {

@@ -10,7 +10,8 @@ import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/home/section_title.dart';
 
 class NearbyEventsVisual extends StatelessWidget {
-  const NearbyEventsVisual({super.key});
+  const NearbyEventsVisual({super.key, required this.isInAustralia});
+  final bool isInAustralia;
 
   @override
   Widget build(BuildContext context) {

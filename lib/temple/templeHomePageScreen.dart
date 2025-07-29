@@ -86,6 +86,7 @@ class TempleHomePageScreen extends StatelessWidget {
                               openingHours['closing'] ?? 'Not Available',
                           address: address,
                           image: photoUrl,
+                          isOpenNow: temple['opening_hours']['open_now'],
                         ),
                         arguments: [
                           temple['geometry']['location']['lat'],

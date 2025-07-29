@@ -3,11 +3,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
+import 'package:trunriproject/currentLocation.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:trunriproject/widgets/helper.dart';
 
@@ -103,6 +106,32 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
     }
   }
 
+  Future<bool> isUserInAustralia() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return false;
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      permission = await Geolocator.requestPermission();
+      if (permission != LocationPermission.always &&
+          permission != LocationPermission.whileInUse) {
+        return false;
+      }
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+
+    return placemarks.isNotEmpty && placemarks.first.isoCountryCode == 'AU';
+  }
+
   void verifyOTP() async {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
@@ -129,32 +158,36 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
           widget.password!,
         );
 
-        Navigator.of(context).pushAndRemoveUntil(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const PickUpAddressScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              var tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              var offsetAnimation = animation.drive(tween);
-              return SlideTransition(
-                position: offsetAnimation,
-                child: child,
-              );
-            },
-          ),
-          (Route<dynamic> route) => false,
-        );
+        checkIfUserInAustralia();
       } catch (e) {
         showSnackBar(context, "Invalid OTP");
       }
     }
 
     NewHelper.hideLoader(loader);
+  }
+
+  void checkIfUserInAustralia() {
+    Future.delayed(Duration.zero, () async {
+      bool inAustralia = await isUserInAustralia();
+
+      if (!inAustralia) {
+        // Ask them to manually select Australian state + suburb
+        Get.to(
+          () => const PickUpAddressScreen(),
+        );
+      } else {
+        Get.to(
+          () => const CurrentAddress(
+            isProfileScreen: false,
+            savedAddress: '',
+            latitude: '',
+            longitude: '',
+            radiusFilter: 50,
+          ),
+        );
+      }
+    });
   }
 
   void verifyOTPForSignInScreen() async {
@@ -180,26 +213,28 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
           await PresenceService.setUserOnline(); // only for current user
         }
 
-        Navigator.of(context).pushAndRemoveUntil(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const MyBottomNavBar(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              var tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              var offsetAnimation = animation.drive(tween);
-              return SlideTransition(
-                position: offsetAnimation,
-                child: child,
-              );
-            },
-          ),
-          (Route<dynamic> route) => false,
-        );
+        // Navigator.of(context).pushAndRemoveUntil(
+        //   PageRouteBuilder(
+        //     pageBuilder: (context, animation, secondaryAnimation) =>
+        //         const MyBottomNavBar(),
+        //     transitionsBuilder:
+        //         (context, animation, secondaryAnimation, child) {
+        //       const begin = Offset(1.0, 0.0);
+        //       const end = Offset.zero;
+        //       const curve = Curves.ease;
+        //       var tween =
+        //           Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        //       var offsetAnimation = animation.drive(tween);
+        //       return SlideTransition(
+        //         position: offsetAnimation,
+        //         child: child,
+        //       );
+        //     },
+        //   ),
+        //   (Route<dynamic> route) => false,
+        // );
+
+        checkIfUserInAustralia();
       } catch (e) {
         showSnackBar(context, "Invalid OTP Error : ${e.toString()}");
       }

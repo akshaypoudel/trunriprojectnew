@@ -1,3 +1,5 @@
+// Full revised code with improved UI and better layout handling
+
 import 'dart:developer';
 import 'dart:io';
 
@@ -23,8 +25,9 @@ class ResturentDetailsScreen extends StatefulWidget {
   final String closingTime;
   final String address;
   final String image;
+  final bool isOpenNow;
 
-  ResturentDetailsScreen({
+  const ResturentDetailsScreen({
     super.key,
     required this.name,
     required this.desc,
@@ -33,6 +36,7 @@ class ResturentDetailsScreen extends StatefulWidget {
     required this.closingTime,
     required this.address,
     required this.image,
+    required this.isOpenNow,
   });
 
   @override
@@ -92,9 +96,9 @@ class _ResturentDetailsScreenState extends State<ResturentDetailsScreen> {
           'name': widget.name,
           'address': widget.address,
           'image': widget.image,
-          'rating':widget.rating,
+          'rating': widget.rating,
           'openingTime': widget.openingTime,
-          'closingTime' : widget.closingTime,
+          'closingTime': widget.closingTime,
           'desc': widget.desc
         });
       }
@@ -108,7 +112,7 @@ class _ResturentDetailsScreenState extends State<ResturentDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    if(Get.arguments!=null){
+    if (Get.arguments != null) {
       resturentLat = Get.arguments[0];
       resturentlong = Get.arguments[1];
     }
@@ -118,7 +122,7 @@ class _ResturentDetailsScreenState extends State<ResturentDetailsScreen> {
   Future<File> _downloadImage(String url) async {
     final directory = await getApplicationDocumentsDirectory();
     final filePath = '${directory.path}/temp_image.jpg';
-    final response = await Dio().download(url, filePath);
+    await Dio().download(url, filePath);
     return File(filePath);
   }
 
@@ -128,311 +132,194 @@ class _ResturentDetailsScreenState extends State<ResturentDetailsScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(widget.name),
-        leading: GestureDetector(
-          onTap: () {
-            Get.back();
-          },
-          child: const Icon(
-            Icons.arrow_back_ios_new,
-            color: AppTheme.mainColor,
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.mainColor),
+          onPressed: () => Get.back(),
         ),
         actions: [
-          GestureDetector(
-            onTap: () async {
+          IconButton(
+            icon: const Icon(Icons.share, color: AppTheme.mainColor),
+            onPressed: () async {
               try {
                 final file = await _downloadImage(widget.image);
-                String textSend = '${widget.name}    ' + 'Address :- ${widget.address}';
-                await Share.shareXFiles(
-                  [
-                    XFile(file.path),
-                  ],
-                  text: textSend,
-                  subject: widget.address,
-                );
+                await Share.shareXFiles([
+                  XFile(file.path),
+                ], text: '${widget.name}\nAddress: ${widget.address}');
               } catch (e) {
                 log('Error sharing image: $e');
               }
             },
-            child: const Icon(Icons.share, color: AppTheme.mainColor),
           ),
           const SizedBox(width: 10),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 80),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.network(
-                  widget.image,
-                  height: 250,
-                  width: Get.width,
-                  fit: BoxFit.cover,
-                ),
-                Positioned(
-                  bottom: 10,
-                  right: 20,
-                  child: GestureDetector(
-                    onTap: _toggleFavorite,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: Colors.transparent,
-                        shape: BoxShape.circle,
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(20),
+                        bottomRight: Radius.circular(20),
                       ),
-                      child: Icon(
-                        Icons.favorite,
-                        color: isFavorite ? Colors.red : Colors.grey,
-                        size: 30,
+                      child: Image.network(
+                        widget.image,
+                        height: 250,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
                       ),
                     ),
+                    Positioned(
+                      bottom: 10,
+                      right: 20,
+                      child: GestureDetector(
+                        onTap: _toggleFavorite,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.white,
+                          child: Icon(
+                            Icons.favorite,
+                            color: isFavorite ? Colors.red : Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.name,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.buttonColor,
+                        ),
+                      ),
+                      (widget.isOpenNow)
+                          ? const Chip(
+                              side: BorderSide(color: Colors.red),
+                              backgroundColor: Colors.orangeAccent,
+                              label: Text(
+                                'Open Now',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            )
+                          : const Chip(
+                              side: BorderSide(color: Colors.red),
+                              backgroundColor: Colors.orangeAccent,
+                              label: Text(
+                                'Closed',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                      const SizedBox(height: 12),
+                      _infoRow('assets/images/address.png', 'Address',
+                          widget.address),
+                      _infoRow('assets/images/rating.png', 'Rating',
+                          '${widget.rating}'),
+                      _infoRow(
+                        'assets/images/time.png',
+                        'Opening Time',
+                        widget.openingTime.isNotEmpty
+                            ? (widget.openingTime != 'null')
+                                ? widget.openingTime
+                                : 'Not Available'
+                            : 'Not Available',
+                      ),
+                      _infoRow(
+                          'assets/images/time.png',
+                          'Closing Time',
+                          widget.closingTime.isNotEmpty
+                              ? widget.closingTime
+                              : 'Not Available'),
+                      _infoRow('assets/images/description.png', 'Description',
+                          widget.desc),
+                      const SizedBox(height: 20),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: SizedBox(
+                          height: 200,
+                          width: double.infinity,
+                          child: GoogleMap(
+                            initialCameraPosition: CameraPosition(
+                              target: LatLng(resturentLat, resturentlong),
+                              zoom: 15,
+                            ),
+                            markers: {
+                              Marker(
+                                markerId: const MarkerId('resturentLocation'),
+                                position: LatLng(resturentLat, resturentlong),
+                              ),
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 15),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 25,
-                      color: AppTheme.buttonColor,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Divider(height: 1, color: Colors.grey),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Image.asset(
-                        'assets/images/address.png',
-                        height: 30,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Address',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                                color: AppTheme.blackColor,
-                              ),
-                            ),
-                            Text(
-                              widget.address,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 15,
-                                color: AppTheme.blackColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  const SizedBox(height: 10),
-                  const Divider(height: 1, color: Colors.grey),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Image.asset(
-                        'assets/images/rating.png',
-                        height: 30,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            RatingBarIndicator(
-                              rating: widget.rating,
-                              itemBuilder: (context, index) => const Icon(
-                                Icons.star,
-                                color: Colors.amber,
-                              ),
-                              itemCount: 5,
-                              itemSize: 30.0,
-                              direction: Axis.horizontal,
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              'Rating : - ${widget.rating}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 15,
-                                color: AppTheme.blackColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  const Divider(height: 1, color: Colors.grey),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Image.asset(
-                        'assets/images/time.png',
-                        height: 30,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Opening Time',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                                color: AppTheme.blackColor,
-                              ),
-                            ),
-                            Text(
-                              ' ${widget.openingTime.isNotEmpty ? '- ${widget.openingTime}' : 'Not Available'}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 15,
-                                color: AppTheme.blackColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  const SizedBox(height: 10),
-                  const Divider(height: 1, color: Colors.grey),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Image.asset(
-                        'assets/images/time.png',
-                        height: 30,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Closing Time',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                                color: AppTheme.blackColor,
-                              ),
-                            ),
-                            Text(
-                              ' ${widget.closingTime.isNotEmpty ? '- ${widget.closingTime}' : 'Not Available'}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 15,
-                                color: AppTheme.blackColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  const Divider(height: 1, color: Colors.grey),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Image.asset(
-                        'assets/images/description.png',
-                        height: 30,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Description',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                                color: AppTheme.blackColor,
-                              ),
-                            ),
-                            Text(
-                              widget.desc,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 15,
-                                color: AppTheme.blackColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  const SizedBox(height: 10),
-                  const Divider(height: 1, color: Colors.grey),
-                  const SizedBox(height: 10),
-                  Container(
-                    height: 200,
-                    child: GoogleMap(
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(resturentLat, resturentlong),
-                        zoom: 15,
-                      ),
-                      markers: {
-                        Marker(
-                          markerId: const MarkerId('resturentLocation'),
-                          position: LatLng(resturentLat, resturentlong),
-                        ),
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 20.0),
-        child: FloatingActionButton(
-          onPressed: (){
-            _launchMap(resturentLat, resturentlong);
-          },
-          backgroundColor: AppTheme.mainColor,
-          child:const  Icon(
-            Icons.directions,
-            size: 40,
           ),
-        ),
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: FloatingActionButton(
+              onPressed: () => _launchMap(resturentLat, resturentlong),
+              backgroundColor: AppTheme.mainColor,
+              child: const Icon(Icons.directions, size: 30),
+            ),
+          ),
+        ],
       ),
+    );
+  }
 
+  Widget _infoRow(String iconPath, String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.asset(iconPath, height: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: AppTheme.blackColor,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: AppTheme.blackColor,
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 }

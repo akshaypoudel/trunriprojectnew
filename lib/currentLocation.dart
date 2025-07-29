@@ -27,12 +27,14 @@ class CurrentAddress extends StatefulWidget {
     required this.latitude,
     required this.longitude,
     required this.radiusFilter,
+    this.isInAustralia,
   });
   final bool isProfileScreen;
   final String savedAddress;
   final String latitude;
   final String longitude;
   final int radiusFilter;
+  final bool? isInAustralia;
   static var chooseAddressScreen = "/chooseAddressScreen";
 
   @override
@@ -50,6 +52,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
   Position? _currentPosition;
 
   String? street, city, state, country, zipcode, town;
+  String suburb = '';
 
   // String googleApikey = "AIzaSyAP9njE_z7lH2tii68WLoQGju0DF8KryXA";
   CameraPosition? cameraPosition;
@@ -200,7 +203,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
     });
   }
 
-  Future<void> updateCurrentLocation() async {
+  Future<void> updateCurrentLocation({required bool isInAustralia}) async {
     if (_address == widget.savedAddress &&
         radiusFilter == widget.radiusFilter) {
       Navigator.pop(context);
@@ -214,27 +217,52 @@ class _CurrentAddressState extends State<CurrentAddress> {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    final userRef = _firestore.collection('currentLocation').doc(user.uid);
+    DocumentReference<Map<String, dynamic>> userRef;
+    if (isInAustralia) {
+      userRef = _firestore.collection('currentLocation').doc(user.uid);
+    } else {
+      userRef = _firestore.collection('nativeAddress').doc(user.uid);
+    }
 
     try {
       final snapshot = await userRef.get();
 
       if (snapshot.exists) {
-        await userRef.update({
-          'Street': street,
-          'city': city,
-          'state': state,
-          'country': country,
-          'zipcode': zipcode,
-          'town': town,
-          'latitude': latitude1,
-          'longitude': longitude1,
-          'radiusFilter': radiusFilter,
-        });
+        if (isInAustralia) {
+          await userRef.update({
+            'Street': street,
+            'city': city,
+            'state': state,
+            'country': country,
+            'zipcode': zipcode,
+            'town': town,
+            'latitude': latitude1,
+            'longitude': longitude1,
+            'radiusFilter': radiusFilter,
+          });
+        } else {
+          await userRef.update({
+            // 'Street': street,
+            'nativeAddress': {
+              'city': city,
+              'state': state,
+              'country': country,
+              'zipcode': zipcode,
+              // 'town': town,
+              'latitude': latitude1,
+              'longitude': longitude1,
+              'radiusFilter': radiusFilter,
+            }
+          });
+        }
 
-        fullAddress = '$street, $town, $city, $state, $zipcode, $country';
+        fullAddress = '$town, $city, $state, $zipcode, $country';
 
-        showSnackBar(context, 'Current Location Updated Successfully');
+        if (isInAustralia) {
+          showSnackBar(context, 'Current Location Updated Successfully');
+        } else {
+          showSnackBar(context, 'Location Updated Successfully');
+        }
 
         Navigator.pop(context, {
           'state': state,
@@ -603,7 +631,9 @@ class _CurrentAddressState extends State<CurrentAddress> {
                                 GestureDetector(
                                   onTap: () {
                                     if (widget.isProfileScreen) {
-                                      updateCurrentLocation();
+                                      updateCurrentLocation(
+                                          isInAustralia:
+                                              widget.isInAustralia ?? false);
                                     } else {
                                       addCurrentLocation();
                                     }

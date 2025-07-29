@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,8 +19,8 @@ class LocationData extends ChangeNotifier {
 
   String _usersAddress = '';
   String _shortFormAddress = '';
-  String _state = '';
-  String _city = '';
+  final String _state = '';
+  final String _city = '';
 
   List<dynamic> _restaurauntList = [];
   List<dynamic> _groceryList = [];
@@ -49,6 +50,35 @@ class LocationData extends ChangeNotifier {
 
   void setTempEventRadiusFilter(int? value) {
     _tempEventRadiusFilter = value;
+    notifyListeners();
+  }
+
+  /////////////////////////////////////////////////////////////
+
+  String _nativeState = '';
+  String _nativeCity = '';
+  String _suburb = '';
+  String _zipcode = '';
+  double _nativeRadiusFilter = 10;
+
+  String get getNativeState => _nativeState;
+  String get getNativeCity => _nativeCity;
+  String get getNativeSuburb => _suburb;
+  String get getNativeZipcode => _zipcode;
+  double get getNativeRadiusFilter => _nativeRadiusFilter;
+
+  void setNativeLocation({
+    required String state,
+    required String city,
+    required String suburb,
+    required String zipcode,
+    required double radiusFilter,
+  }) {
+    _nativeState = state;
+    _nativeCity = city;
+    _suburb = suburb;
+    _zipcode = zipcode;
+    _nativeRadiusFilter = radiusFilter;
     notifyListeners();
   }
 
@@ -104,31 +134,124 @@ class LocationData extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchUserAddressAndLocation() async {
-    dynamic addressSnapshot = await firestore
-        .collection('currentLocation')
-        .doc(auth.currentUser!.uid)
-        .get();
+  Future<void> fetchUserAddressAndLocation(
+      {required bool isInAustralia}) async {
+    late DocumentSnapshot addressSnapshot1;
 
-    if (addressSnapshot.exists) {
-      final street = addressSnapshot.data()['Street'] ?? '';
-      final city = addressSnapshot.data()['city'] ?? '';
-      _city = city;
-      final town = addressSnapshot.data()['town'] ?? '';
-      final state = addressSnapshot.data()['state'] ?? '';
-      _state = state;
-      final country = addressSnapshot.data()['country'] ?? '';
-      final zip = addressSnapshot.data()['zipcode'] ?? '';
-      final fullAddress = '$street, $town, $city, $state, $zip, $country';
+    if (isInAustralia) {
+      addressSnapshot1 = await firestore
+          .collection('currentLocation')
+          .doc(auth.currentUser!.uid)
+          .get();
+    } else {
+      addressSnapshot1 = await firestore
+          .collection('nativeAddress')
+          .doc(auth.currentUser!.uid)
+          .get();
+    }
+
+    if (addressSnapshot1.exists) {
+      Map<String, dynamic>? addressSnapshot;
+
+      if (isInAustralia) {
+        addressSnapshot = addressSnapshot1.data() as Map<String, dynamic>?;
+      } else {
+        addressSnapshot =
+            (addressSnapshot1.data() as Map<String, dynamic>?)?['nativeAddress']
+                as Map<String, dynamic>?;
+      }
+
+      if (addressSnapshot != null) {
+        final city = addressSnapshot['city'] ?? '';
+        _nativeCity = city;
+        final state = addressSnapshot['state'] ?? '';
+        _nativeState = state;
+        final country = addressSnapshot['country'] ?? '';
+        final zip = addressSnapshot['zipcode'] ?? '';
+        final suburb = addressSnapshot['suburb'] ?? '';
+        final fullAddress = '$suburb, $city, $state, $zip, $country';
+        _usersAddress = fullAddress;
+
+        final lat = addressSnapshot['latitude'] ?? '';
+        final long = addressSnapshot['longitude'] ?? '';
+
+        if (lat is double && long is double) {
+          _latitude = lat;
+          _longitude = long;
+        } else if (lat is String && long is String) {
+          _latitude = double.tryParse(lat) ?? 0.0;
+          _longitude = double.tryParse(long) ?? 0.0;
+        }
+
+        final radius = addressSnapshot['radiusFilter'] ?? 50;
+        if (radius is int) {
+          _radiusFilter = radius;
+        } else if (radius is double) {
+          _radiusFilter = radius.toInt();
+        }
+
+        _shortFormAddress = '📍 $city, ${getStateShortForm(state)}';
+        notifyListeners();
+      } else {
+        log('addressSnapshot is null or not a Map');
+      }
+    } else {
+      log('Document does not exist');
+    }
+  }
+
+  Future<void> fetchUserAddressAndLocation1(
+      {required bool isInAustralia}) async {
+    dynamic addressSnapshot1;
+    if (isInAustralia) {
+      addressSnapshot1 = await firestore
+          .collection('currentLocation')
+          .doc(auth.currentUser!.uid)
+          .get();
+    } else {
+      addressSnapshot1 = await firestore
+          .collection('nativeAddress')
+          .doc(auth.currentUser!.uid)
+          .get();
+    }
+
+    if (addressSnapshot1.exists) {
+      Map<String, dynamic>? addressSnapshot;
+
+      if (isInAustralia) {
+        addressSnapshot = addressSnapshot1.data() as Map<String, dynamic>?;
+      } else {
+        addressSnapshot =
+            (addressSnapshot1.data() as Map<String, dynamic>?)?['nativeAddress']
+                as Map<String, dynamic>?;
+      }
+      // final street = addressSnapshot.data()['Street'] ?? '';
+      final city = addressSnapshot?['city'] ?? '';
+      _nativeCity = city;
+      // final town = addressSnapshot.data()['town'] ?? '';
+      final state = addressSnapshot?['state'] ?? '';
+      _nativeState = state;
+      final country = addressSnapshot?['country'] ?? '';
+      final zip = addressSnapshot?['zipcode'] ?? '';
+      final suburb = addressSnapshot?['suburb'] ?? '';
+      final fullAddress = '$suburb, $city, $state, $zip, $country';
       _usersAddress = fullAddress;
-      String lat = addressSnapshot.data()['latitude'] ?? '';
-      String long = addressSnapshot.data()['longitude'] ?? '';
-      _latitude = lat.toNum.toDouble();
-      _longitude = long.toNum.toDouble();
-      _radiusFilter = addressSnapshot.data()['radiusFilter'] ?? 50;
-
+      final lat = addressSnapshot?['latitude'] ?? '';
+      final long = addressSnapshot?['longitude'] ?? '';
+      if (lat is double && long is double) {
+        _latitude = lat;
+        _longitude = long;
+      } else if (lat is String && long is String) {
+        _latitude = lat.toNum.toDouble();
+        _longitude = long.toNum.toDouble();
+      }
+      final radius = addressSnapshot?['radiusFilter'] ?? 50;
+      if (radius is int) {
+        _radiusFilter = radius;
+      } else if (radius is double) {
+        _radiusFilter = radius.toInt();
+      }
       _shortFormAddress = '📍 $city, ${getStateShortForm(state)}';
-
       notifyListeners();
     } else {
       log('currentLocation doesnt exists');
