@@ -88,12 +88,17 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
         'uid': uid,
       }, SetOptions(merge: true));
 
+      await FirebaseFirestore.instance
+          .collection('User')
+          .doc(uid)
+          .set({'city': cityController.text}, SetOptions(merge: true));
+
       Provider.of<LocationData>(context, listen: false).setNativeLocation(
         state: stateController.text,
         city: cityController.text,
         suburb: suburbController.text,
         zipcode: pincodeController.text,
-        radiusFilter: _radiusFilter,
+        radiusFilter: _radiusFilter.toInt(),
       );
 
       Get.offAll(() => const VisaTypeScreen());

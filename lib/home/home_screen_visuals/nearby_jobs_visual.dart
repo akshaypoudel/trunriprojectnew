@@ -14,7 +14,7 @@ class NearbyJobsVisual extends StatelessWidget {
     var width = MediaQuery.of(context).size.width;
 
     return SizedBox(
-      height: height * 0.25,
+      height: (isInAustralia) ? height * .32 : height * .26,
       width: width,
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('jobs').snapshots(),
@@ -24,7 +24,51 @@ class NearbyJobsVisual extends StatelessWidget {
                 child: CircularProgressIndicator(color: Colors.orange));
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No jobs found'));
+            return ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                Container(
+                  width: 200,
+                  margin: const EdgeInsets.symmetric(horizontal: 100),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.deepOrange.shade200),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.business_center,
+                        size: 48,
+                        color: Colors.orangeAccent,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        (isInAustralia) ? 'No Jobs Nearby' : 'No Jobs Found',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        isInAustralia
+                            ? 'Try expanding your radius or check another suburb'
+                            : 'Select a different suburb in Australia to find Jobs',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade700,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
           }
 
           return ListView.separated(

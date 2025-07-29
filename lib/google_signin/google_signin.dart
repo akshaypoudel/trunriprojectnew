@@ -3,8 +3,13 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
+import 'package:trunriproject/currentLocation.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:trunriproject/nativAddressScreen.dart';
 import 'package:trunriproject/widgets/helper.dart';
@@ -26,27 +31,6 @@ class CustomGoogleSignin {
 
       bool isNewUser = userCredential.additionalUserInfo!.isNewUser;
 
-      Navigator.of(context).pushAndRemoveUntil(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => (!isNewUser)
-              ? const MyBottomNavBar()
-              : const PickUpAddressScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.ease;
-            var tween =
-                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            var offsetAnimation = animation.drive(tween);
-            return SlideTransition(
-              position: offsetAnimation,
-              child: child,
-            );
-          },
-        ),
-        (Route<dynamic> route) => false,
-      );
-
       if (isNewUser) {
         registerWithGoogle(
           userCredential.user!.displayName!,
@@ -64,6 +48,31 @@ class CustomGoogleSignin {
         showSnackBar(context, "User Log In Successfull");
       } else {
         showSnackBar(context, "User Registered Successfully");
+      }
+
+      if (isNewUser) {
+        checkIfUserInAustralia();
+      } else {
+        Navigator.of(context).pushAndRemoveUntil(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const MyBottomNavBar(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              var tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var offsetAnimation = animation.drive(tween);
+              return SlideTransition(
+                position: offsetAnimation,
+                child: child,
+              );
+            },
+          ),
+          (Route<dynamic> route) => false,
+        );
       }
     } on Exception catch (e) {
       log('exception->$e');
@@ -96,5 +105,53 @@ class CustomGoogleSignin {
     }).then((value) {
       NewHelper.hideLoader(loader);
     });
+  }
+
+  void checkIfUserInAustralia() {
+    Future.delayed(Duration.zero, () async {
+      bool inAustralia = await isUserInAustralia();
+
+      if (!inAustralia) {
+        Get.offAll(
+          () => const PickUpAddressScreen(),
+        );
+      } else {
+        Get.offAll(
+          () => const CurrentAddress(
+            isProfileScreen: false,
+            savedAddress: '',
+            latitude: '',
+            longitude: '',
+            radiusFilter: 50,
+          ),
+        );
+      }
+    });
+  }
+
+  Future<bool> isUserInAustralia() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return false;
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      permission = await Geolocator.requestPermission();
+      if (permission != LocationPermission.always &&
+          permission != LocationPermission.whileInUse) {
+        return false;
+      }
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+
+    return placemarks.isNotEmpty && placemarks.first.isoCountryCode == 'AU';
   }
 }

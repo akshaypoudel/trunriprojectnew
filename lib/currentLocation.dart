@@ -173,12 +173,16 @@ class _CurrentAddressState extends State<CurrentAddress> {
     });
   }
 
-  void addCurrentLocation() {
+  void addCurrentLocation() async {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
-    FirebaseFirestore.instance
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await FirebaseFirestore.instance.collection('User').doc(uid).set({
+      'city': city,
+    }, SetOptions(merge: true));
+    await FirebaseFirestore.instance
         .collection('currentLocation')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .doc(uid)
         .set({
       'Street': street,
       'city': city,
@@ -204,6 +208,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
   }
 
   Future<void> updateCurrentLocation({required bool isInAustralia}) async {
+    // log('radius filter ----------- $radiusFilter');
     if (_address == widget.savedAddress &&
         radiusFilter == widget.radiusFilter) {
       Navigator.pop(context);
@@ -216,6 +221,10 @@ class _CurrentAddressState extends State<CurrentAddress> {
 
     final user = _auth.currentUser;
     if (user == null) return;
+
+    await FirebaseFirestore.instance.collection('User').doc(user.uid).set({
+      'city': city,
+    }, SetOptions(merge: true));
 
     DocumentReference<Map<String, dynamic>> userRef;
     if (isInAustralia) {
@@ -501,6 +510,9 @@ class _CurrentAddressState extends State<CurrentAddress> {
                   padding: const EdgeInsets.only(right: 15, top: 35),
                   child: Row(
                     children: [
+                      const SizedBox(
+                        width: 10,
+                      ),
                       GestureDetector(
                         onTap: () {
                           Get.back();
@@ -532,7 +544,9 @@ class _CurrentAddressState extends State<CurrentAddress> {
                                 trailing: IconButton(
                                   onPressed: _showFilterDialog,
                                   icon: const Icon(
-                                    Icons.filter_list,
+                                    Icons.filter_alt_sharp,
+                                    color: Colors.red,
+                                    size: 30,
                                   ),
                                 ),
                                 dense: true,

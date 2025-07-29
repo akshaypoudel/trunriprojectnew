@@ -90,15 +90,12 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
   }
 
   Future<void> updateUserName(String newName) async {
-    User? user = FirebaseAuth.instance.currentUser; // 1. Get the current user
+    User? user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
       try {
-        await user.updateDisplayName(newName); // 2. Call updateDisplayName()
-        showSnackBar(context,
-            "Display name updated successfully to: ${user.displayName}");
+        await user.updateDisplayName(newName);
       } on FirebaseAuthException catch (e) {
-        // 3. Handle errors
         showSnackBar(context, "Error updating display name: ${e.message}");
       }
     } else {
@@ -172,12 +169,11 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
       bool inAustralia = await isUserInAustralia();
 
       if (!inAustralia) {
-        // Ask them to manually select Australian state + suburb
-        Get.to(
+        Get.offAll(
           () => const PickUpAddressScreen(),
         );
       } else {
-        Get.to(
+        Get.offAll(
           () => const CurrentAddress(
             isProfileScreen: false,
             savedAddress: '',
@@ -213,28 +209,28 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
           await PresenceService.setUserOnline(); // only for current user
         }
 
-        // Navigator.of(context).pushAndRemoveUntil(
-        //   PageRouteBuilder(
-        //     pageBuilder: (context, animation, secondaryAnimation) =>
-        //         const MyBottomNavBar(),
-        //     transitionsBuilder:
-        //         (context, animation, secondaryAnimation, child) {
-        //       const begin = Offset(1.0, 0.0);
-        //       const end = Offset.zero;
-        //       const curve = Curves.ease;
-        //       var tween =
-        //           Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        //       var offsetAnimation = animation.drive(tween);
-        //       return SlideTransition(
-        //         position: offsetAnimation,
-        //         child: child,
-        //       );
-        //     },
-        //   ),
-        //   (Route<dynamic> route) => false,
-        // );
+        Navigator.of(context).pushAndRemoveUntil(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const MyBottomNavBar(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.ease;
+              var tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var offsetAnimation = animation.drive(tween);
+              return SlideTransition(
+                position: offsetAnimation,
+                child: child,
+              );
+            },
+          ),
+          (Route<dynamic> route) => false,
+        );
 
-        checkIfUserInAustralia();
+        // checkIfUserInAustralia();
       } catch (e) {
         showSnackBar(context, "Invalid OTP Error : ${e.toString()}");
       }

@@ -15,37 +15,99 @@ class NearbyEventsVisual extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('MakeEvent').snapshots(),
-      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text("No events available"));
-        }
+    return Column(
+      children: [
+        // Always visible heading
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: SectionTitle(
+            title: "Upcoming Events",
+            press: () {
+              final events = Provider.of<LocationData>(context, listen: false)
+                  .getEventList;
+              Get.to(() => EventDiscoveryScreen(eventList: events));
+            },
+          ),
+        ),
+        // Event data visual
+        StreamBuilder(
+          stream:
+              FirebaseFirestore.instance.collection('MakeEvent').snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-        List<Map<String, dynamic>> eventList = snapshot.data!.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
+            List<Map<String, dynamic>> eventList = [];
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Provider.of<LocationData>(context, listen: false)
-              .setEventList(eventList);
-        });
+            if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+              eventList = snapshot.data!.docs
+                  .map((doc) => doc.data() as Map<String, dynamic>)
+                  .toList();
 
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SectionTitle(
-                title: "Upcoming Events",
-                press: () {
-                  Get.to(() => EventDiscoveryScreen(eventList: eventList));
-                },
-              ),
-            ),
-            Container(
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Provider.of<LocationData>(context, listen: false)
+                    .setEventList(eventList);
+              });
+            }
+
+            if (eventList.isEmpty) {
+              return SizedBox(
+                height: 200,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    Container(
+                      width: 200,
+                      margin: const EdgeInsets.symmetric(horizontal: 100),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.deepOrange.shade200),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.calendar_month_sharp,
+                            size: 48,
+                            color: Colors.orangeAccent,
+                          ),
+                          const SizedBox(height: 12),
+                          Center(
+                            child: Text(
+                              (isInAustralia)
+                                  ? 'No Events Nearby'
+                                  : 'No Events Found',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            isInAustralia
+                                ? 'Try expanding your radius or check another suburb'
+                                : 'Select a different suburb in Australia to find Events',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade700,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return Container(
               height: 140,
               margin: const EdgeInsets.only(left: 20),
               decoration: BoxDecoration(
@@ -99,10 +161,10 @@ class NearbyEventsVisual extends StatelessWidget {
                   autoPlayCurve: Curves.easeInOutCirc,
                 ),
               ),
-            ),
-          ],
-        );
-      },
+            );
+          },
+        ),
+      ],
     );
   }
 }

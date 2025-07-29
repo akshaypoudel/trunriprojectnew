@@ -1,3 +1,6 @@
+import 'dart:developer';
+import 'dart:math' as Math;
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -5,8 +8,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/events/eventDetailsScreen.dart';
 import 'package:trunriproject/events/postEventScreen.dart';
+import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 import 'package:trunriproject/subscription/subscription_screen.dart';
+
+enum ActiveFilter { none, city, radius }
 
 class EventDiscoveryScreen extends StatefulWidget {
   final List<Map<String, dynamic>> eventList;
@@ -21,8 +27,9 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
   final TextEditingController searchController = TextEditingController();
   late List<Map<String, dynamic>> filteredEvents;
   List<String> selectedCategories = [];
-  String? selectedCityGlobal;
+  String? selectedCityGlobal = 'Sydney';
   double selectedRadiusGlobal = 50;
+  ActiveFilter activeFilter = ActiveFilter.none;
 
   final List<String> categories = [
     'Music',
@@ -46,10 +53,10 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
     super.dispose();
   }
 
-  void _applyLocationFilter(String city, double radius) {
+  void _applyLocationFilter(String city) {
     setState(() {
       selectedCityGlobal = city;
-      selectedRadiusGlobal = radius;
+      // selectedRadiusGlobal = radius;
       final list = widget.eventList;
       filteredEvents = list.where((event) {
         final eventCity = event['city']?.toString().toLowerCase() ?? '';
@@ -57,6 +64,41 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
       }).toList();
     });
   }
+
+  void _applyRadiusFilter(double radiusKm) {
+    final provider = Provider.of<LocationData>(context, listen: false);
+    setState(() {
+      selectedRadiusGlobal = radiusKm;
+      log('calling radius filter....... \n selected radius = $selectedRadiusGlobal');
+
+      filteredEvents = widget.eventList.where((event) {
+        final evLat = event['latitude'] as double?;
+        final evLng = event['longitude'] as double?;
+        if (evLat == null || evLng == null) return false;
+
+        final distance = haversineDistance(
+            provider.getLatitude, provider.getLongitude, evLat, evLng);
+        return distance <= radiusKm;
+      }).toList();
+
+      log('filter events = $filteredEvents');
+    });
+  }
+
+  double haversineDistance(double lat1, double lon1, double lat2, double lon2) {
+    const earthRadius = 6371;
+    final dLat = _toRadians(lat2 - lat1);
+    final dLon = _toRadians(lon2 - lon1);
+    final a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(_toRadians(lat1)) *
+            Math.cos(_toRadians(lat2)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+    final c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadius * c;
+  }
+
+  double _toRadians(double degree) => degree * Math.pi / 180;
 
   void _showLocationFilterDialog() {
     String selectedCity = selectedCityGlobal ?? 'Sydney';
@@ -89,12 +131,17 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.location_on, color: Colors.orange),
+                      Icon(
+                        Icons.location_on,
+                        color: Colors.orange,
+                      ),
                       SizedBox(width: 8),
                       Text(
                         'Filter by Location',
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -128,7 +175,30 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                   ),
 
                   const SizedBox(height: 20),
-
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 2,
+                        width: 100,
+                        color: Colors.black12,
+                      ),
+                      const Text(
+                        "  Or  ",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xff6F6B7A),
+                          fontSize: 16,
+                        ),
+                      ),
+                      Container(
+                        height: 2,
+                        width: 100,
+                        color: Colors.black12,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
                   // Radius Slider
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,7 +211,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                         value: selectedRadius,
                         min: 1,
                         max: 100,
-                        divisions: 10,
+                        divisions: 99,
                         activeColor: Colors.orange,
                         label: '${selectedRadius.round()} km',
                         onChanged: (value) {
@@ -162,15 +232,19 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                       TextButton.icon(
                         onPressed: () {
                           setState(() {
-                            selectedCityGlobal = null;
+                            selectedCityGlobal = 'Sydney';
                             selectedRadiusGlobal = 50;
                             filteredEvents = List.from(widget.eventList);
                           });
                           Navigator.pop(context);
                         },
                         icon: const Icon(Icons.clear, color: Colors.red),
-                        label: const Text('Cancel',
-                            style: TextStyle(color: Colors.red)),
+                        label: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.red,
+                          ),
+                        ),
                       ),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
@@ -186,7 +260,28 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                             style: TextStyle(color: Colors.white)),
                         onPressed: () {
                           Navigator.pop(context);
-                          _applyLocationFilter(selectedCity, selectedRadius);
+                          final cityChanged =
+                              selectedCity != selectedCityGlobal;
+                          final radiusChanged =
+                              selectedRadius != selectedRadiusGlobal;
+
+                          if (cityChanged && !radiusChanged) {
+                            activeFilter = ActiveFilter.city;
+                            _applyLocationFilter(selectedCity);
+                          } else if (radiusChanged && !cityChanged) {
+                            activeFilter = ActiveFilter.radius;
+                            _applyRadiusFilter(selectedRadius);
+                          } else if (cityChanged && radiusChanged) {
+                            // if both changed, you can choose priority (e.g., city overrides)
+                            activeFilter = ActiveFilter.city;
+                            _applyLocationFilter(selectedCity);
+                          } else {
+                            activeFilter = ActiveFilter.city;
+                            _applyLocationFilter(selectedCity);
+                            // filteredEvents = List.from(widget.eventList);
+                          }
+
+                          // save globals
                           selectedCityGlobal = selectedCity;
                           selectedRadiusGlobal = selectedRadius;
                         },
@@ -294,8 +389,9 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                       ),
                     ),
                     if (selectedCategories.isNotEmpty ||
-                        selectedCityGlobal != null ||
-                        searchController.text.isNotEmpty)
+                        selectedCityGlobal != 'Sydney' ||
+                        searchController.text.isNotEmpty ||
+                        activeFilter != ActiveFilter.none)
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: OutlinedButton.icon(
@@ -303,9 +399,10 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                             setState(() {
                               searchController.clear();
                               selectedCategories.clear();
-                              selectedCityGlobal = null;
+                              selectedCityGlobal = 'Sydney';
                               selectedRadiusGlobal = 50;
                               filteredEvents = List.from(widget.eventList);
+                              activeFilter = ActiveFilter.none;
                             });
                           },
                           icon: const Icon(

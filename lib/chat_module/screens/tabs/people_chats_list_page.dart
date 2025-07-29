@@ -7,6 +7,7 @@ import 'package:get/route_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/chat_module/components/user_tiles.dart';
 import 'package:trunriproject/chat_module/screens/chat_screen.dart';
+import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 import 'package:trunriproject/subscription/subscription_screen.dart';
 
@@ -36,11 +37,13 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
   }
 
   Future<void> _loadChats() async {
+    final provider = Provider.of<LocationData>(context, listen: false);
     try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
       final meDoc =
           await FirebaseFirestore.instance.collection('User').doc(uid).get();
       currentEmail = meDoc.get('email');
+      String currentCity = meDoc.get('city');
 
       final myFriends = meDoc.data()?['friends'] ?? [];
       final myRequests = meDoc.data()?['friendRequests'] ?? {};
@@ -52,14 +55,66 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
       final allUsers =
           await FirebaseFirestore.instance.collection('User').get();
 
+      // dynamic allUsersLocation;
+      // if (provider.isUserInAustralia) {
+      //   allUsersLocation = await FirebaseFirestore.instance
+      //       .collection('currentLocation')
+      //       .doc(uid)
+      //       .get();
+      // } else {
+      //   allUsersLocation = await FirebaseFirestore.instance
+      //       .collection('nativeAddress')
+      //       .doc(uid)
+      //       .get();
+      // }
+
+      // if (allUsersLocation.exists) {
+      //   if (provider.isUserInAustralia) {
+      //     currentCity = allUsersLocation.data()?['city'];
+      //   } else {
+      //     currentCity = allUsersLocation.data()?['nativeAddress']['city'];
+      //   }
+      // }
+
       List<Map<String, dynamic>> tempFriends = [];
       List<Map<String, dynamic>> tempOthers = [];
       List<Map<String, dynamic>> tempReceived = [];
 
+      if (allUsers.docs.isEmpty) {
+        return;
+      }
+
       for (var doc in allUsers.docs) {
         final email = doc['email'];
         final name = doc['name'];
+        final userCity = doc['city'];
+        // final otherUserId = doc.id;
+
         if (email == currentEmail) continue;
+        if (currentCity != userCity) continue;
+
+        // dynamic allUsersLocation;
+        // if (provider.isUserInAustralia) {
+        //   allUsersLocation = await FirebaseFirestore.instance
+        //       .collection('currentLocation')
+        //       .doc(otherUserId)
+        //       .get();
+        // } else {
+        //   allUsersLocation = await FirebaseFirestore.instance
+        //       .collection('nativeAddress')
+        //       .doc(otherUserId)
+        //       .get();
+        // }
+
+        // if (allUsersLocation.exists) {
+        //   if (provider.isUserInAustralia) {
+        //     userCity = allUsersLocation.data()?['city'];
+        //   } else {
+        //     userCity = allUsersLocation.data()?['nativeAddress']['city'];
+        //   }
+        // }
+
+        if (userCity != currentCity) continue;
 
         final userMap = {
           'email': email,
@@ -362,113 +417,119 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
               onRefresh: _loadChats,
               backgroundColor: Colors.white,
               color: Colors.deepOrange,
-              child: ListView(
-                children: [
-                  if (receivedRequestsList.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Row(
-                        children: [
-                          const Text(
-                            'Friend Requests',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+              child: (receivedRequestsList.isEmpty &&
+                      friendsList.isEmpty &&
+                      addFriendsList.isEmpty)
+                  ? const Center(
+                      child: Text('No Person Found in your Area'),
+                    )
+                  : ListView(
+                      children: [
+                        if (receivedRequestsList.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'Friend Requests',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  ' (${receivedRequestsList.length})',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Text(
-                            ' (${receivedRequestsList.length})',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                        ...receivedRequestsList.map(
+                          (user) => UserTiles(
+                            chatType: 'user',
+                            userName: user['name'],
+                            lastMessage: 'Sent you a friend request',
+                            lastMessageTime: '',
+                            imageUrl: user['profile'],
+                            status: 'received',
+                            onAcceptRequest: () => _acceptFriendRequest(
+                              user['email'],
+                            ),
+                            onDeclineRequest: () => _declineFriendRequest(
+                              user['email'],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ...receivedRequestsList.map(
-                    (user) => UserTiles(
-                      chatType: 'user',
-                      userName: user['name'],
-                      lastMessage: 'Sent you a friend request',
-                      lastMessageTime: '',
-                      imageUrl: user['profile'],
-                      status: 'received',
-                      onAcceptRequest: () => _acceptFriendRequest(
-                        user['email'],
-                      ),
-                      onDeclineRequest: () => _declineFriendRequest(
-                        user['email'],
-                      ),
-                    ),
-                  ),
-                  if (friendsList.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Row(
-                        children: [
-                          const Text(
-                            'Friends',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                        ),
+                        if (friendsList.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'Friends',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  ' (${friendsList.length})',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Text(
-                            ' (${friendsList.length})',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        ...friendsList.map(
+                          (user) => UserTiles(
+                            chatType: 'user',
+                            userName: user['name'],
+                            lastMessage: user['lastMessage'],
+                            lastMessageTime: user['lastMessageTime'],
+                            imageUrl: user['profile'],
+                            status: 'friend',
+                            onOpenChat: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ChatScreen(
+                                    receiversName: user['name'],
+                                    receiversID: user['email'],
+                                  ),
+                                ),
+                              ).then((_) => _loadChats());
+                            },
                           ),
-                        ],
-                      ),
-                    ),
-                  ...friendsList.map(
-                    (user) => UserTiles(
-                      chatType: 'user',
-                      userName: user['name'],
-                      lastMessage: user['lastMessage'],
-                      lastMessageTime: user['lastMessageTime'],
-                      imageUrl: user['profile'],
-                      status: 'friend',
-                      onOpenChat: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ChatScreen(
-                              receiversName: user['name'],
-                              receiversID: user['email'],
-                            ),
+                        ),
+                        if (addFriendsList.isNotEmpty)
+                          const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: Text('Add Friends',
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
                           ),
-                        ).then((_) => _loadChats());
-                      },
+                        ...addFriendsList.map(
+                          (user) => UserTiles(
+                            chatType: 'user',
+                            userName: user['name'],
+                            lastMessage: '',
+                            lastMessageTime: '',
+                            imageUrl: user['profile'],
+                            status: user['relation'],
+                            onSendFriendRequest: () {
+                              if (user['relation'] == 'none') {
+                                _sendFriendRequest(user['email']);
+                              }
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  if (addFriendsList.isNotEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(12.0),
-                      child: Text('Add Friends',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                    ),
-                  ...addFriendsList.map(
-                    (user) => UserTiles(
-                      chatType: 'user',
-                      userName: user['name'],
-                      lastMessage: '',
-                      lastMessageTime: '',
-                      imageUrl: user['profile'],
-                      status: user['relation'],
-                      onSendFriendRequest: () {
-                        if (user['relation'] == 'none') {
-                          _sendFriendRequest(user['email']);
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ),
             ),
     );
   }

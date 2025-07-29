@@ -36,6 +36,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
   TextEditingController aboutCompanyController = TextEditingController();
   TextEditingController cityController = TextEditingController();
   TextEditingController stateController = TextEditingController();
+  TextEditingController fullAddressController = TextEditingController();
 
   final formKey1 = GlobalKey<FormState>();
   final uuid = const Uuid();
@@ -135,6 +136,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
     aboutCompanyController.dispose();
     cityController.dispose();
     stateController.dispose();
+    fullAddressController.dispose();
     super.dispose();
   }
 
@@ -164,6 +166,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
       'timeOfAdd': timeOfAdd,
       'city': cityController.text,
       'state': stateController.text,
+      'fullAddress': fullAddressController.text,
     }).then((value) {
       showSnackBar(context, 'Job Added Successfully');
       // Get.to(const JobHomePageScreen());
@@ -227,6 +230,16 @@ class _AddJobScreenState extends State<AddJobScreen> {
                 controller: stateController,
                 validator:
                     RequiredValidator(errorText: 'State is required').call,
+              ),
+              const Padding(
+                padding: EdgeInsets.only(left: 25),
+                child: Text('Full Address'),
+              ),
+              CommonTextField(
+                hintText: 'Enter Full Address',
+                controller: fullAddressController,
+                validator:
+                    RequiredValidator(errorText: 'Address is required').call,
               ),
               const Padding(
                 padding: EdgeInsets.only(left: 25),
@@ -337,7 +350,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
                 children: [
                   Expanded(
                     child: CommonTextField(
-                        hintText: 'IND ₹0.00',
+                        hintText: 'AU\$ 0.00',
                         labelText: 'Min Salary',
                         keyboardType: const TextInputType.numberWithOptions(),
                         controller: minimumSalaryController,
@@ -348,7 +361,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
                   ),
                   Expanded(
                     child: CommonTextField(
-                        hintText: 'IND ₹0.00',
+                        hintText: 'AU\$ 0.00',
                         labelText: 'Max Salary',
                         keyboardType: const TextInputType.numberWithOptions(),
                         controller: maximunSalaryController,

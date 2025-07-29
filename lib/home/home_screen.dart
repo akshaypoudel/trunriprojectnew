@@ -344,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _fetchBasedOn(
           locationData.getLatitude,
           locationData.getLongitude,
-          locationData.getRadiusFilter,
+          locationData.getNativeRadiusFilter,
         );
         locationData.setIsLocationFetched(true);
       }
@@ -365,7 +365,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 top: 90,
                 child: RefreshIndicator.adaptive(
                   onRefresh: () async {
-                    // _getCurrentLocation();
                     isUserinAustraliaOrNot();
                   },
                   child: SingleChildScrollView(

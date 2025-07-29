@@ -43,130 +43,144 @@ class ResturentItemListScreen extends StatelessWidget {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'Restaurants Near You',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange),
-              ),
-            ),
-            Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: filteredRestaurants.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 18,
-                  childAspectRatio: 3 / 4.5,
+            if (filteredRestaurants.isNotEmpty)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'Restaurants Near You',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange),
                 ),
-                itemBuilder: (context, index) {
-                  final restaurant = filteredRestaurants[index];
-                  final name = restaurant['name'] ?? 'Unknown';
-                  final address = restaurant['vicinity'] ?? 'No Address';
-                  final rating =
-                      (restaurant['rating'] as num?)?.toDouble() ?? 0.0;
-                  final photoReference = restaurant['photos'] != null
-                      ? restaurant['photos'][0]['photo_reference']
-                      : null;
-                  final photoUrl = photoReference != null
-                      ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoReference&key=${Constants.API_KEY}'
-                      : 'https://via.placeholder.com/400';
-                  final openingHours = restaurant['opening_hours'] ?? {};
-
-                  return GestureDetector(
-                    onTap: () {
-                      Get.to(
-                        ResturentDetailsScreen(
-                          name: name,
-                          rating: rating,
-                          desc: 'No Description Available',
-                          openingTime: 'Not Available',
-                          closingTime:
-                              openingHours['closing'] ?? 'Not Available',
-                          address: address,
-                          image: photoUrl,
-                          isOpenNow: openingHours['open_now'],
-                        ),
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.orange.withOpacity(0.1),
-                            blurRadius: 6,
-                            spreadRadius: 2,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+              ),
+            (filteredRestaurants.isEmpty)
+                ? const Padding(
+                    padding: EdgeInsets.all(40),
+                    child: Center(
+                      child: Text(
+                        '😕 No Restauraunts found.',
+                        style: TextStyle(fontSize: 20, color: Colors.grey),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(12)),
-                            child: CachedNetworkImage(
-                              imageUrl: photoUrl,
-                              height: 120,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
+                    ),
+                  )
+                : Expanded(
+                    child: GridView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: filteredRestaurants.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 18,
+                        childAspectRatio: 3 / 4.5,
+                      ),
+                      itemBuilder: (context, index) {
+                        final restaurant = filteredRestaurants[index];
+                        final name = restaurant['name'] ?? 'Unknown';
+                        final address = restaurant['vicinity'] ?? 'No Address';
+                        final rating =
+                            (restaurant['rating'] as num?)?.toDouble() ?? 0.0;
+                        final photoReference = restaurant['photos'] != null
+                            ? restaurant['photos'][0]['photo_reference']
+                            : null;
+                        final photoUrl = photoReference != null
+                            ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoReference&key=${Constants.API_KEY}'
+                            : 'https://via.placeholder.com/400';
+                        final openingHours = restaurant['opening_hours'] ?? {};
+
+                        return GestureDetector(
+                          onTap: () {
+                            Get.to(
+                              ResturentDetailsScreen(
+                                name: name,
+                                rating: rating,
+                                desc: 'No Description Available',
+                                openingTime: 'Not Available',
+                                closingTime:
+                                    openingHours['closing'] ?? 'Not Available',
+                                address: address,
+                                image: photoUrl,
+                                isOpenNow: openingHours['open_now'],
+                              ),
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.orange.withOpacity(0.1),
+                                  blurRadius: 6,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  name,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black,
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(12)),
+                                  child: CachedNetworkImage(
+                                    imageUrl: photoUrl,
+                                    height: 120,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.star,
-                                        size: 14, color: Colors.orange),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      rating.toString(),
-                                      style: const TextStyle(
-                                          fontSize: 12, color: Colors.black54),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  address,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        name,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.star,
+                                              size: 14, color: Colors.orange),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            rating.toString(),
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.black54),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        address,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            ),
+                  ),
           ],
         ),
       ),

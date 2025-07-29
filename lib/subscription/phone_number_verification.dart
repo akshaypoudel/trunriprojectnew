@@ -23,7 +23,7 @@ class _PhoneNumberVerificationState extends State<PhoneNumberVerification> {
   bool showOtpField = false;
   int? _resendToken;
 
-  String code = "+91";
+  String code = "+61";
 
   void requestForOtp() async {
     String completePhoneNum = '$code${phoneController.text.trim()}';
@@ -130,7 +130,7 @@ class _PhoneNumberVerificationState extends State<PhoneNumberVerification> {
                   borderRadius: BorderRadius.circular(11),
                 ),
               ),
-              initialCountryCode: "IN",
+              initialCountryCode: "AU",
               onCountryChanged: (country) {
                 code = '+${country.dialCode}';
               },

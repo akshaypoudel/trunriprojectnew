@@ -165,6 +165,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<bool> _handleLocationSource() async {
+    bool hasPermission = await _handleLocationPermission();
+    if (!hasPermission) {
+      log('no permissionlllllllllllllllllllll');
+      return false;
+    }
     final position = await Geolocator.getCurrentPosition();
     final placemarks =
         await placemarkFromCoordinates(position.latitude, position.longitude);
@@ -176,6 +181,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } else {
       return false;
     }
+  }
+
+  Future<bool> _handleLocationPermission() async {
+    // radiusFilter = widget.radiusFilter;
+    bool isServiceEnabled;
+    LocationPermission permission;
+
+    isServiceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!isServiceEnabled) {
+      showSnackBar(context, 'Location Service Not Enabled');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        showSnackBar(context, 'Location Permission Not Given.');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      showSnackBar(
+        context,
+        'Location Permission is Denied Forever. Can\'t Access Location',
+      );
+    }
+    return true;
   }
 
   @override
@@ -198,7 +230,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         addressController.text = shortFormAddress;
         final latitude = value.getLatitude;
         final longitude = value.getLongitude;
-        final radiusFilter = value.getRadiusFilter;
+        final radiusFilter = value.getNativeRadiusFilter;
 
         return Scaffold(
           backgroundColor: Colors.white,

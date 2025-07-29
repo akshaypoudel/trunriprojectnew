@@ -42,7 +42,7 @@ class SubscriptionSuccessScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 FadeIn(
                   child: Text(
-                    'You are now a PRO member of TruNri\nand have access to these features for 1 month.',
+                    'You are now a PRO member of TruNri\nand have access to these features:',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
@@ -56,12 +56,11 @@ class SubscriptionSuccessScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildFeature(
-                          "✔️ Post unlimited jobs,events and accomodations"),
+                      _buildFeature("✔️ Post unlimited events and posts"),
                       _buildFeature("✔️ Promote business ads and offers"),
-                      _buildFeature("✔️ Direct replies to job seekers"),
+                      _buildFeature("✔️ Send Friend Requests & Create Groups"),
                       _buildFeature("✔️ Control visibility of your postings"),
-                      _buildFeature("✔️ Featured profile badge"),
+                      // _buildFeature("✔️ Featured profile badge"),
                     ],
                   ),
                 ),
