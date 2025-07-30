@@ -243,7 +243,23 @@ class _GroupsChatPageState extends State<GroupsChatPage>
   Widget _buildChatList() {
     if (isLoading) return const Center(child: CircularProgressIndicator());
     if (cachedChatList == null || cachedChatList!.isEmpty) {
-      return const Center(child: Text("No groups yet!!"));
+      return RefreshIndicator(
+        onRefresh: _loadChats,
+        backgroundColor: Colors.white,
+        color: Colors.deepOrange,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: const [
+            SizedBox(height: 200),
+            Center(
+              child: Text(
+                "No groups yet!!",
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     return RefreshIndicator(

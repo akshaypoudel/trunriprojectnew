@@ -96,7 +96,18 @@ class _CommunityPageState extends State<CommunityPage>
                   final posts = snapshot.data!.docs;
 
                   if (posts.isEmpty) {
-                    return const Center(child: Text("No posts yet."));
+                    return ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(height: 200),
+                        Center(
+                          child: Text(
+                            "No posts yet.",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    );
                   }
 
                   return ListView.builder(

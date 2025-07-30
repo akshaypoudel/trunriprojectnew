@@ -1,108 +1,21 @@
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-// import 'package:trunriproject/chat_module/context_chats/screens/context_chat_screen.dart';
-
-// class InquiryDetailsPage extends StatelessWidget {
-//   const InquiryDetailsPage({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final currentUser = FirebaseAuth.instance.currentUser;
-
-//     return StreamBuilder<QuerySnapshot>(
-//       stream: FirebaseFirestore.instance
-//           .collection('contextChats')
-//           .where('seekerId', isEqualTo: currentUser!.uid)
-//           .snapshots(),
-//       builder: (context, snapshot) {
-//         if (snapshot.connectionState == ConnectionState.waiting) {
-//           return const Center(child: CircularProgressIndicator());
-//         }
-
-//         final docs = snapshot.data?.docs ?? [];
-
-//         if (docs.isEmpty) {
-//           return const Center(child: Text('No previous inquiries yet.'));
-//         }
-
-//         return ListView.builder(
-//           itemCount: docs.length,
-//           itemBuilder: (context, index) {
-//             final data = docs[index].data() as Map<String, dynamic>;
-//             final listingTitle = data['postTitle'] ?? 'Listing';
-//             final listingType = data['postType'] ?? 'accommodation';
-//             final String address = '${data['city']},${data['state']}';
-
-//             return Padding(
-//               padding: const EdgeInsets.all(8.0),
-//               child: Container(
-//                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-//                 decoration: BoxDecoration(
-//                   color: Colors.white,
-//                   boxShadow: [
-//                     BoxShadow(
-//                       color: Colors.orange.withValues(alpha: 0.04),
-//                       blurRadius: 5,
-//                       offset: const Offset(0, 3),
-//                     ),
-//                   ],
-//                   borderRadius: BorderRadius.circular(12),
-//                   border: const Border.symmetric(
-//                     vertical: BorderSide(color: Colors.black),
-//                     horizontal: BorderSide(color: Colors.black),
-//                   ),
-//                 ),
-//                 child: ListTile(
-//                   leading: Icon(
-//                     listingType == 'job'
-//                         ? Icons.work_outline
-//                         : Icons.home_outlined,
-//                     color: Colors.orange,
-//                   ),
-//                   title: Text(listingTitle),
-//                   subtitle: Text(
-//                     address,
-//                     maxLines: 1,
-//                     overflow: TextOverflow.ellipsis,
-//                   ),
-//                   trailing: Text(
-//                     listingType,
-//                     maxLines: 1,
-//                     overflow: TextOverflow.ellipsis,
-//                   ),
-//                   onTap: () {
-//                     Get.to(
-//                       () => ContextChatScreen(
-//                         postId: data['postId'],
-//                         postType: data['postType'],
-//                         posterId: data['posterId'],
-//                         seekerId: data['seekerId'],
-//                         postTitle: data['postTitle'],
-//                         city: data['city'],
-//                         state: data['state'],
-//                       ),
-//                     );
-//                   },
-//                 ),
-//               ),
-//             );
-//           },
-//         );
-//       },
-//     );
-//   }
-// }
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:trunriproject/chat_module/context_chats/screens/context_chat_screen.dart';
 
-class InquiryDetailsPage extends StatelessWidget {
+class InquiryDetailsPage extends StatefulWidget {
   const InquiryDetailsPage({super.key});
+
+  @override
+  State<InquiryDetailsPage> createState() => _InquiryDetailsPageState();
+}
+
+class _InquiryDetailsPageState extends State<InquiryDetailsPage> {
+  Future<void> _refreshData() async {
+    setState(() {});
+    await Future.delayed(const Duration(milliseconds: 500)); // simulate refresh
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +39,16 @@ class InquiryDetailsPage extends StatelessWidget {
         final allDocs = snapshot.data?.docs ?? [];
 
         if (allDocs.isEmpty) {
-          return const Center(child: Text('No inquiries yet.'));
+          return RefreshIndicator(
+            onRefresh: _refreshData,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: const [
+                SizedBox(height: 200),
+                Center(child: Text('No inquiries yet.')),
+              ],
+            ),
+          );
         }
 
         final sentInquiries = allDocs

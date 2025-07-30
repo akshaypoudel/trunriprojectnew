@@ -55,27 +55,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
       final allUsers =
           await FirebaseFirestore.instance.collection('User').get();
 
-      // dynamic allUsersLocation;
-      // if (provider.isUserInAustralia) {
-      //   allUsersLocation = await FirebaseFirestore.instance
-      //       .collection('currentLocation')
-      //       .doc(uid)
-      //       .get();
-      // } else {
-      //   allUsersLocation = await FirebaseFirestore.instance
-      //       .collection('nativeAddress')
-      //       .doc(uid)
-      //       .get();
-      // }
-
-      // if (allUsersLocation.exists) {
-      //   if (provider.isUserInAustralia) {
-      //     currentCity = allUsersLocation.data()?['city'];
-      //   } else {
-      //     currentCity = allUsersLocation.data()?['nativeAddress']['city'];
-      //   }
-      // }
-
       List<Map<String, dynamic>> tempFriends = [];
       List<Map<String, dynamic>> tempOthers = [];
       List<Map<String, dynamic>> tempReceived = [];
@@ -88,33 +67,10 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
         final email = doc['email'];
         final name = doc['name'];
         final userCity = doc['city'];
-        // final otherUserId = doc.id;
 
         if (email == currentEmail) continue;
-        if (currentCity != userCity) continue;
 
-        // dynamic allUsersLocation;
-        // if (provider.isUserInAustralia) {
-        //   allUsersLocation = await FirebaseFirestore.instance
-        //       .collection('currentLocation')
-        //       .doc(otherUserId)
-        //       .get();
-        // } else {
-        //   allUsersLocation = await FirebaseFirestore.instance
-        //       .collection('nativeAddress')
-        //       .doc(otherUserId)
-        //       .get();
-        // }
-
-        // if (allUsersLocation.exists) {
-        //   if (provider.isUserInAustralia) {
-        //     userCity = allUsersLocation.data()?['city'];
-        //   } else {
-        //     userCity = allUsersLocation.data()?['nativeAddress']['city'];
-        //   }
-        // }
-
-        if (userCity != currentCity) continue;
+        // if (userCity != currentCity) continue;
 
         final userMap = {
           'email': email,
@@ -160,6 +116,8 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
         } else if (receivedRequests.contains(email)) {
           tempReceived.add({...userMap, 'relation': 'received'});
         } else {
+          if (currentCity != userCity) continue;
+
           tempOthers.add({...userMap, 'relation': 'none'});
         }
       }
@@ -409,6 +367,9 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    setState(() {
+      log('friend request = $receivedRequestsList');
+    });
     return Scaffold(
       backgroundColor: Colors.white,
       body: isLoading
@@ -417,11 +378,20 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
               onRefresh: _loadChats,
               backgroundColor: Colors.white,
               color: Colors.deepOrange,
-              child: (receivedRequestsList.isEmpty &&
+              child: receivedRequestsList.isEmpty &&
                       friendsList.isEmpty &&
-                      addFriendsList.isEmpty)
-                  ? const Center(
-                      child: Text('No Person Found in your Area'),
+                      addFriendsList.isEmpty
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(height: 200),
+                        Center(
+                          child: Text(
+                            'No Person Found in your Area',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ],
                     )
                   : ListView(
                       children: [

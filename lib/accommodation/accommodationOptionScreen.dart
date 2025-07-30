@@ -20,6 +20,11 @@ class _AccommodationoptionscreenState extends State<Accommodationoptionscreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Accomodations'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
       body: SafeArea(
         child: Container(
           margin: const EdgeInsets.only(left: 15, right: 15),

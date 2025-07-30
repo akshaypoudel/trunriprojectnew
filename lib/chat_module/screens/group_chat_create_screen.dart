@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -22,35 +21,45 @@ class _GroupChatCreateScreenState extends State<GroupChatCreateScreen> {
   bool isLoading = true;
   String? currentUserEmail = '';
   String? currentUserName = '';
+  List<String> friendEmails = [];
 
   @override
   void initState() {
     super.initState();
-    fetchUserList();
+    fetchFriendsAndUsers();
   }
 
-  Future<void> fetchUserList() async {
+  Future<void> fetchFriendsAndUsers() async {
     try {
       final currentUserId = FirebaseAuth.instance.currentUser!.uid;
       final currentUserDoc = await FirebaseFirestore.instance
           .collection('User')
           .doc(currentUserId)
           .get();
-      setState(() {
-        currentUserEmail = currentUserDoc.get('email');
-        currentUserName = currentUserDoc.get('name');
-      });
 
-      final querySnapshot =
-          await FirebaseFirestore.instance.collection('User').get();
+      currentUserEmail = currentUserDoc.get('email');
+      currentUserName = currentUserDoc.get('name');
+      friendEmails = List<String>.from(currentUserDoc.get('friends') ?? []);
 
-      final filteredUsers = querySnapshot.docs
-          .where((doc) => doc.get('email') != currentUserEmail)
-          .map((doc) => {
-                'name': doc.get('name'),
-                'email': doc.get('email'),
-              })
-          .toList();
+      if (friendEmails.isEmpty) {
+        setState(() {
+          userList = [];
+          isLoading = false;
+        });
+        return;
+      }
+
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('User')
+          .where('email', whereIn: friendEmails)
+          .get();
+
+      final filteredUsers = querySnapshot.docs.map((doc) {
+        return {
+          'name': doc.get('name'),
+          'email': doc.get('email'),
+        };
+      }).toList();
 
       emailToNameMap = {
         for (var user in filteredUsers) user['email']: user['name']
@@ -60,10 +69,11 @@ class _GroupChatCreateScreenState extends State<GroupChatCreateScreen> {
         userList = filteredUsers;
         isLoading = false;
       });
-
-      // log('final user list = $userList');
     } catch (e) {
-      log('Error fetching users: $e');
+      log('Error fetching friends: $e');
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -136,7 +146,13 @@ class _GroupChatCreateScreenState extends State<GroupChatCreateScreen> {
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : userList.isEmpty
-                    ? const Center(child: Text("No users available"))
+                    ? const Center(
+                        child: Text(
+                          "Please add some friends before creating a group.",
+                          style: TextStyle(fontSize: 16),
+                          textAlign: TextAlign.center,
+                        ),
+                      )
                     : ListView.builder(
                         itemCount: userList.length,
                         itemBuilder: (context, index) {
@@ -172,9 +188,9 @@ class _GroupChatCreateScreenState extends State<GroupChatCreateScreen> {
       floatingActionButton: selectedUserEmails.isNotEmpty
           ? FloatingActionButton.extended(
               onPressed: () {
-                final userList = selectedUserEmails.toSet();
-                userList.add(currentUserEmail!);
-                final selectedNewUserList = userList.map((email) {
+                final userSet = selectedUserEmails.toSet();
+                userSet.add(currentUserEmail!);
+                final selectedNewUserList = userSet.map((email) {
                   return {
                     'email': email,
                     'name': (email == currentUserEmail)
@@ -187,7 +203,7 @@ class _GroupChatCreateScreenState extends State<GroupChatCreateScreen> {
                   MaterialPageRoute(
                     builder: (context) => GroupNameScreen(
                       selectedUsers: selectedNewUserList,
-                      selectedUsersSet: userList,
+                      selectedUsersSet: userSet,
                     ),
                   ),
                 );

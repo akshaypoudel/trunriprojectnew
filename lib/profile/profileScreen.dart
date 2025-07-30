@@ -11,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/currentLocation.dart';
@@ -515,7 +516,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               height: 10,
                             ),
                             GestureDetector(
-                              onTap: () {
+                              onTap: () async {
                                 PresenceService.setUserOffline();
                                 GoogleSignIn().signOut();
                                 FirebaseAuth.instance.signOut().then((value) {
@@ -525,6 +526,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     "Logged Out Successfully",
                                   );
                                 });
+
+                                final prefs =
+                                    await SharedPreferences.getInstance();
+                                await prefs.remove('hasShownLocationDialog');
                               },
                               child: ListTile(
                                 leading: Image.asset(

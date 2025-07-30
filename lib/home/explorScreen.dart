@@ -129,15 +129,15 @@ class _ExplorScreenState extends State<ExplorScreen> {
                         leading: Image.asset('assets/icons/accommodation.png'),
                         title: const Text('Accommodation'),
                         onTap: () {
-                          if (subscriptionProvider.isUserSubscribed) {
-                            Get.to(const Accommodationoptionscreen());
-                          } else {
-                            Get.to(
-                              LookingForAPlaceScreen(
-                                accommodationList: provider.getAccomodationList,
-                              ),
-                            );
-                          }
+                          // if (subscriptionProvider.isUserSubscribed) {
+                          Get.to(const Accommodationoptionscreen());
+                          // } else {
+                          // Get.to(
+                          // LookingForAPlaceScreen(
+                          // accommodationList: provider.getAccomodationList,
+                          // ),
+                          // );
+                          // }
                         },
                         trailing: const Icon(
                           Icons.arrow_forward_ios_outlined,

@@ -44,8 +44,6 @@
                 <data android:scheme="http"/>
                 <data android:scheme="https"/>
             </intent-filter>
-            <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="3689537667932014"/>
-            <meta-data android:name="com.facebook.sdk.ClientToken" android:value="33f61263b0271eb266df2a493fabedae"/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -69,8 +67,6 @@
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAP9njE_z7lH2tii68WLoQGju0DF8KryXA"/>
 
-        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
-        <meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/facebook_client_token"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

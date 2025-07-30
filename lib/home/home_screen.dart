@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/home/constants.dart';
 import 'package:trunriproject/home/home_screen_visuals/get_banners_visual.dart';
 import 'package:trunriproject/home/home_screen_visuals/get_categories_visuals.dart';
@@ -71,6 +72,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _handleLocationSource() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Check if dialog has been shown
+    final hasShownLocationDialog =
+        prefs.getBool('hasShownLocationDialog') ?? false;
+
     final position = await Geolocator.getCurrentPosition();
     final placemarks =
         await placemarkFromCoordinates(position.latitude, position.longitude);
@@ -79,12 +86,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (country == "Australia") {
       isInAustralia = true;
-      _showLocationInfoDialog(isInAustralia: isInAustralia);
+      // _showLocationInfoDialog(isInAustralia: isInAustralia);
       _getCurrentLocation();
     } else {
       isInAustralia = false;
-      _showLocationInfoDialog(isInAustralia: isInAustralia);
+      // _showLocationInfoDialog(isInAustralia: isInAustralia);
       getCurrentLocationByAddress();
+    }
+
+    if (!hasShownLocationDialog) {
+      _showLocationInfoDialog(isInAustralia: isInAustralia);
+
+      // Mark as shown
+      await prefs.setBool('hasShownLocationDialog', true);
     }
   }
 
