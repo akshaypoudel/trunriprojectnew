@@ -108,7 +108,7 @@ class NearbyEventsVisual extends StatelessWidget {
             }
 
             return Container(
-              height: 140,
+              height: 170,
               margin: const EdgeInsets.only(left: 20),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -155,7 +155,7 @@ class NearbyEventsVisual extends StatelessWidget {
                 },
                 options: CarouselOptions(
                   height: 450,
-                  viewportFraction: 0.55,
+                  viewportFraction: 0.65,
                   enlargeCenterPage: true,
                   autoPlay: true,
                   autoPlayCurve: Curves.easeInOutCirc,

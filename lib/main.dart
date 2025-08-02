@@ -119,6 +119,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
           useMaterial3: true,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.white,
+            scrolledUnderElevation: 0.0,
+            elevation: 0.0,
+            surfaceTintColor:
+                Colors.transparent, // Important for Material 3 to avoid tinting
+          ),
         ),
         routingCallback: (routing) {
           if (routing?.isBack == true) {

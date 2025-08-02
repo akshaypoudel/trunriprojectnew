@@ -147,6 +147,8 @@ class LocationData extends ChangeNotifier {
   }) async {
     late DocumentSnapshot addressSnapshot1;
 
+    log('user is in australia === $isInAustralia');
+
     if (isInAustralia) {
       addressSnapshot1 = await firestore
           .collection('currentLocation')

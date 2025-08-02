@@ -46,14 +46,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool dataLoaded = true;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
+  // final TextEditingController addressController = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
   String name = '';
   String email = '';
-  String addressText = '';
-  String latitude = '';
-  String longitude = '';
   String imageUrl = '';
 
   updateProfile() async {
@@ -63,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     try {
       await fireStoreService.updateProfile(
-        address: addressText,
+        address: '',
         allowChange: userImageFile.path.isEmpty ? false : true,
         context: context,
         email: emailController.text.trim(),
@@ -93,7 +90,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> fetchUserData() async {
     FirebaseAuth auth = FirebaseAuth.instance;
-    final provider = Provider.of<LocationData>(context, listen: false);
 
     String phone = '';
     String newEmail = '';
@@ -109,11 +105,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       imageUrl = snapshot.get('profile') ?? '';
       // userImageUrl = imageUrl;
     }
-    addressText = provider.getUsersAddress;
-    addressController.text = provider.getShortFormAddress;
-    log('address controlle text = ${addressController.text}');
-    latitude = provider.getLatitude.toString();
-    longitude = provider.getLongitude.toString();
 
     dynamic querySnapshot;
     if (phone.isNotEmpty) {
@@ -137,7 +128,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         name = userData['name'] ?? '';
         email = userData['email'] ?? '';
-        log('user address = $addressText');
       } else {
         showSnackBar(context, "User data not found for phone number");
       }
@@ -149,13 +139,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      Provider.of<LocationData>(context, listen: false)
-          .fetchUserAddressAndLocation(
-        isInAustralia: await _handleLocationSource(),
-      );
-      Provider.of<ChatProvider>(context, listen: false).fetchUserProfileImage();
-    });
 
     initialize();
   }
@@ -213,7 +196,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void dispose() {
-    addressController.dispose();
+    // addressController.dispose();
     nameController.dispose();
     emailController.dispose();
     super.dispose();
@@ -227,8 +210,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Consumer<LocationData>(
       builder: (BuildContext context, LocationData value, Widget? child) {
         final address = value.getUsersAddress;
-        final shortFormAddress = value.getShortFormAddress;
-        addressController.text = shortFormAddress;
+        // final shortFormAddress = value.getShortFormAddress;
+        // addressController.text = shortFormAddress;
         final latitude = value.getLatitude;
         final longitude = value.getLongitude;
         final radiusFilter = value.getNativeRadiusFilter;
@@ -378,17 +361,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             fontSize: 14,
                                             color: Colors.black),
                                       ),
-                                      ShowAddressText(
-                                        controller: addressController,
-                                        onTap: () {
-                                          onLocationChanged(
-                                            address,
-                                            radiusFilter,
-                                            latitude.toString(),
-                                            longitude.toString(),
-                                          );
-                                        },
-                                      ),
+                                      // ShowAddressText(
+                                      //   controller: addressController,
+                                      //   onTap: () {
+                                      //     onLocationChanged(
+                                      //       address,
+                                      //       radiusFilter,
+                                      //       latitude.toString(),
+                                      //       longitude.toString(),
+                                      //     );
+                                      //   },
+                                      // ),
                                     ],
                                   ),
                                 ),
@@ -720,48 +703,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
-  }
-
-  void onLocationChanged(
-    String address,
-    int radiusFilter,
-    String lat,
-    lng,
-  ) async {
-    bool isInAustralia = await _handleLocationSource();
-    Map<String, dynamic> selectedAddress = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => CurrentAddress(
-          isProfileScreen: true,
-          savedAddress: address,
-          latitude: lat,
-          longitude: lng,
-          radiusFilter: radiusFilter,
-          isInAustralia: isInAustralia,
-        ),
-      ),
-    );
-
-    final provider = Provider.of<LocationData>(context, listen: false);
-    // ignore: unnecessary_null_comparison
-    if (selectedAddress.isNotEmpty) {
-      String lat = selectedAddress['latitude'];
-      String lon = selectedAddress['longitude'];
-      setState(() {
-        final shortFormAddress =
-            '📍 ${selectedAddress['city']}, ${provider.getStateShortForm(selectedAddress['state'])}';
-
-        provider.setAllLocationData(
-          lat: lat.toNum.toDouble(),
-          long: lon.toNum.toDouble(),
-          fullAddress: selectedAddress['address'],
-          shortFormAddress: shortFormAddress,
-          radiusFilter: selectedAddress['radiusFilter'],
-          isLocationFetched: false,
-        );
-        addressController.text = shortFormAddress;
-      });
-    }
   }
 }

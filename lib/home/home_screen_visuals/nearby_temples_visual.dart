@@ -112,7 +112,7 @@ class NearbyTemplesVisual extends StatelessWidget {
                         closingTime: closingTime.toString(),
                         address: address.toString(),
                         image: photoUrl.toString(),
-                        isOpenNow: openingHours['open_now'],
+                        isOpenNow: true,
                       ),
                       arguments: [lat, lng],
                     );
@@ -122,8 +122,9 @@ class NearbyTemplesVisual extends StatelessWidget {
                     width: 200,
                     margin: const EdgeInsets.symmetric(horizontal: 10),
                     decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(11)),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(11),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -147,7 +148,7 @@ class NearbyTemplesVisual extends StatelessWidget {
                             style: const TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontSize: 15,
                             ),
                             maxLines: 1,
                           ),
@@ -161,7 +162,7 @@ class NearbyTemplesVisual extends StatelessWidget {
                             style: const TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.w300,
-                              fontSize: 14,
+                              fontSize: 15,
                             ),
                             maxLines: 1,
                           ),

@@ -111,7 +111,7 @@ class NearbyAccomodationVisual extends StatelessWidget {
               )
             else
               Container(
-                height: 160,
+                height: 200,
                 margin: const EdgeInsets.only(left: 20),
                 child: CarouselSlider.builder(
                   itemCount: accommodationList.length,
@@ -130,7 +130,7 @@ class NearbyAccomodationVisual extends StatelessWidget {
                         );
                       },
                       child: Container(
-                        width: 242,
+                        width: 300,
                         margin: const EdgeInsets.only(right: 10),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
@@ -166,14 +166,17 @@ class NearbyAccomodationVisual extends StatelessWidget {
                                       Text(
                                         data['city'] ?? 'No City',
                                         style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold),
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
                                       ),
                                       Text(
                                         data['state'] ?? 'No State',
                                         style: const TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 12),
+                                          color: Colors.white70,
+                                          fontSize: 15,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -186,8 +189,9 @@ class NearbyAccomodationVisual extends StatelessWidget {
                     );
                   },
                   options: CarouselOptions(
-                    height: 160,
-                    viewportFraction: 0.55,
+                    height: 350,
+                    viewportFraction: 0.7,
+                    aspectRatio: 16 / 9,
                     enlargeCenterPage: true,
                     autoPlay: true,
                     autoPlayInterval: const Duration(seconds: 4),

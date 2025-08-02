@@ -174,10 +174,8 @@ void showSnackBar(
   SnackBarBehavior? behavior,
   bool? center,
 }) {
-  // Remove any existing SnackBar
-  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  ScaffoldMessenger.of(context).clearSnackBars();
 
-  // Determine SnackBar position and behavior
   final isCenter = center == true;
   final snackBarBehavior = behavior ??
       (isCenter ? SnackBarBehavior.floating : SnackBarBehavior.fixed);
@@ -196,7 +194,7 @@ void showSnackBar(
     behavior: snackBarBehavior,
     margin: isCenter
         ? const EdgeInsets.symmetric(horizontal: 40, vertical: 20)
-        : null, // Margin only for floating (centered) SnackBar
+        : null,
     shape: isCenter
         ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
         : null,

@@ -84,7 +84,7 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
         'sent': [],
         'received': [],
       },
-    }).then((value) {
+    }, SetOptions(merge: true)).then((value) {
       NewHelper.hideLoader(loader);
     });
   }

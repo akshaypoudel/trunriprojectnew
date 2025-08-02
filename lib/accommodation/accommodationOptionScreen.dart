@@ -21,7 +21,7 @@ class _AccommodationoptionscreenState extends State<Accommodationoptionscreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Accomodations'),
+        // title: const Text('Accomodations'),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
@@ -31,7 +31,7 @@ class _AccommodationoptionscreenState extends State<Accommodationoptionscreen> {
           child: Column(
             children: [
               const SizedBox(
-                height: 50,
+                height: 10,
               ),
               const Text(
                 'Hi there, how can i help you?',

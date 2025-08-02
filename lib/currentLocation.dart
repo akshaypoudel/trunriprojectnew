@@ -194,7 +194,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
       'latitude': latitude1,
       'longitude': longitude1,
       'radiusFilter': radiusFilter,
-    }).then((value) {
+    }, SetOptions(merge: true)).then((value) {
       showSnackBar(context, 'Current Location Save Successfully');
       Navigator.pushAndRemoveUntil(
         context,

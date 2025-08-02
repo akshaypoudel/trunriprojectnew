@@ -165,12 +165,9 @@ class NearbyGroceryStoresVisual extends StatelessWidget {
                                 style: const TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
-                                  fontSize:
-                                      14, // Adjust the font size as needed
+                                  fontSize: 15,
                                 ),
-                                // overflow: TextOverflow.ellipsis,
-                                maxLines:
-                                    1, // Allow text to wrap to 2 lines if needed
+                                maxLines: 1,
                               ),
                             ),
                             const SizedBox(height: 5),
@@ -182,12 +179,9 @@ class NearbyGroceryStoresVisual extends StatelessWidget {
                                 style: const TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.w300,
-                                  fontSize:
-                                      14, // Adjust the font size as needed
+                                  fontSize: 15,
                                 ),
-                                // overflow: TextOverflow.ellipsis,
-                                maxLines:
-                                    1, // Allow text to wrap to 2 lines if needed
+                                maxLines: 1,
                               ),
                             ),
                           ],

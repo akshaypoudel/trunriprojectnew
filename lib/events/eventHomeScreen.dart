@@ -1,3 +1,818 @@
+// import 'dart:developer';
+// import 'dart:math' as Math;
+
+// import 'package:cached_network_image/cached_network_image.dart';
+// import 'package:flutter/material.dart';
+// import 'package:get/get.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:provider/provider.dart';
+// import 'package:trunriproject/events/eventDetailsScreen.dart';
+// import 'package:trunriproject/events/postEventScreen.dart';
+// import 'package:trunriproject/home/provider/location_data.dart';
+// import 'package:trunriproject/subscription/subscription_data.dart';
+// import 'package:trunriproject/subscription/subscription_screen.dart';
+
+// enum ActiveFilter { none, city, radius }
+
+// class EventDiscoveryScreen extends StatefulWidget {
+//   final List<Map<String, dynamic>> eventList;
+
+//   const EventDiscoveryScreen({super.key, required this.eventList});
+
+//   @override
+//   State<EventDiscoveryScreen> createState() => _EventDiscoveryScreenState();
+// }
+
+// class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
+//   final TextEditingController searchController = TextEditingController();
+//   late List<Map<String, dynamic>> filteredEvents;
+//   List<String> selectedCategories = [];
+//   String? selectedCityGlobal = 'Sydney';
+//   double selectedRadiusGlobal = 50;
+//   ActiveFilter activeFilter = ActiveFilter.none;
+//   String selectedTab = 'Traditional';
+
+//   final List<String> categories = [
+//     'Music',
+//     'Traditional',
+//     'Business',
+//     'Community & Culture',
+//     'Health & Fitness',
+//     'Fashion',
+//     'Other & Meetup & Sports',
+//   ];
+
+//   final List<String> tabs = ['Traditional', 'Business', 'Culture'];
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     filteredEvents = List.from(widget.eventList);
+//   }
+
+//   @override
+//   void dispose() {
+//     searchController.dispose();
+//     super.dispose();
+//   }
+
+//   void _applyLocationFilter(String city) {
+//     setState(() {
+//       selectedCityGlobal = city;
+//       final list = widget.eventList;
+//       filteredEvents = list.where((event) {
+//         final eventCity = event['city']?.toString().toLowerCase() ?? '';
+//         return eventCity.contains(city.toLowerCase());
+//       }).toList();
+//     });
+//   }
+
+//   void _applyRadiusFilter(double radiusKm) {
+//     final provider = Provider.of<LocationData>(context, listen: false);
+//     setState(() {
+//       selectedRadiusGlobal = radiusKm;
+//       log('calling radius filter....... \n selected radius = $selectedRadiusGlobal');
+
+//       filteredEvents = widget.eventList.where((event) {
+//         final evLat = event['latitude'] as double?;
+//         final evLng = event['longitude'] as double?;
+//         if (evLat == null || evLng == null) return false;
+
+//         final distance = haversineDistance(
+//             provider.getLatitude, provider.getLongitude, evLat, evLng);
+//         return distance <= radiusKm;
+//       }).toList();
+
+//       log('filter events = $filteredEvents');
+//     });
+//   }
+
+//   double haversineDistance(double lat1, double lon1, double lat2, double lon2) {
+//     const earthRadius = 6371;
+//     final dLat = _toRadians(lat2 - lat1);
+//     final dLon = _toRadians(lon2 - lon1);
+//     final a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+//         Math.cos(_toRadians(lat1)) *
+//             Math.cos(_toRadians(lat2)) *
+//             Math.sin(dLon / 2) *
+//             Math.sin(dLon / 2);
+//     final c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+//     return earthRadius * c;
+//   }
+
+//   double _toRadians(double degree) => degree * Math.pi / 180;
+
+//   void _showLocationFilterDialog() {
+//     String selectedCity = selectedCityGlobal ?? 'Sydney';
+//     double selectedRadius = selectedRadiusGlobal ?? 50;
+
+//     final List<String> australianCities = [
+//       'Sydney',
+//       'Melbourne',
+//       'Brisbane',
+//       'Perth',
+//       'Adelaide',
+//       'Gold Coast',
+//       'Canberra',
+//       'Hobart',
+//       'Darwin',
+//       'Newcastle'
+//     ];
+
+//     showDialog(
+//       context: context,
+//       builder: (context) => Dialog(
+//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+//         backgroundColor: Colors.white,
+//         child: StatefulBuilder(
+//           builder: (context, setState) {
+//             return Padding(
+//               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+//               child: Column(
+//                 mainAxisSize: MainAxisSize.min,
+//                 children: [
+//                   const Row(
+//                     children: [
+//                       Icon(
+//                         Icons.location_on,
+//                         color: Colors.orange,
+//                       ),
+//                       SizedBox(width: 8),
+//                       Text(
+//                         'Filter by Location',
+//                         style: TextStyle(
+//                           fontSize: 20,
+//                           fontWeight: FontWeight.bold,
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                   const SizedBox(height: 20),
+//                   Container(
+//                     padding: const EdgeInsets.symmetric(horizontal: 12),
+//                     decoration: BoxDecoration(
+//                       borderRadius: BorderRadius.circular(12),
+//                       border: Border.all(color: Colors.orange),
+//                     ),
+//                     child: DropdownButtonHideUnderline(
+//                       child: DropdownButton<String>(
+//                         isExpanded: true,
+//                         value: selectedCity,
+//                         icon: const Icon(Icons.arrow_drop_down),
+//                         items: australianCities.map((city) {
+//                           return DropdownMenuItem<String>(
+//                             value: city,
+//                             child: Text(city),
+//                           );
+//                         }).toList(),
+//                         onChanged: (value) {
+//                           setState(() {
+//                             selectedCity = value!;
+//                           });
+//                         },
+//                       ),
+//                     ),
+//                   ),
+
+//                   const SizedBox(height: 20),
+//                   Row(
+//                     mainAxisAlignment: MainAxisAlignment.center,
+//                     children: [
+//                       Container(
+//                         height: 2,
+//                         width: 100,
+//                         color: Colors.black12,
+//                       ),
+//                       const Text(
+//                         "  Or  ",
+//                         style: TextStyle(
+//                           fontWeight: FontWeight.bold,
+//                           color: Color(0xff6F6B7A),
+//                           fontSize: 16,
+//                         ),
+//                       ),
+//                       Container(
+//                         height: 2,
+//                         width: 100,
+//                         color: Colors.black12,
+//                       ),
+//                     ],
+//                   ),
+//                   const SizedBox(height: 20),
+
+//                   Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       const Text(
+//                         'Select Radius (in km)',
+//                         style: TextStyle(fontWeight: FontWeight.w600),
+//                       ),
+//                       Slider(
+//                         value: selectedRadius,
+//                         min: 1,
+//                         max: 100,
+//                         divisions: 99,
+//                         activeColor: Colors.orange,
+//                         label: '${selectedRadius.round()} km',
+//                         onChanged: (value) {
+//                           setState(() {
+//                             selectedRadius = value;
+//                           });
+//                         },
+//                       ),
+//                     ],
+//                   ),
+
+//                   const SizedBox(height: 20),
+
+//                   // Buttons Row
+//                   Row(
+//                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                     children: [
+//                       TextButton.icon(
+//                         onPressed: () {
+//                           setState(() {
+//                             selectedCityGlobal = 'Sydney';
+//                             selectedRadiusGlobal = 50;
+//                             filteredEvents = List.from(widget.eventList);
+//                           });
+//                           Navigator.pop(context);
+//                         },
+//                         icon: const Icon(Icons.clear, color: Colors.red),
+//                         label: const Text(
+//                           'Cancel',
+//                           style: TextStyle(
+//                             color: Colors.red,
+//                           ),
+//                         ),
+//                       ),
+//                       ElevatedButton.icon(
+//                         style: ElevatedButton.styleFrom(
+//                           backgroundColor: Colors.orange,
+//                           padding: const EdgeInsets.symmetric(
+//                               horizontal: 20, vertical: 10),
+//                           shape: RoundedRectangleBorder(
+//                             borderRadius: BorderRadius.circular(12),
+//                           ),
+//                         ),
+//                         icon: const Icon(Icons.filter_alt, color: Colors.white),
+//                         label: const Text(
+//                           'Apply Filter',
+//                           style: TextStyle(
+//                             color: Colors.white,
+//                           ),
+//                         ),
+//                         onPressed: () {
+//                           Navigator.pop(context);
+//                           final cityChanged =
+//                               selectedCity != selectedCityGlobal;
+//                           final radiusChanged =
+//                               selectedRadius != selectedRadiusGlobal;
+
+//                           if (cityChanged && !radiusChanged) {
+//                             activeFilter = ActiveFilter.city;
+//                             _applyLocationFilter(selectedCity);
+//                           } else if (radiusChanged && !cityChanged) {
+//                             activeFilter = ActiveFilter.radius;
+//                             _applyRadiusFilter(selectedRadius);
+//                           } else if (cityChanged && radiusChanged) {
+//                             activeFilter = ActiveFilter.city;
+//                             _applyLocationFilter(selectedCity);
+//                           } else {
+//                             activeFilter = ActiveFilter.city;
+//                             _applyLocationFilter(selectedCity);
+//                           }
+
+//                           selectedCityGlobal = selectedCity;
+//                           selectedRadiusGlobal = selectedRadius;
+//                         },
+//                       ),
+//                     ],
+//                   ),
+//                 ],
+//               ),
+//             );
+//           },
+//         ),
+//       ),
+//     );
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final provider = Provider.of<SubscriptionData>(context, listen: false);
+//     return StatefulBuilder(
+//       builder: (context, setState) => GestureDetector(
+//         onTap: () {
+//           FocusScope.of(context).unfocus();
+//         },
+//         child: Scaffold(
+//           backgroundColor: Colors.white,
+//           appBar: AppBar(
+//             backgroundColor: Colors.white,
+//             elevation: 0,
+//             leading: IconButton(
+//               icon: const Icon(Icons.arrow_back, color: Colors.black, size: 28),
+//               onPressed: () => Navigator.of(context).pop(),
+//             ),
+//             title: const Text(
+//               'Events Near You',
+//               style: TextStyle(
+//                 color: Colors.orange,
+//                 fontSize: 22,
+//                 fontWeight: FontWeight.bold,
+//               ),
+//             ),
+//             centerTitle: false,
+//             actions: [
+//               IconButton(
+//                 onPressed: () => _showLocationFilterDialog(),
+//                 icon: const Icon(
+//                   Icons.location_on,
+//                   color: Colors.orange,
+//                   size: 28,
+//                 ),
+//               ),
+//             ],
+//           ),
+//           body: Column(
+//             children: [
+//               Container(
+//                 height: 50,
+//                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+//                 child: Row(
+//                   children: tabs.map((tab) {
+//                     final isSelected = selectedTab == tab;
+//                     return Expanded(
+//                       child: GestureDetector(
+//                         onTap: () {
+//                           setState(
+//                             () {
+//                               selectedTab = tab;
+//                             },
+//                           );
+//                         },
+//                         child: Container(
+//                           margin: const EdgeInsets.symmetric(horizontal: 4),
+//                           padding: const EdgeInsets.symmetric(vertical: 12),
+//                           decoration: BoxDecoration(
+//                             color: isSelected
+//                                 ? Colors.orange
+//                                 : const Color(0xFFF0F0F0),
+//                             borderRadius: BorderRadius.circular(25),
+//                           ),
+//                           child: Text(
+//                             tab,
+//                             textAlign: TextAlign.center,
+//                             style: TextStyle(
+//                               color: isSelected ? Colors.white : Colors.black,
+//                               fontWeight: FontWeight.w600,
+//                               fontSize: 14,
+//                             ),
+//                           ),
+//                         ),
+//                       ),
+//                     );
+//                   }).toList(),
+//                 ),
+//               ),
+
+//               // Search Bar
+//               Container(
+//                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+//                 padding:
+//                     const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+//                 decoration: BoxDecoration(
+//                   color: const Color(0xFFF5F5F5),
+//                   borderRadius: BorderRadius.circular(25),
+//                   border: Border.all(color: const Color(0xFFE0E0E0)),
+//                 ),
+//                 child: Row(
+//                   children: [
+//                     const Icon(Icons.search, color: Colors.grey, size: 20),
+//                     const SizedBox(width: 12),
+//                     Expanded(
+//                       child: TextField(
+//                         controller: searchController,
+//                         decoration: const InputDecoration(
+//                           hintText: 'Search by name, category, city...',
+//                           hintStyle:
+//                               TextStyle(color: Colors.grey, fontSize: 14),
+//                           border: InputBorder.none,
+//                         ),
+//                         style:
+//                             const TextStyle(color: Colors.black, fontSize: 14),
+//                         onChanged: (query) {
+//                           setState(() {
+//                             filteredEvents = widget.eventList.where((event) {
+//                               final name = event['eventName']
+//                                       ?.toString()
+//                                       .toLowerCase() ??
+//                                   '';
+//                               return name.contains(query.toLowerCase());
+//                             }).toList();
+//                           });
+//                         },
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+
+//               // Action Buttons Row
+
+//               // Events Grid
+//               Expanded(
+//                 child: filteredEvents.isEmpty
+//                     ? Center(
+//                         child: Text(
+//                           'No Events found for this category!',
+//                           style: GoogleFonts.poppins(
+//                               fontSize: 18, color: Colors.grey),
+//                         ),
+//                       )
+//                     : GridView.builder(
+//                         padding: const EdgeInsets.all(16),
+//                         itemCount: filteredEvents.length,
+//                         gridDelegate:
+//                             const SliverGridDelegateWithFixedCrossAxisCount(
+//                           crossAxisCount: 2,
+//                           crossAxisSpacing: 12,
+//                           mainAxisSpacing: 16,
+//                           childAspectRatio: 0.55,
+//                         ),
+//                         itemBuilder: (context, index) {
+//                           final event = filteredEvents[index];
+//                           final name = event['eventName'] ?? 'No Title';
+//                           final address = event['location'] ?? 'No Location';
+//                           final photoUrl = event['photo'] != null &&
+//                                   event['photo'].isNotEmpty
+//                               ? event['photo']
+//                               : 'https://via.placeholder.com/400';
+//                           final date = event['eventDate'] ?? '';
+//                           final time = event['eventTime'] ?? '';
+
+//                           return GestureDetector(
+//                             onTap: () {
+//                               Get.to(
+//                                 EventDetailsScreen(
+//                                   eventDate: date,
+//                                   eventName: name,
+//                                   eventTime: time,
+//                                   location: address,
+//                                   photoUrl: photoUrl,
+//                                   price: event['ticketPrice'],
+//                                   description: event['description'],
+//                                   category: event['category'][0],
+//                                   eventType: event['eventType'][0],
+//                                   contactInfo: event['contactInformation'],
+//                                 ),
+//                               );
+//                             },
+//                             child: Container(
+//                               height: 350,
+//                               decoration: BoxDecoration(
+//                                 color: Colors.white,
+//                                 borderRadius: BorderRadius.circular(12),
+//                                 boxShadow: [
+//                                   BoxShadow(
+//                                     color: Colors.black.withOpacity(0.1),
+//                                     blurRadius: 8,
+//                                     spreadRadius: 1,
+//                                     offset: const Offset(0, 2),
+//                                   ),
+//                                 ],
+//                               ),
+//                               child: Column(
+//                                 crossAxisAlignment: CrossAxisAlignment.start,
+//                                 children: [
+//                                   // Event Image
+//                                   Expanded(
+//                                     flex: 2,
+//                                     child: ClipRRect(
+//                                       borderRadius: const BorderRadius.vertical(
+//                                           top: Radius.circular(12)),
+//                                       child: Container(
+//                                         width: double.infinity,
+//                                         decoration: BoxDecoration(
+//                                           gradient: LinearGradient(
+//                                             begin: Alignment.topCenter,
+//                                             end: Alignment.bottomCenter,
+//                                             colors: [
+//                                               Colors.black.withOpacity(0.3),
+//                                               Colors.black.withOpacity(0.7),
+//                                             ],
+//                                           ),
+//                                         ),
+//                                         child: CachedNetworkImage(
+//                                           imageUrl: photoUrl is List
+//                                               ? photoUrl[0]
+//                                               : photoUrl,
+//                                           fit: BoxFit.cover,
+//                                           placeholder: (context, url) =>
+//                                               Container(
+//                                             color: Colors.grey[300],
+//                                             child: const Center(
+//                                               child: CircularProgressIndicator(
+//                                                 valueColor:
+//                                                     AlwaysStoppedAnimation<
+//                                                             Color>(
+//                                                         Colors
+//                                                             .deepOrangeAccent),
+//                                               ),
+//                                             ),
+//                                           ),
+//                                           errorWidget: (context, url, error) =>
+//                                               Container(
+//                                             color: Colors.grey[300],
+//                                             child: const Icon(Icons.error),
+//                                           ),
+//                                         ),
+//                                       ),
+//                                     ),
+//                                   ),
+
+//                                   // Event Details
+//                                   Expanded(
+//                                     flex: 2,
+//                                     child: Padding(
+//                                       padding: const EdgeInsets.all(12.0),
+//                                       child: Column(
+//                                         crossAxisAlignment:
+//                                             CrossAxisAlignment.start,
+//                                         // mainAxisAlignment:
+//                                         // MainAxisAlignment.spaceBetween,
+//                                         children: [
+//                                           Column(
+//                                             crossAxisAlignment:
+//                                                 CrossAxisAlignment.start,
+//                                             children: [
+//                                               Text(
+//                                                 name,
+//                                                 maxLines: 1,
+//                                                 overflow: TextOverflow.ellipsis,
+//                                                 style: const TextStyle(
+//                                                   fontSize: 16,
+//                                                   fontWeight: FontWeight.bold,
+//                                                   color: Colors.black,
+//                                                 ),
+//                                               ),
+//                                               const SizedBox(height: 4),
+//                                               Row(
+//                                                 children: [
+//                                                   const Icon(
+//                                                       Icons.calendar_month,
+//                                                       size: 14,
+//                                                       color: Colors
+//                                                           .deepOrangeAccent),
+//                                                   const SizedBox(width: 4),
+//                                                   Expanded(
+//                                                     child: Text(
+//                                                       "$date • $time",
+//                                                       style: const TextStyle(
+//                                                         fontSize: 12,
+//                                                         color: Colors
+//                                                             .deepOrangeAccent,
+//                                                         fontWeight:
+//                                                             FontWeight.w500,
+//                                                       ),
+//                                                     ),
+//                                                   ),
+//                                                 ],
+//                                               ),
+//                                               const SizedBox(height: 2),
+//                                               Row(
+//                                                 children: [
+//                                                   const Icon(Icons.location_on,
+//                                                       size: 14,
+//                                                       color: Colors
+//                                                           .deepOrangeAccent),
+//                                                   const SizedBox(width: 4),
+//                                                   Expanded(
+//                                                     child: Text(
+//                                                       address,
+//                                                       maxLines: 1,
+//                                                       overflow:
+//                                                           TextOverflow.ellipsis,
+//                                                       style: const TextStyle(
+//                                                         fontSize: 12,
+//                                                         color: Colors
+//                                                             .deepOrangeAccent,
+//                                                         fontWeight:
+//                                                             FontWeight.w500,
+//                                                       ),
+//                                                     ),
+//                                                   ),
+//                                                 ],
+//                                               ),
+//                                             ],
+//                                           ),
+//                                           const SizedBox(height: 5),
+//                                           // View Details Button
+//                                           SizedBox(
+//                                             width: double.infinity,
+//                                             child: ElevatedButton(
+//                                               onPressed: () {
+//                                                 Get.to(
+//                                                   EventDetailsScreen(
+//                                                     eventDate: date,
+//                                                     eventName: name,
+//                                                     eventTime: time,
+//                                                     location: address,
+//                                                     photoUrl: photoUrl,
+//                                                     price: event['ticketPrice'],
+//                                                     description:
+//                                                         event['description'],
+//                                                     category: event['category']
+//                                                         [0],
+//                                                     eventType:
+//                                                         event['eventType'][0],
+//                                                     contactInfo: event[
+//                                                         'contactInformation'],
+//                                                   ),
+//                                                 );
+//                                               },
+//                                               style: ElevatedButton.styleFrom(
+//                                                 backgroundColor: Colors.orange,
+//                                                 padding:
+//                                                     const EdgeInsets.symmetric(
+//                                                         vertical: 8),
+//                                                 shape: RoundedRectangleBorder(
+//                                                   borderRadius:
+//                                                       BorderRadius.circular(8),
+//                                                 ),
+//                                                 elevation: 0,
+//                                               ),
+//                                               child: const Text(
+//                                                 'View Details',
+//                                                 style: TextStyle(
+//                                                   color: Colors.white,
+//                                                   fontWeight: FontWeight.w600,
+//                                                   fontSize: 12,
+//                                                 ),
+//                                               ),
+//                                             ),
+//                                           ),
+//                                         ],
+//                                       ),
+//                                     ),
+//                                   ),
+//                                 ],
+//                               ),
+//                             ),
+//                           );
+//                         },
+//                       ),
+//               ),
+//             ],
+//           ),
+//           floatingActionButton: FloatingActionButton.extended(
+//             //label: ,
+//             backgroundColor: Colors.orange,
+//             onPressed: () {
+//               if (provider.isUserSubscribed) {
+//                 Get.to(() => const PostEventScreen());
+//               } else {
+//                 _showSubscriptionDialog();
+//               }
+//             },
+//             label: const Row(
+//               children: [
+//                 Icon(Icons.add, color: Colors.white, size: 18),
+//                 Text(
+//                   'Post',
+//                   style: TextStyle(
+//                     fontWeight: FontWeight.w600,
+//                     fontSize: 14,
+//                     color: Colors.white,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+//         ),
+//       ),
+//     );
+//   }
+
+//   void _showSubscriptionDialog() {
+//     showDialog(
+//       context: context,
+//       builder: (_) => Dialog(
+//         backgroundColor: Colors.white,
+//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+//         child: Padding(
+//           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+//           child: Column(
+//             mainAxisSize: MainAxisSize.min,
+//             children: [
+//               // Premium Icon or Image
+//               const Icon(Icons.lock_outline_rounded,
+//                   size: 48, color: Colors.orange),
+
+//               const SizedBox(height: 12),
+
+//               // Title
+//               const Text(
+//                 'Premium Feature',
+//                 style: TextStyle(
+//                   fontSize: 20,
+//                   fontWeight: FontWeight.w700,
+//                 ),
+//               ),
+
+//               const SizedBox(height: 8),
+
+//               // Description
+//               const Text(
+//                 'Posting Events is a premium feature.\nSubscribe now to unlock this and more!',
+//                 textAlign: TextAlign.center,
+//                 style: TextStyle(fontSize: 16, color: Colors.black87),
+//               ),
+
+//               const SizedBox(height: 16),
+
+//               // Feature Highlights
+//               const Column(
+//                 children: [
+//                   Row(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     children: [
+//                       Icon(Icons.event_available_outlined,
+//                           color: Colors.orange, size: 22),
+//                       SizedBox(width: 8),
+//                       Text('Post Events and Restauraunts'),
+//                     ],
+//                   ),
+//                   SizedBox(height: 8),
+//                   Row(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     children: [
+//                       Icon(Icons.star_rounded, color: Colors.orange, size: 22),
+//                       SizedBox(width: 8),
+//                       Text('Post & Promote Listings'),
+//                     ],
+//                   ),
+//                   SizedBox(height: 8),
+//                   Row(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     children: [
+//                       Icon(Icons.group_add_sharp,
+//                           color: Colors.orange, size: 22),
+//                       SizedBox(width: 8),
+//                       Text(
+//                           'Send Friend Requests & \nCreate Groups with your friends'),
+//                     ],
+//                   ),
+//                   SizedBox(height: 8),
+//                   Row(
+//                     mainAxisAlignment: MainAxisAlignment.start,
+//                     children: [
+//                       Icon(Icons.stars_sharp, color: Colors.orange, size: 22),
+//                       SizedBox(width: 8),
+//                       Text('And More...'),
+//                     ],
+//                   ),
+//                 ],
+//               ),
+
+//               const SizedBox(height: 24),
+
+//               // Buttons
+//               Row(
+//                 mainAxisAlignment: MainAxisAlignment.end,
+//                 children: [
+//                   TextButton(
+//                     onPressed: () => Navigator.of(context).pop(),
+//                     child: const Text('Maybe Later'),
+//                   ),
+//                   ElevatedButton.icon(
+//                     icon: const Icon(Icons.workspace_premium, size: 20),
+//                     label: const Text('Subscribe Now'),
+//                     style: ElevatedButton.styleFrom(
+//                       backgroundColor: Colors.orange.shade100,
+//                       shape: RoundedRectangleBorder(
+//                         borderRadius: BorderRadius.circular(12),
+//                       ),
+//                       padding: const EdgeInsets.symmetric(
+//                           horizontal: 16, vertical: 12),
+//                     ),
+//                     onPressed: () {
+//                       Navigator.of(context).pop();
+//                       Get.to(() => const SubscriptionScreen());
+//                     },
+//                   ),
+//                 ],
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
 import 'dart:developer';
 import 'dart:math' as Math;
 
@@ -32,19 +847,17 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
   ActiveFilter activeFilter = ActiveFilter.none;
 
   final List<String> categories = [
-    'Music',
+    'All',
     'Traditional',
     'Business',
-    'Community & Culture',
-    'Health & Fitness',
-    'Fashion',
-    'Other & Meetup & Sports',
+    'Culture',
   ];
 
   @override
   void initState() {
     super.initState();
     filteredEvents = List.from(widget.eventList);
+    selectedCategories.add('All'); // Default selected category
   }
 
   @override
@@ -56,7 +869,6 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
   void _applyLocationFilter(String city) {
     setState(() {
       selectedCityGlobal = city;
-      // selectedRadiusGlobal = radius;
       final list = widget.eventList;
       filteredEvents = list.where((event) {
         final eventCity = event['city']?.toString().toLowerCase() ?? '';
@@ -272,16 +1084,13 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                             activeFilter = ActiveFilter.radius;
                             _applyRadiusFilter(selectedRadius);
                           } else if (cityChanged && radiusChanged) {
-                            // if both changed, you can choose priority (e.g., city overrides)
                             activeFilter = ActiveFilter.city;
                             _applyLocationFilter(selectedCity);
                           } else {
                             activeFilter = ActiveFilter.city;
                             _applyLocationFilter(selectedCity);
-                            // filteredEvents = List.from(widget.eventList);
                           }
 
-                          // save globals
                           selectedCityGlobal = selectedCity;
                           selectedRadiusGlobal = selectedRadius;
                         },
@@ -309,129 +1118,37 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
           backgroundColor: Colors.white,
           appBar: AppBar(
             backgroundColor: Colors.white,
-            title: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: searchController,
-                    // your search logic
-                    decoration: const InputDecoration(
-                      hintText: 'Search Event',
-                      hintStyle: TextStyle(color: Colors.black54),
-                      prefixIcon: Icon(Icons.search, color: Colors.black54),
-                      border: InputBorder.none,
-                    ),
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.location_on_sharp,
-                    color: Colors.orange,
-                    size: 30,
-                  ),
-                  onPressed: () => _showLocationFilterDialog(),
-                )
-              ],
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
             ),
+            title: const Text(
+              'Events Near You',
+              style: TextStyle(
+                color: Colors.orange,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.menu, color: Colors.black),
+                onPressed: () {
+                  // Handle menu action
+                },
+              ),
+            ],
           ),
           body: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Text(
-                        'Events\nNear You',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          if (provider.isUserSubscribed) {
-                            Get.to(() => const PostEventScreen());
-                          } else {
-                            // Get.to(() => const SubscriptionScreen());
-                            _showSubscriptionDialog();
-                          }
-                        },
-                        icon: const Icon(Icons.event, color: Colors.white),
-                        label: const Text(
-                          'Post an Event',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Colors.orangeAccent.shade200, // Button color
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(20), // Rounded corners
-                          ),
-                          elevation: 4,
-                          shadowColor:
-                              Colors.orangeAccent.withValues(alpha: 0.5),
-                        ),
-                      ),
-                    ),
-                    if (selectedCategories.isNotEmpty ||
-                        selectedCityGlobal != 'Sydney' ||
-                        searchController.text.isNotEmpty ||
-                        activeFilter != ActiveFilter.none)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              searchController.clear();
-                              selectedCategories.clear();
-                              selectedCityGlobal = 'Sydney';
-                              selectedRadiusGlobal = 50;
-                              filteredEvents = List.from(widget.eventList);
-                              activeFilter = ActiveFilter.none;
-                            });
-                          },
-                          icon: const Icon(
-                            Icons.clear,
-                            size: 18,
-                            color: Colors.red,
-                          ),
-                          label: const Text(
-                            'Clear\nFilters',
-                            style: TextStyle(
-                              color: Colors.red,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: Colors.red,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  height: 40,
+                // Category Chips
+                Container(
+                  height: 50,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: categories.length,
@@ -439,48 +1156,253 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                       final category = categories[index];
                       final isSelected = selectedCategories.contains(category);
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: ChoiceChip(
-                          label: Text(category),
-                          selected: isSelected,
-                          selectedColor: Colors.orange,
-                          onSelected: (bool selected) {
-                            setState(() {
-                              if (selected) {
-                                selectedCategories.add(category);
-                              } else {
-                                selectedCategories.remove(category);
-                              }
-                              final query = searchController.text.toLowerCase();
-                              filteredEvents = widget.eventList.where((event) {
-                                final name = event['eventName']
-                                        ?.toString()
-                                        .toLowerCase() ??
-                                    '';
-                                final matchesQuery = name.contains(query);
+                        padding: const EdgeInsets.only(right: 12.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFFFFE5CC)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: TextButton(
+                            // onPressed: () {
+                            //   setState(() {
+                            //     selectedCategories.clear();
+                            //     selectedCategories.add(category);
+                            //     final query =
+                            //         searchController.text.toLowerCase();
+                            //     filteredEvents =
+                            //         widget.eventList.where((event) {
+                            //       final name = event['eventName']
+                            //               ?.toString()
+                            //               .toLowerCase() ??
+                            //           '';
+                            //       final matchesQuery = name.contains(query);
+                            //       final matchesCategory =
+                            //           selectedCategories.isEmpty ||
+                            //               (event['category'] != null &&
+                            //                   (event['category'] as List).any(
+                            //                       (cat) => selectedCategories
+                            //                           .contains(cat)));
+                            //       return matchesQuery && matchesCategory;
+                            //     }).toList();
+                            //   });
+                            // },
 
-                                final matchesCategory = selectedCategories
-                                        .isEmpty ||
-                                    (event['category'] != null &&
+                            onPressed: () {
+                              setState(() {
+                                selectedCategories.clear();
+                                selectedCategories.add(category);
+
+                                if (category == 'All') {
+                                  filteredEvents = List.from(widget.eventList);
+                                } else {
+                                  final query =
+                                      searchController.text.toLowerCase();
+                                  filteredEvents =
+                                      widget.eventList.where((event) {
+                                    final name = event['eventName']
+                                            ?.toString()
+                                            .toLowerCase() ??
+                                        '';
+                                    final matchesQuery = name.contains(query);
+                                    final matchesCategory = event['category'] !=
+                                            null &&
                                         (event['category'] as List).any((cat) =>
-                                            selectedCategories.contains(cat)));
-                                return matchesQuery && matchesCategory;
-                              }).toList();
-                            });
-                          },
+                                            selectedCategories.contains(cat));
+                                    return matchesQuery && matchesCategory;
+                                  }).toList();
+                                }
+                              });
+                            },
+
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 8),
+                            ),
+                            child: Text(
+                              category,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? Colors.orange
+                                    : Colors.grey[600],
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ),
                         ),
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: 20),
+
+                // Search Bar with Location and Post Event Button
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[300]!),
+                    ),
+                    child: Row(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Icon(
+                            Icons.search,
+                            color: Colors.grey,
+                            size: 24,
+                          ),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: searchController,
+                            decoration: const InputDecoration(
+                              hintText: 'Search by name, category, city...',
+                              hintStyle: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 16,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding:
+                                  EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                            ),
+                            onChanged: (query) {
+                              setState(() {
+                                filteredEvents =
+                                    widget.eventList.where((event) {
+                                  final name = event['eventName']
+                                          ?.toString()
+                                          .toLowerCase() ??
+                                      '';
+                                  final matchesQuery =
+                                      name.contains(query.toLowerCase());
+
+                                  final matchesCategory =
+                                      selectedCategories.isEmpty ||
+                                          (event['category'] != null &&
+                                              (event['category'] as List).any(
+                                                  (cat) => selectedCategories
+                                                      .contains(cat)));
+                                  return matchesQuery && matchesCategory;
+                                }).toList();
+                              });
+                            },
+                          ),
+                        ),
+                        // Location Icon
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.location_on,
+                              color: Colors.orange,
+                              size: 24,
+                            ),
+                            onPressed: () => _showLocationFilterDialog(),
+                          ),
+                        ),
+                        // Post Event Button
+                        Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              if (provider.isUserSubscribed) {
+                                Get.to(() => const PostEventScreen());
+                              } else {
+                                _showSubscriptionDialog();
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            label: const Text(
+                              'Post',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Clear Filters Button (if needed)
+                if (selectedCategories.length > 1 ||
+                    selectedCityGlobal != 'Sydney' ||
+                    searchController.text.isNotEmpty ||
+                    activeFilter != ActiveFilter.none)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            searchController.clear();
+                            selectedCategories.clear();
+                            selectedCategories.add('Traditional');
+                            selectedCityGlobal = 'Sydney';
+                            selectedRadiusGlobal = 50;
+                            filteredEvents = List.from(widget.eventList);
+                            activeFilter = ActiveFilter.none;
+                          });
+                        },
+                        icon: const Icon(
+                          Icons.clear,
+                          size: 16,
+                          color: Colors.red,
+                        ),
+                        label: const Text(
+                          'Clear Filters',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 12,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.red),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                const SizedBox(height: 16),
+
+                // Events Grid
                 (filteredEvents.isEmpty)
                     ? Padding(
                         padding: const EdgeInsets.all(18.0),
                         child: Center(
                           child: Text(
-                            'No Events, found for this category!',
-                            style: GoogleFonts.poppins(fontSize: 20),
+                            'No Events found for this category!',
+                            style: GoogleFonts.poppins(fontSize: 18),
                           ),
                         ),
                       )
@@ -494,7 +1416,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                           crossAxisCount: 2,
                           crossAxisSpacing: 16,
                           mainAxisSpacing: 18,
-                          childAspectRatio: 3 / 4.5,
+                          childAspectRatio: 3 / 5,
                         ),
                         itemBuilder: (context, index) {
                           final event = filteredEvents[index];
@@ -527,13 +1449,13 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.orange.withValues(alpha: 0.1),
-                                    blurRadius: 6,
-                                    spreadRadius: 2,
-                                    offset: const Offset(0, 4),
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 8,
+                                    spreadRadius: 0,
+                                    offset: const Offset(0, 2),
                                   ),
                                 ],
                               ),
@@ -542,49 +1464,116 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                                 children: [
                                   ClipRRect(
                                     borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(12)),
+                                        top: Radius.circular(16)),
                                     child: CachedNetworkImage(
-                                      imageUrl: photoUrl[0],
+                                      imageUrl: photoUrl is List
+                                          ? photoUrl[0]
+                                          : photoUrl,
                                       height: 120,
                                       width: double.infinity,
                                       fit: BoxFit.cover,
+                                      placeholder: (context, url) => Container(
+                                        height: 120,
+                                        color: Colors.grey[200],
+                                        child: const Center(
+                                          child: CircularProgressIndicator(
+                                            color: Colors.orange,
+                                          ),
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                          Container(
+                                        height: 120,
+                                        color: Colors.grey[200],
+                                        child: const Icon(Icons.error),
+                                      ),
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          name,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black,
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            name,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.black,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          "$date at $time",
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.black54,
+                                          const SizedBox(height: 6),
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.access_time,
+                                                size: 15,
+                                                color: Colors.orange,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  "$date - $time",
+                                                  style: const TextStyle(
+                                                    fontSize: 13,
+                                                    color: Colors.orange,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          address,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey,
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.location_on,
+                                                size: 15,
+                                                color: Colors.grey,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  address,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 13,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                      ],
+                                          const Spacer(),
+                                          Container(
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 6,
+                                              horizontal: 12,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.orange,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: const Text(
+                                              'View Details',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -612,13 +1601,9 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Premium Icon or Image
               const Icon(Icons.lock_outline_rounded,
                   size: 48, color: Colors.deepOrange),
-
               const SizedBox(height: 12),
-
-              // Title
               const Text(
                 'Premium Feature',
                 style: TextStyle(
@@ -626,19 +1611,13 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-
               const SizedBox(height: 8),
-
-              // Description
               const Text(
                 'Posting Events is a premium feature.\nSubscribe now to unlock this and more!',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, color: Colors.black87),
               ),
-
               const SizedBox(height: 16),
-
-              // Feature Highlights
               const Column(
                 children: [
                   Row(
@@ -647,7 +1626,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                       Icon(Icons.event_available_outlined,
                           color: Colors.orange, size: 22),
                       SizedBox(width: 8),
-                      Text('Post Events and Restauraunts'),
+                      Text('Post Events and Restaurants'),
                     ],
                   ),
                   SizedBox(height: 8),
@@ -681,10 +1660,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 24),
-
-              // Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -692,7 +1668,6 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                     onPressed: () => Navigator.of(context).pop(),
                     child: const Text('Maybe Later'),
                   ),
-                  // const SizedBox(width: 8),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.workspace_premium, size: 20),
                     label: const Text('Subscribe Now'),

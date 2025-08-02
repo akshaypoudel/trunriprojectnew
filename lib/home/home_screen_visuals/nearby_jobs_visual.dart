@@ -142,7 +142,8 @@ class NearbyJobsVisual extends StatelessWidget {
                         ),
                         child: const Text(
                           "View Details",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15),
                         ),
                       ),
                     ),
@@ -174,7 +175,7 @@ class NearbyJobsVisual extends StatelessWidget {
               text: '$label ',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 13,
+                fontSize: 15,
                 color: Colors.black,
               ),
               children: [
@@ -182,7 +183,7 @@ class NearbyJobsVisual extends StatelessWidget {
                   text: value,
                   style: const TextStyle(
                     fontWeight: FontWeight.normal,
-                    fontSize: 13,
+                    fontSize: 15,
                     color: Colors.black,
                   ),
                 ),

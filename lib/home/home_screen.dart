@@ -10,6 +10,8 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
+import 'package:trunriproject/currentLocation.dart';
 import 'package:trunriproject/home/constants.dart';
 import 'package:trunriproject/home/home_screen_visuals/get_banners_visual.dart';
 import 'package:trunriproject/home/home_screen_visuals/get_categories_visuals.dart';
@@ -20,6 +22,8 @@ import 'package:trunriproject/home/home_screen_visuals/nearby_jobs_visual.dart';
 import 'package:trunriproject/home/home_screen_visuals/nearby_restauraunts_visual.dart';
 import 'package:trunriproject/home/home_screen_visuals/nearby_temples_visual.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
+import 'package:trunriproject/notificatioonScreen.dart';
+import 'package:trunriproject/profile/show_address_text.dart';
 import 'package:trunriproject/widgets/helper.dart';
 import '../job/jobHomePageScreen.dart';
 import '../temple/templeHomePageScreen.dart';
@@ -42,11 +46,11 @@ class _HomeScreenState extends State<HomeScreen> {
   FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FocusNode _focusNode = FocusNode();
-  bool isInAustralia = false;
+  final TextEditingController addressController = TextEditingController();
 
-  String usersLatitude = '';
-  String usersLongitude = '';
-  int usersRadiusFilter = 50;
+  bool isInAustralia = false;
+  bool isNavigating = false;
+  bool isShownLocationInfoDialog = false;
 
   List<dynamic> _restaurants = [];
   List<dynamic> _groceryStores = [];
@@ -58,25 +62,149 @@ class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> _temples = [];
   List<String> imageUrls = [];
 
+  String addressText = '';
+  String usersLatitude = '';
+  String usersLongitude = '';
+  int usersRadiusFilter = 50;
+
   @override
   void initState() {
     super.initState();
     _handleLocationSource();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Provider.of<LocationData>(context, listen: false)
+          .fetchUserAddressAndLocation(
+        isInAustralia: isInAustralia,
+      );
+
+      Provider.of<ChatProvider>(context, listen: false).fetchUserProfileImage();
+      await fetchAddressData();
+    });
+
     fetchImageData();
   }
 
   @override
   void dispose() {
     _focusNode.dispose();
+    addressController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLocationSource() async {
-    final prefs = await SharedPreferences.getInstance();
+  Future<void> fetchAddressData() async {
+    final provider = Provider.of<LocationData>(context, listen: false);
+    setState(() {
+      addressText = provider.getUsersAddress;
+      addressController.text = provider.getShortFormAddress;
+      usersLatitude = provider.getLatitude.toString();
+      usersLongitude = provider.getLongitude.toString();
+      usersRadiusFilter = provider.getNativeRadiusFilter;
+    });
+  }
 
-    // Check if dialog has been shown
-    final hasShownLocationDialog =
-        prefs.getBool('hasShownLocationDialog') ?? false;
+  void onLocationChanged(
+    String address,
+    int radiusFilter,
+    String latitude,
+    String longitude,
+  ) async {
+    if (isNavigating) return;
+    isNavigating = true;
+
+    try {
+      Map<String, dynamic> selectedAddress = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CurrentAddress(
+            isProfileScreen: true,
+            savedAddress: address,
+            latitude: latitude,
+            longitude: longitude,
+            radiusFilter: radiusFilter,
+            isInAustralia: isInAustralia,
+          ),
+        ),
+      );
+
+      if (!mounted || selectedAddress.isEmpty) return;
+
+      final provider = Provider.of<LocationData>(context, listen: false);
+
+      String lat = selectedAddress['latitude'];
+      String lon = selectedAddress['longitude'];
+      final shortFormAddress =
+          '📍 ${selectedAddress['city']}, ${provider.getStateShortForm(selectedAddress['state'])}';
+
+      provider.setAllLocationData(
+        lat: lat.toNum.toDouble(),
+        long: lon.toNum.toDouble(),
+        fullAddress: selectedAddress['address'],
+        shortFormAddress: shortFormAddress,
+        radiusFilter: selectedAddress['radiusFilter'],
+        isLocationFetched: false,
+      );
+
+      if (mounted) {
+        setState(() {
+          addressController.text = shortFormAddress;
+        });
+      }
+    } catch (e) {
+      log("Navigation Error: $e");
+    } finally {
+      isNavigating = false;
+    }
+  }
+
+  void onLocationChanged1(
+    String address,
+    int radiusFilter,
+    String lat,
+    String lng,
+  ) async {
+    // bool isInAustralia =  _handleLocationSource();
+    Map<String, dynamic> selectedAddress = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CurrentAddress(
+          isProfileScreen: true,
+          savedAddress: address,
+          latitude: lat,
+          longitude: lng,
+          radiusFilter: radiusFilter,
+          isInAustralia: isInAustralia,
+        ),
+      ),
+    );
+
+    final provider = Provider.of<LocationData>(context, listen: false);
+    // ignore: unnecessary_null_comparison
+    if (selectedAddress.isNotEmpty) {
+      String lat = selectedAddress['latitude'];
+      String lon = selectedAddress['longitude'];
+      setState(() {
+        final shortFormAddress =
+            '📍 ${selectedAddress['city']}, ${provider.getStateShortForm(selectedAddress['state'])}';
+
+        provider.setAllLocationData(
+          lat: lat.toNum.toDouble(),
+          long: lon.toNum.toDouble(),
+          fullAddress: selectedAddress['address'],
+          shortFormAddress: shortFormAddress,
+          radiusFilter: selectedAddress['radiusFilter'],
+          isLocationFetched: false,
+        );
+        addressController.text = shortFormAddress;
+      });
+    }
+  }
+
+  Future<void> _handleLocationSource() async {
+    // final prefs = await SharedPreferences.getInstance();
+
+    // // Check if dialog has been shown
+    // final hasShownLocationDialog =
+    //     prefs.getBool('hasShownLocationDialog') ?? false;
 
     final position = await Geolocator.getCurrentPosition();
     final placemarks =
@@ -85,21 +213,28 @@ class _HomeScreenState extends State<HomeScreen> {
     final country = placemarks.first.country;
 
     if (country == "Australia") {
-      isInAustralia = true;
-      // _showLocationInfoDialog(isInAustralia: isInAustralia);
+      setState(() {
+        isInAustralia = true;
+      });
       _getCurrentLocation();
     } else {
-      isInAustralia = false;
-      // _showLocationInfoDialog(isInAustralia: isInAustralia);
+      setState(() {
+        isInAustralia = false;
+      });
       getCurrentLocationByAddress();
+      // _showLocationInfoDialog(isInAustralia: isInAustralia);
     }
 
-    if (!hasShownLocationDialog) {
+    if (!isShownLocationInfoDialog) {
+      isShownLocationInfoDialog = true;
       _showLocationInfoDialog(isInAustralia: isInAustralia);
-
-      // Mark as shown
-      await prefs.setBool('hasShownLocationDialog', true);
     }
+
+    // if (!hasShownLocationDialog) {
+    //   _showLocationInfoDialog(isInAustralia: isInAustralia);
+
+    //   await prefs.setBool('hasShownLocationDialog', true);
+    // }
   }
 
   void _showLocationInfoDialog({required bool isInAustralia}) {
@@ -109,9 +244,11 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (BuildContext context) {
           return AlertDialog(
             backgroundColor: Colors.white,
-            title: Text(isInAustralia
-                ? 'You are in Australia'
-                : 'You are outside Australia'),
+            title: Text(
+              isInAustralia
+                  ? 'You are in Australia'
+                  : 'You are outside Australia',
+            ),
             content: Text(
               isInAustralia
                   ? 'You are in Australia. You will get all the listings (restaurants, grocery stores, events, temples, jobs, accommodations) based on your current location.'
@@ -165,13 +302,10 @@ class _HomeScreenState extends State<HomeScreen> {
       latitude = lat;
       longitude = lng;
     } else if (lat is String || lng is String) {
-      // latitude = lat.toNum.toDouble();
-      // longitude = lng.toNum.toDouble();
       latitude = double.parse(lat);
       longitude = double.parse(lng);
     }
 
-    log("latitude = $lat, longitude = $lng, radiusFilter = $radiusFilter");
     if (radiusFilter is int) {
       _fetchBasedOn(latitude, longitude, radiusFilter);
     } else if (radiusFilter is double) {
@@ -376,7 +510,10 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Stack(
             children: [
               Positioned.fill(
-                top: 90,
+                top: 125,
+                left: 0,
+                right: 0,
+                bottom: 0,
                 child: RefreshIndicator.adaptive(
                   onRefresh: () async {
                     isUserinAustraliaOrNot();
@@ -393,7 +530,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(
-                          height: 10,
+                          height: 2,
                         ),
                         GetBannersVisual(
                           onPageChanged: (value, _) {
@@ -480,12 +617,43 @@ class _HomeScreenState extends State<HomeScreen> {
                 top: 0,
                 left: 0,
                 right: 0,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SearchField(focusNode: _focusNode),
-                    ),
-                  ],
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: ShowAddressText(
+                              controller: addressController,
+                              onTap: () {
+                                onLocationChanged(
+                                  addressController.text,
+                                  usersRadiusFilter,
+                                  usersLatitude,
+                                  usersLongitude,
+                                );
+                              },
+                            ),
+                          ),
+                          IconButton(
+                            icon: CircleAvatar(
+                              backgroundColor: Colors.orange.shade50,
+                              child: const Icon(Icons.notifications_sharp,
+                                  color: Colors.orange),
+                            ),
+                            onPressed: () {
+                              Get.to(const NotificationScreen());
+                            },
+                          ),
+                        ],
+                      ),
+                      SearchField(focusNode: _focusNode),
+                    ],
+                  ),
                 ),
               )
             ],

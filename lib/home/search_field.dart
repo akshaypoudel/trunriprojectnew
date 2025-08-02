@@ -1,11 +1,9 @@
 import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:trunriproject/accommodation/accommodationHomeScreen.dart';
 import 'package:trunriproject/accommodation/lookingForAPlaceScreen.dart';
 import 'package:trunriproject/events/eventHomeScreen.dart';
 import 'package:trunriproject/home/groceryStoreListScreen.dart';
@@ -13,8 +11,6 @@ import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/home/resturentItemListScreen.dart';
 import 'package:trunriproject/job/jobHomePageScreen.dart';
 import 'package:trunriproject/temple/templeHomePageScreen.dart';
-
-import '../notificatioonScreen.dart';
 import '../widgets/appTheme.dart';
 
 class SearchField extends StatefulWidget {
@@ -43,7 +39,6 @@ class _SearchFieldState extends State<SearchField> {
 
   void _onFocusChange() {
     if (!_focusNode.hasFocus) {
-      // When losing focus, hide suggestions and clear filtered items
       showSuggestions.value = false;
       setState(() {
         _filteredItems.clear();
@@ -73,12 +68,57 @@ class _SearchFieldState extends State<SearchField> {
   }
 
   void _filterItems(String query) {
-    final filtered = _allItems
-        .where((item) => item.toLowerCase().contains(query.toLowerCase()))
-        .toList();
+    final normalizedQuery = _normalize(query);
+
+    final filtered = _allItems.where((item) {
+      final normalizedItem = _normalize(item);
+      return normalizedItem.contains(normalizedQuery) ||
+          _isFuzzyMatch(normalizedQuery, normalizedItem);
+    }).toList();
+
     setState(() {
       _filteredItems = filtered;
     });
+  }
+
+  String _normalize(String input) {
+    return input.toLowerCase().trim().replaceAll(RegExp(r'[^\w\s]'), '');
+  }
+
+  bool _isFuzzyMatch(String query, String item) {
+    int distance = _levenshteinDistance(query, item);
+    return distance <= 2;
+  }
+
+  int _levenshteinDistance(String s, String t) {
+    if (s == t) return 0;
+    if (s.isEmpty) return t.length;
+    if (t.isEmpty) return s.length;
+
+    List<List<int>> matrix = List.generate(
+      s.length + 1,
+      (_) => List.filled(t.length + 1, 0),
+    );
+
+    for (int i = 0; i <= s.length; i++) {
+      matrix[i][0] = i;
+    }
+    for (int j = 0; j <= t.length; j++) {
+      matrix[0][j] = j;
+    }
+
+    for (int i = 1; i <= s.length; i++) {
+      for (int j = 1; j <= t.length; j++) {
+        int cost = s[i - 1] == t[j - 1] ? 0 : 1;
+        matrix[i][j] = [
+          matrix[i - 1][j] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j - 1] + cost,
+        ].reduce((a, b) => a < b ? a : b);
+      }
+    }
+
+    return matrix[s.length][t.length];
   }
 
   void _navigateToScreen(String selectedItem) {
@@ -87,7 +127,7 @@ class _SearchFieldState extends State<SearchField> {
 
     final item = selectedItem.toLowerCase();
 
-    if (item.contains("restaurant")) {
+    if (item.contains("restaurants")) {
       Get.to(
         ResturentItemListScreen(
           restaurant_List: Provider.of<LocationData>(context, listen: false)
@@ -137,14 +177,10 @@ class _SearchFieldState extends State<SearchField> {
       },
       child: Column(
         children: [
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 5),
           Row(
             children: [
-              const SizedBox(
-                width: 10,
-              ),
+              const SizedBox(width: 10),
               Expanded(
                 child: Form(
                   child: TextFormField(
@@ -154,48 +190,20 @@ class _SearchFieldState extends State<SearchField> {
                       if (value.isNotEmpty) {
                         _filterItems(value);
                         showSuggestions.value = true;
-                        setState(() {});
                       } else {
                         showSuggestions.value = false;
                       }
                     },
                     decoration: InputDecoration(
                       floatingLabelBehavior: FloatingLabelBehavior.never,
-                      counterStyle: GoogleFonts.roboto(
-                          color: AppTheme.secondaryColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400),
-                      counter: const Offstage(),
-                      errorMaxLines: 2,
                       hintText: "Search TruNri Services",
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        color: Colors.orange,
-                      ),
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          FocusManager.instance.primaryFocus?.unfocus();
-
-                          Get.to(const NotificationScreen());
-                        },
-                        icon: Container(
-                          height: 40,
-                          width: 40,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(50),
-                            color: Colors.orange.shade50,
-                          ),
-                          child: const Icon(
-                            Icons.notifications,
-                            color: Colors.orange,
-                            size: 27,
-                          ),
-                        ),
-                      ),
+                      prefixIcon:
+                          const Icon(Icons.search, color: Colors.orange),
                       hintStyle: GoogleFonts.urbanist(
-                          color: const Color(0xFF86888A),
-                          fontSize: 17,
-                          fontWeight: FontWeight.w400),
+                        color: const Color(0xFF86888A),
+                        fontSize: 17,
+                        fontWeight: FontWeight.w400,
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 16, horizontal: 14),
                       disabledBorder: OutlineInputBorder(
@@ -214,62 +222,59 @@ class _SearchFieldState extends State<SearchField> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       border: OutlineInputBorder(
-                          borderSide:
-                              const BorderSide(color: Colors.orange, width: 1),
-                          borderRadius: BorderRadius.circular(10)),
+                        borderSide:
+                            const BorderSide(color: Colors.orange, width: 1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(
-                width: 10,
-              ),
+              const SizedBox(width: 10),
             ],
           ),
           if (_filteredItems.isNotEmpty)
-            Obx(() {
-              return showSuggestions.value
-                  ? ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: _filteredItems.length,
-                      itemBuilder: (context, index) {
-                        return Column(
-                          children: [
-                            Container(
-                              margin:
-                                  const EdgeInsets.only(left: 15, right: 15),
-                              decoration: BoxDecoration(
+            Obx(
+              () {
+                return showSuggestions.value
+                    ? ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _filteredItems.length,
+                        itemBuilder: (context, index) {
+                          return Column(
+                            children: [
+                              Container(
+                                margin:
+                                    const EdgeInsets.only(left: 15, right: 15),
+                                decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10)),
-                              child: ListTile(
-                                leading: const Icon(Icons.search),
-                                title: Text(_filteredItems[index]),
-                                onTap: () {
-                                  FocusManager.instance.primaryFocus?.unfocus();
-
-                                  String selectedItem = _filteredItems[index];
-                                  _controller.text = selectedItem;
-                                  setState(() {
-                                    _filteredItems.clear();
-                                  });
-                                  _navigateToScreen(selectedItem);
-                                  _controller.clear();
-                                },
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: ListTile(
+                                  leading: const Icon(Icons.search),
+                                  title: Text(_filteredItems[index]),
+                                  onTap: () {
+                                    FocusManager.instance.primaryFocus
+                                        ?.unfocus();
+                                    String selectedItem = _filteredItems[index];
+                                    _controller.text = selectedItem;
+                                    setState(() {
+                                      _filteredItems.clear();
+                                    });
+                                    _navigateToScreen(selectedItem);
+                                    _controller.clear();
+                                  },
+                                ),
                               ),
-                            ),
-                          ],
-                        );
-                      },
-                    )
-                  : const SizedBox.shrink();
-            }),
+                            ],
+                          );
+                        },
+                      )
+                    : const SizedBox.shrink();
+              },
+            ),
         ],
       ),
     );
   }
 }
-
-const searchOutlineInputBorder = OutlineInputBorder(
-  borderRadius: BorderRadius.all(Radius.circular(1)),
-  borderSide: BorderSide.none,
-);

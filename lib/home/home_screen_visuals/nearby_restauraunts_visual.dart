@@ -168,7 +168,7 @@ class NearbyRestaurauntsVisual extends StatelessWidget {
                                 style: const TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                                  fontSize: 15,
                                 ),
                                 maxLines: 1,
                               ),
@@ -182,7 +182,7 @@ class NearbyRestaurauntsVisual extends StatelessWidget {
                                 style: const TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.w300,
-                                  fontSize: 14,
+                                  fontSize: 15,
                                 ),
                                 maxLines: 1,
                               ),

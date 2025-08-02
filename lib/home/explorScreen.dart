@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:trunriproject/accommodation/lookingForAPlaceScreen.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/home/resturentItemListScreen.dart';
-import 'package:trunriproject/home/search_field.dart';
 import 'package:trunriproject/job/jobHomePageScreen.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 

@@ -13,6 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/events/event_location_picker.dart';
 import 'package:trunriproject/home/constants.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
@@ -192,9 +193,12 @@ class _PostEventScreenState extends State<PostEventScreen> {
 
       await FirebaseFirestore.instance.collection('MakeEvent').doc().set({
         'eventName': eventNameController.text.trim(),
+        'eventPosterName': AuthServices().getCurrentUserDisplayName(),
         'description': descriptionController.text.trim(),
         'category': selectedCategories, // Should be a List<String>
-        'ticketPrice': ticketPriceController.text.trim(),
+        'ticketPrice': (selectedEventTypePrice == 'Free')
+            ? '0'
+            : ticketPriceController.text.trim(),
         'eventType': selectedEventTypes, // Should be a List<String>
         'eventDate': selectedDate,
         'eventTime': selectedTime,
@@ -205,7 +209,7 @@ class _PostEventScreenState extends State<PostEventScreen> {
         'longitude': selectedLng,
         'contactInformation': contactInformationController.text.trim(),
         'photo': imageUrls, // Sending multiple images
-      }).then((value) async {
+      }, SetOptions(merge: true)).then((value) async {
         QuerySnapshot snapshot =
             await FirebaseFirestore.instance.collection('MakeEvent').get();
 
