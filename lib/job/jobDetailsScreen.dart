@@ -269,7 +269,12 @@ class JobDetailsScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        Get.to(() => const MyBottomNavBar(index: 2));
+                        Get.to(
+                          () => const MyBottomNavBar(
+                            index: 2,
+                            indexForChat: 0,
+                          ),
+                        );
                       },
                       icon: const Icon(
                         Icons.upload_file_rounded,

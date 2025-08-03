@@ -21,7 +21,7 @@ class JobHomePageScreen extends StatefulWidget {
 }
 
 class _JobHomePageScreenState extends State<JobHomePageScreen> {
-  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
   String _searchQuery = '';
   bool showOnlyMyJobs = false;
 
@@ -47,7 +47,7 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
+    searchController.dispose();
     super.dispose();
   }
 
@@ -265,32 +265,76 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
       _searchQuery.isNotEmpty ||
       activeFilter != ActiveFilter.none;
 
+  Widget _buildStyledButton({
+    required String text,
+    required IconData icon,
+    required VoidCallback onPressed,
+    bool isPrimary = false,
+    bool isOutlined = false,
+    Color? customColor,
+  }) {
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isOutlined
+              ? Colors.transparent
+              : (customColor ?? (isPrimary ? Colors.orange : Colors.white)),
+          foregroundColor: isOutlined
+              ? (customColor ?? Colors.orange)
+              : (isPrimary ? Colors.white : Colors.orange),
+          elevation: 0,
+          side: isOutlined
+              ? BorderSide(color: customColor ?? Colors.orange, width: 1.5)
+              : BorderSide(color: Colors.grey.shade200, width: 1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        icon: Icon(icon, size: 20),
+        label: Text(
+          text,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            letterSpacing: 0.3,
+          ),
+        ),
+        onPressed: onPressed,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<SubscriptionData>(context, listen: false);
     final locationProvider = Provider.of<LocationData>(context, listen: false);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: TextField(
-          controller: _searchController,
-          decoration: InputDecoration(
-            hintText: '🔍 Search for jobs...',
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
+        title: const Text(
+          'Jobs',
+          style: TextStyle(
+            color: Colors.orange,
+            fontSize: 21,
+            fontWeight: FontWeight.bold,
           ),
-          onChanged: (value) =>
-              setState(() => _searchQuery = value.toLowerCase().trim()),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.location_on, size: 30, color: Colors.orange),
+            icon: const Icon(Icons.location_on, size: 27, color: Colors.orange),
             onPressed: _showLocationFilterDialog,
           ),
           if (_hasActiveFilter)
@@ -299,7 +343,7 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
               onPressed: () {
                 setState(() {
                   showOnlyMyJobs = false;
-                  _searchController.clear();
+                  searchController.clear();
                   _searchQuery = '';
                   activeFilter = ActiveFilter.none;
                   selectedCityGlobal = 'Sydney';
@@ -314,52 +358,145 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           child: Column(
             children: [
+              //search bar
+              const SizedBox(height: 10),
+
+              Padding(
+                padding: const EdgeInsets.all(1),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.orange.withValues(alpha: 0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                    border: Border.all(
+                      color: Colors.orange.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 14),
+                        child: Icon(
+                          Icons.search,
+                          color: Colors.orange,
+                          size: 24,
+                        ),
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: searchController,
+                          decoration: const InputDecoration(
+                            hintText: 'Search Jobs',
+                            hintStyle: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 15,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 15,
+                          ),
+                          onChanged: (query) {
+                            setState(() {
+                              _searchQuery = query.toLowerCase().trim();
+                            });
+                            // setState(() {
+                            //   filteredEvents =
+                            //       widget.eventList.where((event) {
+                            //     final name = event['eventName']
+                            //             ?.toString()
+                            //             .toLowerCase() ??
+                            //         '';
+                            //     return name.contains(query.toLowerCase());
+                            //   }).toList();
+                            // });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => Get.to(const AddJobScreen()),
-                      icon: const Icon(Icons.add_circle_outline),
-                      label: const Text(
-                        'Post a Job',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange.shade50,
-                        foregroundColor: Colors.deepOrangeAccent,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                    child: _buildStyledButton(
+                      text: 'Post a Job',
+                      icon: Icons.add_circle_outline,
+                      onPressed: () => Get.to(
+                        () => const AddJobScreen(),
                       ),
                     ),
                   ),
+                  // Expanded(
+                  //   child: ElevatedButton.icon(
+                  //     onPressed: () => Get.to(const AddJobScreen()),
+                  //     icon: const Icon(Icons.add_circle_outline),
+                  //     label: const Text(
+                  //       'Post a Job',
+                  //       style: TextStyle(fontWeight: FontWeight.bold),
+                  //     ),
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: Colors.orange.shade50,
+                  //       foregroundColor: Colors.deepOrangeAccent,
+                  //       elevation: 0,
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(10),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+
                   const SizedBox(width: 10),
                   Expanded(
-                    child: ElevatedButton.icon(
+                    child: _buildStyledButton(
+                      text: showOnlyMyJobs ? 'Show All' : 'My Posts',
+                      icon: Icons.list_alt,
                       onPressed: () {
                         setState(() {
                           showOnlyMyJobs = !showOnlyMyJobs;
                         });
                       },
-                      icon: const Icon(Icons.list_alt),
-                      label: Text(
-                        showOnlyMyJobs ? 'Show All' : 'My Posts',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange.shade50,
-                        foregroundColor: Colors.deepOrangeAccent,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
                     ),
                   ),
+
+                  // Expanded(
+                  //   child: ElevatedButton.icon(
+                  //     onPressed: () {
+                  //       setState(() {
+                  //         showOnlyMyJobs = !showOnlyMyJobs;
+                  //       });
+                  //     },
+                  //     icon: const Icon(Icons.list_alt),
+                  //     label: Text(
+                  //       showOnlyMyJobs ? 'Show All' : 'My Posts',
+                  //       style: const TextStyle(fontWeight: FontWeight.bold),
+                  //     ),
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: Colors.orange.shade50,
+                  //       foregroundColor: Colors.deepOrangeAccent,
+                  //       elevation: 0,
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(10),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               StreamBuilder(
                 stream:
                     FirebaseFirestore.instance.collection('jobs').snapshots(),

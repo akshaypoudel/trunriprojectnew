@@ -1,29 +1,22 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/route_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
-import 'package:trunriproject/currentLocation.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
-import 'package:trunriproject/profile/show_address_text.dart';
 import 'package:trunriproject/signinscreen.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 import 'package:trunriproject/subscription/subscription_screen.dart';
 import 'package:trunriproject/subscription/subscription_success_screen.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import '../recoveryPasswordScreen.dart';
 import '../widgets/helper.dart';
 import '../home/firestore_service.dart';
 import 'addressListScreen.dart';
@@ -46,7 +39,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool dataLoaded = true;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  // final TextEditingController addressController = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
   String name = '';
@@ -63,7 +55,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         address: '',
         allowChange: userImageFile.path.isEmpty ? false : true,
         context: context,
-        email: emailController.text.trim(),
         name: nameController.text.trim(),
         profileImage: userImageFile,
         updated: (bool value) {
@@ -83,8 +74,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         await fireStoreService.updateProfilePictureForCommunity(userImageFile);
       }
     } catch (e) {
-      showSnackBar(context, "Error updating profile: $e");
-      print("Error updating profile: $e");
+      showSnackBar(context, "Error updating profile");
+      // log('updaitn profile error==========  $e');
     }
   }
 
@@ -148,55 +139,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {});
   }
 
-  Future<bool> _handleLocationSource() async {
-    bool hasPermission = await _handleLocationPermission();
-    if (!hasPermission) {
-      log('no permissionlllllllllllllllllllll');
-      return false;
-    }
-    final position = await Geolocator.getCurrentPosition();
-    final placemarks =
-        await placemarkFromCoordinates(position.latitude, position.longitude);
+  // Future<bool> _handleLocationSource() async {
+  //   bool hasPermission = await _handleLocationPermission();
+  //   if (!hasPermission) {
+  //     log('no permissionlllllllllllllllllllll');
+  //     return false;
+  //   }
+  //   final position = await Geolocator.getCurrentPosition();
+  //   final placemarks =
+  //       await placemarkFromCoordinates(position.latitude, position.longitude);
+  //   final country = placemarks.first.country;
+  //   if (country == "Australia") {
+  //     return true;
+  //   } else {
+  //     return false;
+  //   }
+  // }
 
-    final country = placemarks.first.country;
-
-    if (country == "Australia") {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  Future<bool> _handleLocationPermission() async {
-    // radiusFilter = widget.radiusFilter;
-    bool isServiceEnabled;
-    LocationPermission permission;
-
-    isServiceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!isServiceEnabled) {
-      showSnackBar(context, 'Location Service Not Enabled');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        showSnackBar(context, 'Location Permission Not Given.');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      showSnackBar(
-        context,
-        'Location Permission is Denied Forever. Can\'t Access Location',
-      );
-    }
-    return true;
-  }
+  // Future<bool> _handleLocationPermission() async {
+  //   // radiusFilter = widget.radiusFilter;
+  //   bool isServiceEnabled;
+  //   LocationPermission permission;
+  //   isServiceEnabled = await Geolocator.isLocationServiceEnabled();
+  //   if (!isServiceEnabled) {
+  //     showSnackBar(context, 'Location Service Not Enabled');
+  //   }
+  //   permission = await Geolocator.checkPermission();
+  //   if (permission == LocationPermission.denied) {
+  //     permission = await Geolocator.requestPermission();
+  //     if (permission == LocationPermission.denied) {
+  //       showSnackBar(context, 'Location Permission Not Given.');
+  //     }
+  //   }
+  //   if (permission == LocationPermission.deniedForever) {
+  //     showSnackBar(
+  //       context,
+  //       'Location Permission is Denied Forever. Can\'t Access Location',
+  //     );
+  //   }
+  //   return true;
+  // }
 
   @override
   void dispose() {
-    // addressController.dispose();
     nameController.dispose();
     emailController.dispose();
     super.dispose();
@@ -204,17 +189,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final subscriptionProvider =
-        Provider.of<SubscriptionData>(context, listen: false);
+    // final subscriptionProvider =
+    // Provider.of<SubscriptionData>(context, listen: false);
 
     return Consumer<LocationData>(
       builder: (BuildContext context, LocationData value, Widget? child) {
-        final address = value.getUsersAddress;
+        // final address = value.getUsersAddress;
         // final shortFormAddress = value.getShortFormAddress;
         // addressController.text = shortFormAddress;
-        final latitude = value.getLatitude;
-        final longitude = value.getLongitude;
-        final radiusFilter = value.getNativeRadiusFilter;
+        // final latitude = value.getLatitude;
+        // final longitude = value.getLongitude;
+        // final radiusFilter = value.getNativeRadiusFilter;
 
         return Scaffold(
           backgroundColor: Colors.white,
@@ -354,7 +339,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         decoration: InputDecoration(
                                           hintText: email,
                                         ),
-                                        readOnly: !isEditing,
+                                        readOnly: true,
                                         controller: emailController,
                                         style: const TextStyle(
                                             fontWeight: FontWeight.w400,

@@ -15,8 +15,9 @@ import 'explorScreen.dart';
 import 'home_screen.dart';
 
 class MyBottomNavBar extends StatefulWidget {
-  const MyBottomNavBar({super.key, this.index});
+  const MyBottomNavBar({super.key, this.index, this.indexForChat});
   final int? index;
+  final int? indexForChat;
 
   @override
   State<MyBottomNavBar> createState() => _MyBottomNavBarState();
@@ -24,16 +25,22 @@ class MyBottomNavBar extends StatefulWidget {
 
 class _MyBottomNavBarState extends State<MyBottomNavBar> {
   int myCurrentIndex = 0;
-  List<Widget> pages = [
-    const HomeScreen(),
-    const ExplorScreen(),
-    const ChatListScreen(),
-    const ProfileScreen(),
-  ];
+  int? chatTabIndex;
+  late List<Widget> pages;
 
   @override
   void initState() {
     super.initState();
+    if (widget.index != null && widget.indexForChat != null) {
+      myCurrentIndex = 2;
+      chatTabIndex = 0;
+    } else if (widget.index != null) {
+      myCurrentIndex = 2;
+    }
+
+    // Initialize pages list with conditional ChatListScreen
+    _initializePages();
+
     if (widget.index != null) {
       myCurrentIndex = 2;
     }
@@ -41,6 +48,18 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
       initializeProvider();
     });
     checkAndUpdateSubscription();
+  }
+
+  void _initializePages() {
+    pages = [
+      const HomeScreen(),
+      const ExplorScreen(),
+      // Pass the chat tab index if both conditions are met
+      chatTabIndex != null
+          ? ChatListScreen(index: chatTabIndex!)
+          : const ChatListScreen(),
+      const ProfileScreen(),
+    ];
   }
 
   void checkAndUpdateSubscription() async {

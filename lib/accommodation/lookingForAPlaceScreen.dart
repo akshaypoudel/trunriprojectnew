@@ -24,27 +24,40 @@ class LookingForAPlaceScreen extends StatefulWidget {
   State<LookingForAPlaceScreen> createState() => _LookingForAPlaceScreenState();
 }
 
-class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
+class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
+    with TickerProviderStateMixin {
+  static const Color primaryOrange = Color(0xFFFF6B35);
+  static const Color lightOrange = Color(0xFFFF8A50);
+  static const Color backgroundColor = Colors.white;
+  static const Color cardColor = Colors.white;
+  static const Color textPrimary = Color(0xFF2D3748);
+  static const Color textSecondary = Color(0xFF718096);
+  static const Color greyBackground = Color(0xFFF8F9FA);
+
+  late AnimationController _glowController;
+  late Animation<double> _glowAnimation;
+
   final List<String> cityList = [
     'All',
-    'Delhi',
-    'Mumbai',
-    'Bangalore',
-    'Noida',
-    'Kolkata',
-    'Chennai',
-    'Hyderabad'
+    'New South Wales',
+    'Victoria',
+    'Queensland',
+    'Western Australia',
+    'South Australia',
+    'Tasmania',
+    'Canberra',
+    'Darwin',
   ];
-
   final List<String> cityImages = [
-    'https://cdn.pixabay.com/photo/2019/04/07/07/52/taj-mahal-4109110_1280.jpg',
-    'https://cdn.pixabay.com/photo/2022/08/19/15/21/akshardham-7397135_1280.jpg',
-    'https://cdn.pixabay.com/photo/2010/11/29/india-294_1280.jpg',
-    'https://cdn.pixabay.com/photo/2017/12/17/13/10/architecture-3024174_1280.jpg',
-    'https://cdn.pixabay.com/photo/2023/06/08/05/36/sunset-8048741_1280.jpg',
-    'https://cdn.pixabay.com/photo/2017/06/12/08/29/victoria-memorial-2394784_1280.jpg',
-    'https://cdn.pixabay.com/photo/2018/05/16/10/44/chennai-3405413_1280.jpg',
-    'https://cdn.pixabay.com/photo/2019/02/12/14/53/golconda-fort-3992421_1280.jpg',
+    'assets/images/australia.jpg',
+    'assets/images/sydney.jpg',
+    'assets/images/melbourne.jpg',
+    'assets/images/brisbane_river.jpg',
+    'assets/images/perth_city.jpg',
+    'assets/images/adelaide.jpg',
+    'assets/images/tasmania.jpg',
+    'assets/images/canberra.jpg',
+    'assets/images/darwin.jpg',
   ];
 
   List<Map<String, dynamic>> displayedList = [];
@@ -61,11 +74,26 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
     super.initState();
     displayedList = widget.accommodationList;
     searchController.addListener(searchAccommodations);
+
+    // Initialize glow animation for FAB
+    _glowController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    _glowAnimation = Tween<double>(
+      begin: 0.3,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _glowController,
+      curve: Curves.easeInOut,
+    ));
+    _glowController.repeat(reverse: true);
   }
 
   @override
   void dispose() {
     searchController.dispose();
+    _glowController.dispose();
     super.dispose();
   }
 
@@ -100,381 +128,540 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
     });
   }
 
-  void searchAccommodations1() {
-    final query = searchController.text.toLowerCase();
-    setState(() {
-      displayedList = widget.accommodationList.where((item) {
-        final matchesCity = selectedCity == 'All' ||
-            (item['state'] ?? '').toString().toLowerCase() ==
-                selectedCity!.toLowerCase();
-
-        final name = item['fullAddress']?.toString().toLowerCase() ?? '';
-        final city = item['city']?.toString().toLowerCase() ?? '';
-        final state = item['state']?.toString().toLowerCase() ?? '';
-
-        final matchesSearch = name.contains(query) ||
-            city.contains(query) ||
-            state.contains(query);
-
-        return matchesCity && matchesSearch;
-      }).toList();
-    });
-  }
-
   void _showFilterBottomSheet() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return const FilterOptionScreen();
+        return Container(
+          decoration: const BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: const FilterOptionScreen(),
+        );
+      },
+    );
+  }
+
+  Widget _buildStyledButton({
+    required String text,
+    required IconData icon,
+    required VoidCallback onPressed,
+    bool isPrimary = false,
+    bool isOutlined = false,
+    Color? customColor,
+  }) {
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isOutlined
+              ? Colors.transparent
+              : (customColor ?? (isPrimary ? Colors.orange : cardColor)),
+          foregroundColor: isOutlined
+              ? (customColor ?? Colors.orange)
+              : (isPrimary ? cardColor : Colors.orange),
+          elevation: 0,
+          side: isOutlined
+              ? BorderSide(color: customColor ?? Colors.orange, width: 1.5)
+              : BorderSide(color: Colors.grey.shade200, width: 1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        icon: Icon(icon, size: 20),
+        label: Text(
+          text,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            letterSpacing: 0.3,
+          ),
+        ),
+        onPressed: onPressed,
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.orange.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(
+            color: Colors.orange.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 14),
+              child: Icon(
+                Icons.search,
+                color: Colors.orange,
+                size: 24,
+              ),
+            ),
+            Expanded(
+              child: TextField(
+                controller: searchController,
+                decoration: const InputDecoration(
+                  hintText: 'Search Accomodations',
+                  hintStyle: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 17,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 14),
+                ),
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 15,
+                ),
+                onChanged: (query) {
+                  setState(() {
+                    displayedList =
+                        widget.accommodationList.where((accomodation) {
+                      final name =
+                          accomodation['city']?.toString().toLowerCase() ?? '';
+                      return name.contains(query.toLowerCase());
+                    }).toList();
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtonsRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildStyledButton(
+              text: "Filter",
+              icon: Icons.tune,
+              onPressed: _showFilterBottomSheet,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildStyledButton(
+              text: showOnlyMyPost ? 'Show All' : 'My Posts',
+              icon: Icons.home_outlined,
+              onPressed: () {
+                setState(() {
+                  showOnlyMyPost = !showOnlyMyPost;
+                });
+                searchAccommodations();
+              },
+            ),
+          ),
+          if (selectedCityGlobal != 'Sydney' ||
+              searchController.text.isNotEmpty ||
+              activeFilter != ActiveFilter.none) ...[
+            const SizedBox(width: 12),
+            _buildStyledButton(
+              text: "Clear",
+              icon: Icons.clear,
+              onPressed: () {
+                setState(() {
+                  searchController.clear();
+                  selectedCityGlobal = 'Sydney';
+                  selectedRadiusGlobal = 50;
+                  displayedList = List.from(widget.accommodationList);
+                  activeFilter = ActiveFilter.none;
+                  selectedCity = 'All';
+                });
+              },
+              isOutlined: true,
+              customColor: Colors.red.shade400,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCityList() {
+    return Container(
+      height: 80,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: cityList.length,
+        itemBuilder: (context, index) {
+          final isSelected = selectedCity == cityList[index];
+          return GestureDetector(
+            onTap: () => filterByCity(cityList[index]),
+            child: Container(
+              margin: const EdgeInsets.only(right: 12),
+              width: 90,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Stack(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage(cityImages[index]),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.7),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (isSelected)
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.orange, width: 3),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          cityList[index],
+                          style: TextStyle(
+                            color: cardColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                            shadows: [
+                              Shadow(
+                                offset: const Offset(0, 1),
+                                blurRadius: 3,
+                                color: Colors.black.withOpacity(0.8),
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildAccommodationCard(Map<String, dynamic> data, int index) {
+    List images = data['images'] ?? [];
+    String imageUrl = images.isNotEmpty ? images.first.toString() : '';
+
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => AccommodationDetailsScreen(accommodation: data));
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 3,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+                child: imageUrl.isNotEmpty
+                    ? Image.network(
+                        imageUrl,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildImagePlaceholder();
+                        },
+                      )
+                    : _buildImagePlaceholder(),
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      // data['city'] ?? 'Unknown City',
+                      data['Give your listing a title'] ?? 'No Title',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: textPrimary,
+                        letterSpacing: 0.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Expanded(
+                      child: Text(
+                        data['fullAddress'] ?? 'Address not available',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: textSecondary,
+                          height: 1.3,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImagePlaceholder() {
+    return Container(
+      width: double.infinity,
+      color: Colors.grey.shade100,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.image_outlined,
+            size: 40,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "No image",
+            style: TextStyle(
+              color: Colors.grey.shade500,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 64,
+              color: Colors.grey.shade400,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "No accommodations found",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              "Try adjusting your search criteria",
+              style: TextStyle(
+                fontSize: 14,
+                color: textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlowingFAB() {
+    return AnimatedBuilder(
+      animation: _glowAnimation,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color:
+                    Colors.orange.withValues(alpha: _glowAnimation.value * 0.6),
+                blurRadius: 20 * _glowAnimation.value,
+                spreadRadius: 5 * _glowAnimation.value,
+              ),
+              BoxShadow(
+                color:
+                    lightOrange.withValues(alpha: _glowAnimation.value * 0.4),
+                blurRadius: 30 * _glowAnimation.value,
+                spreadRadius: 8 * _glowAnimation.value,
+              ),
+            ],
+          ),
+          child: FloatingActionButton.extended(
+            onPressed: () => Get.to(() => const WhichYouListScreen()),
+            backgroundColor: Colors.orange,
+            foregroundColor: Colors.white,
+            elevation: 8,
+            label: const Text(
+              'Post',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                letterSpacing: 0.5,
+              ),
+            ),
+            icon: const Icon(Icons.add_home_outlined, size: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+          ),
+        );
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<SubscriptionData>(context, listen: false);
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.grey.shade100,
-        title: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search accommodations...',
-                  prefixIcon: const Icon(Icons.search, color: Colors.orange),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ),
-            IconButton(
+        backgroundColor: backgroundColor,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: const Text(
+          'Accomodations',
+          style: TextStyle(
+            fontSize: 21,
+            fontWeight: FontWeight.bold,
+            color: Colors.orange,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: IconButton(
               icon: const Icon(
-                Icons.location_on_sharp,
+                Icons.location_on,
+                size: 26,
                 color: Colors.orange,
-                size: 30,
               ),
               onPressed: () => _showLocationFilterDialog(),
-            )
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
       body: GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.orange,
-                          elevation: 1,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                        ),
-                        onPressed: _showFilterBottomSheet,
-                        icon: const Icon(Icons.filter_list),
-                        label: const Text("Filter"),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.orange,
-                          elevation: 1,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                        ),
-                        onPressed: () {},
-                        icon: const Icon(Icons.bookmark),
-                        label: const Text("Saved"),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    if (selectedCityGlobal != 'Sydney' ||
-                        searchController.text.isNotEmpty ||
-                        activeFilter != ActiveFilter.none)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              searchController.clear();
-                              // selectedCategories.clear();
-                              selectedCityGlobal = 'Sydney';
-                              selectedRadiusGlobal = 50;
-                              displayedList =
-                                  List.from(widget.accommodationList);
-                              activeFilter = ActiveFilter.none;
-                            });
+          child: Column(
+            children: [
+              _buildSearchBar(),
+              _buildActionButtonsRow(),
+              _buildCityList(),
+              Expanded(
+                child: displayedList.isEmpty
+                    ? _buildEmptyState()
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: GridView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: displayedList.length,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount:
+                                MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                            childAspectRatio: 0.75,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                          ),
+                          itemBuilder: (context, index) {
+                            return _buildAccommodationCard(
+                                displayedList[index], index);
                           },
-                          icon: const Icon(
-                            Icons.clear,
-                            size: 18,
-                            color: Colors.red,
-                          ),
-                          label: const Text(
-                            'Clear\nFilters',
-                            style: TextStyle(
-                              color: Colors.red,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: Colors.red,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                          ),
                         ),
                       ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: SizedBox(
-                                // width: double.infinity,
-                                height: 48,
-                                child: ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.orange,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  icon: const Icon(Icons.add_home_outlined),
-                                  label: const Text(
-                                    'Post an Accommodation',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  onPressed: () {
-                                    Get.to(() => const WhichYouListScreen());
-                                  },
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: SizedBox(
-                                height: 48,
-                                child: ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.orange,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  icon: const Icon(Icons.home_sharp),
-                                  label: Text(
-                                    showOnlyMyPost ? 'Show All' : 'My Posts',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      showOnlyMyPost = !showOnlyMyPost;
-                                    });
-                                    searchAccommodations();
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-
-                        // SizedBox(
-                        //   height: 70,
-                        //   child: ListView.builder(
-                        //     scrollDirection: Axis.horizontal,
-                        //     itemCount: cityList.length,
-                        //     itemBuilder: (context, index) {
-                        //       return GestureDetector(
-                        //         onTap: () => filterByCity(cityList[index]),
-                        //         child: Container(
-                        //           margin: const EdgeInsets.only(right: 10),
-                        //           width: 80,
-                        //           decoration: BoxDecoration(
-                        //             borderRadius: BorderRadius.circular(12),
-                        //             image: DecorationImage(
-                        //               image: NetworkImage(cityImages[index]),
-                        //               fit: BoxFit.cover,
-                        //             ),
-                        //             border: selectedCity == cityList[index]
-                        //                 ? Border.all(
-                        //                     color: Colors.orange, width: 2)
-                        //                 : null,
-                        //           ),
-                        //           child: Stack(
-                        //             children: [
-                        //               Positioned.fill(
-                        //                 child: Container(
-                        //                   decoration: BoxDecoration(
-                        //                     borderRadius:
-                        //                         BorderRadius.circular(12),
-                        //                     color: Colors.black
-                        //                         .withValues(alpha: 0.4),
-                        //                   ),
-                        //                 ),
-                        //               ),
-                        //               Center(
-                        //                 child: Text(
-                        //                   cityList[index],
-                        //                   style: const TextStyle(
-                        //                     color: Colors.white,
-                        //                     fontWeight: FontWeight.bold,
-                        //                     fontSize: 15,
-                        //                   ),
-                        //                   textAlign: TextAlign.center,
-                        //                 ),
-                        //               ),
-                        //             ],
-                        //           ),
-                        //         ),
-                        //       );
-                        //     },
-                        //   ),
-                        // ),
-
-                        // const SizedBox(height: 12),
-                        displayedList.isEmpty
-                            ? const Center(
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 40),
-                                  child: Text("No accommodations found"),
-                                ),
-                              )
-                            : GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: displayedList.length,
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 0.7,
-                                  crossAxisSpacing: 12,
-                                  mainAxisSpacing: 12,
-                                ),
-                                itemBuilder: (context, index) {
-                                  final data = displayedList[index];
-                                  List images = data['images'] ?? [];
-                                  String imageUrl = images.isNotEmpty
-                                      ? images.first.toString()
-                                      : '';
-
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Get.to(
-                                        () => AccommodationDetailsScreen(
-                                          accommodation: displayedList[index],
-                                        ),
-                                      );
-                                    },
-                                    child: Card(
-                                      elevation: 2,
-                                      color: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                const BorderRadius.vertical(
-                                              top: Radius.circular(14),
-                                            ),
-                                            child: imageUrl.isNotEmpty
-                                                ? Image.network(
-                                                    imageUrl,
-                                                    height: 120,
-                                                    width: double.infinity,
-                                                    fit: BoxFit.cover,
-                                                  )
-                                                : Container(
-                                                    height: 120,
-                                                    color: Colors.grey[300],
-                                                    child: const Center(
-                                                        child:
-                                                            Text("No image")),
-                                                  ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              data['city'] ?? 'Unknown City',
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8.0),
-                                            child: Text(
-                                              data['fullAddress'] ??
-                                                  'Address not available',
-                                              style: const TextStyle(
-                                                fontSize: 13,
-                                                color: Colors.black54,
-                                              ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                        const SizedBox(height: 16),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
         ),
       ),
+      floatingActionButton: _buildGlowingFAB(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
+  // Keep all your existing methods for filters and location handling...
   void _applyLocationFilter(String city) {
     setState(() {
       selectedCityGlobal = city;
-      // selectedRadiusGlobal = radius;
       final list = widget.accommodationList;
       displayedList = list.where((event) {
         final eventCity = event['city']?.toString().toLowerCase() ?? '';
@@ -485,7 +672,7 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
 
   Future<void> _applyRadiusFilter(double radiusKm) async {
     final provider = Provider.of<LocationData>(context, listen: false);
-    await _preloadLatLngsIfMissing(); // ensure all items have lat/lng
+    await _preloadLatLngsIfMissing();
     setState(() {
       selectedRadiusGlobal = radiusKm;
       displayedList = widget.accommodationList.where((accommodation) {
@@ -511,7 +698,6 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
     }
   }
 
-// This returns (latitude, longitude) for an address, or null if not found.
   Future<LatLng?> _geocodeAddress(String address) async {
     try {
       List<Location> locations = await locationFromAddress(address);
@@ -553,8 +739,7 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
       'Canberra',
       'Hobart',
       'Darwin',
-      'Newcastle',
-      'Putney'
+      'Newcastle'
     ];
 
     showDialog(
@@ -696,8 +881,12 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
                           ),
                         ),
                         icon: const Icon(Icons.filter_alt, color: Colors.white),
-                        label: const Text('Apply Filter',
-                            style: TextStyle(color: Colors.white)),
+                        label: const Text(
+                          'Apply Filter',
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
                         onPressed: () {
                           Navigator.pop(context);
                           final cityChanged =
@@ -718,6 +907,7 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen> {
                             activeFilter = ActiveFilter.city;
                             _applyLocationFilter(selectedCity);
                           }
+
                           selectedCityGlobal = selectedCity;
                           selectedRadiusGlobal = selectedRadius;
                         },

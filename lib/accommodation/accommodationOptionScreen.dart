@@ -41,7 +41,7 @@ class _AccommodationoptionscreenState extends State<Accommodationoptionscreen> {
                     fontSize: 30),
               ),
               const Text(
-                'To get started, let us know what brings to you to TruNRI',
+                'To get started, let us know what brings to you to TruNri',
                 style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.w300,

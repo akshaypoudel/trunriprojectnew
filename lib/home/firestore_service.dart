@@ -33,7 +33,6 @@ class FirebaseFireStoreService {
 
   Future<bool> updateProfile({
     required String name,
-    required String email,
     required String address,
     required File profileImage,
     required bool allowChange,
@@ -66,12 +65,35 @@ class FirebaseFireStoreService {
     }
   }
 
-  Future<String> getProfileImageUrl(File profileImage) async {
+  Future<String> getProfileImageUrl1(File profileImage) async {
     final fileName = path.basename(profileImage.path);
     final storageRef =
         FirebaseStorage.instance.ref().child('user_images/$fileName');
 
     return await storageRef.getDownloadURL();
+  }
+
+  Future<String> getProfileImageUrl(File profileImage) async {
+    try {
+      // Create unique filename to avoid conflicts
+      final String fileName =
+          'profile_${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final Reference imageRef =
+          FirebaseStorage.instance.ref().child('user_images').child(fileName);
+
+      // Upload the file
+      final UploadTask uploadTask = imageRef.putFile(profileImage);
+
+      // Wait for upload completion and get download URL
+      final TaskSnapshot snapshot = await uploadTask;
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      log('Profile image uploaded successfully: $downloadUrl');
+      return downloadUrl;
+    } catch (e) {
+      log('Error uploading profile image: $e');
+      rethrow; // This will be caught by the updateProfile method
+    }
   }
 
   Future<void> updateProfilePictureForCommunity(

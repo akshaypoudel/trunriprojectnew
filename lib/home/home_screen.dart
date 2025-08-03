@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool isInAustralia = false;
   bool isNavigating = false;
-  bool isShownLocationInfoDialog = false;
+  static bool isShownLocationInfoDialog = false;
 
   List<dynamic> _restaurants = [];
   List<dynamic> _groceryStores = [];
@@ -510,7 +510,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Stack(
             children: [
               Positioned.fill(
-                top: 125,
+                top: 130,
                 left: 0,
                 right: 0,
                 bottom: 0,
