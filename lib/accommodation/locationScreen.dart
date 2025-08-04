@@ -212,7 +212,7 @@ import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/accommodation/propertyScreen.dart';
-import 'package:trunriproject/accommodation/whichYouListScreen.dart';
+import 'package:trunriproject/events/event_location_picker.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/widgets/helper.dart';
 import '../widgets/commomButton.dart';
@@ -229,6 +229,11 @@ class _LocationScreenState extends State<LocationScreen> {
   final TextEditingController stateController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
+  double? selectedLat;
+  double? selectedLng;
+  String? selectedAddress;
+  String? selectedCity;
+  String? selectedState;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -268,18 +273,13 @@ class _LocationScreenState extends State<LocationScreen> {
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        final provider = Provider.of<LocationData>(context, listen: false);
-
-        double latitude = provider.getLatitude;
-        double longitude = provider.getLongitude;
-
         for (var doc in querySnapshot.docs) {
           await _firestore.collection('accommodation').doc(doc.id).update({
             'state': stateController.text.trim(),
             'city': cityController.text.trim(),
             'fullAddress': addressController.text.trim(),
-            'lat': latitude,
-            'long': longitude,
+            'lat': selectedLat,
+            'long': selectedLng,
           });
         }
 
@@ -441,6 +441,30 @@ class _LocationScreenState extends State<LocationScreen> {
     }
   }
 
+  void showAddressModal(BuildContext context) async {
+    Map<String, dynamic> result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const LocationPickerScreen(),
+      ),
+    );
+    setState(() {
+      selectedLat = result['lat'];
+      selectedLng = result['lng'];
+      selectedAddress = result['address'];
+      selectedCity = result['city'];
+      selectedState = result['state'];
+      addressController.clear();
+      cityController.clear();
+      stateController.clear();
+      addressController.text = selectedAddress!;
+      cityController.text = selectedCity!;
+      stateController.text = selectedState!;
+    });
+
+    log("Selected Location: $selectedLat, $selectedLng, $selectedAddress, $selectedCity, $selectedState");
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -464,74 +488,81 @@ class _LocationScreenState extends State<LocationScreen> {
             child: const Icon(Icons.clear),
           ),
         ),
-        body: SingleChildScrollView(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            child: Form(
-              key: formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 20),
-                  const Text(
-                    'State',
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black),
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: stateController,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter state name',
-                      hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    const Text(
+                      'State',
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black),
                     ),
-                    validator:
-                        RequiredValidator(errorText: 'State is required').call,
-                  ),
-                  const SizedBox(height: 30),
-                  const Text(
-                    'City',
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black),
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: cityController,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter city name',
-                      hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: stateController,
+                      decoration: const InputDecoration(
+                        hintText: 'Enter state name',
+                        hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
+                      validator:
+                          RequiredValidator(errorText: 'State is required')
+                              .call,
                     ),
-                    validator:
-                        RequiredValidator(errorText: 'City is required').call,
-                  ),
-                  const SizedBox(height: 30),
-                  const Text(
-                    'Full Address',
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black),
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: addressController,
-                    decoration: const InputDecoration(
-                      hintText:
-                          'Ex: H.No/Apartment no, street name, suburb name',
-                      hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                    const SizedBox(height: 30),
+                    const Text(
+                      'City',
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black),
                     ),
-                    validator: MultiValidator([
-                      RequiredValidator(errorText: 'Address is required'),
-                      MinLengthValidator(6,
-                          errorText: 'Minimum 6 characters are required'),
-                    ]).call,
-                  ),
-                  const SizedBox(height: 30),
-                ],
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: cityController,
+                      decoration: const InputDecoration(
+                        hintText: 'Enter city name',
+                        hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
+                      validator:
+                          RequiredValidator(errorText: 'City is required').call,
+                    ),
+                    const SizedBox(height: 30),
+                    const Text(
+                      'Full Address',
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black),
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      onTap: () {
+                        showAddressModal(context);
+                      },
+                      readOnly: true,
+                      controller: addressController,
+                      decoration: const InputDecoration(
+                        hintText:
+                            'Ex: H.No/Apartment no, street name, suburb name',
+                        hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
+                      validator: MultiValidator([
+                        RequiredValidator(errorText: 'Address is required'),
+                        MinLengthValidator(6,
+                            errorText: 'Minimum 6 characters are required'),
+                      ]).call,
+                    ),
+                    const SizedBox(height: 30),
+                  ],
+                ),
               ),
             ),
           ),

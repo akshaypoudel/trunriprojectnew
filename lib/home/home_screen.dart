@@ -100,6 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
       usersLongitude = provider.getLongitude.toString();
       usersRadiusFilter = provider.getNativeRadiusFilter;
     });
+    log('full addr === $addressText');
   }
 
   void onLocationChanged(
@@ -144,11 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
         isLocationFetched: false,
       );
 
-      if (mounted) {
-        setState(() {
-          addressController.text = shortFormAddress;
-        });
-      }
+      await fetchAddressData();
     } catch (e) {
       log("Navigation Error: $e");
     } finally {
@@ -570,7 +567,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           isInAustralia: isInAustralia,
                         ),
                         const SizedBox(height: 20),
-                        NearbyAccomodationVisual(isInAustralia: isInAustralia),
+                        NearbyAccomodationVisual(
+                          isInAustralia: isInAustralia,
+                        ),
                         const SizedBox(height: 20),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -630,6 +629,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: ShowAddressText(
                               controller: addressController,
                               onTap: () {
+                                log('address = ${addressController.text}');
                                 onLocationChanged(
                                   addressController.text,
                                   usersRadiusFilter,

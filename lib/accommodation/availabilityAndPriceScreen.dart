@@ -154,290 +154,294 @@ class _AvailabilityAndPriceScreenState
           child: const Icon(Icons.arrow_back_ios),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          margin: const EdgeInsets.only(left: 15, right: 15),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Set the availability',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => _selectDate(context, true),
-                    child: Container(
-                      width: 150,
-                      padding: const EdgeInsets.only(
-                          top: 10, bottom: 10, left: 25, right: 25),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey, width: 1),
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: Center(
-                        child: Text(_formatDate(selectedAvailabilityDate)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  GestureDetector(
-                    onTap: () => _selectDate(context, false),
-                    child: Container(
-                      width: 150,
-                      padding: const EdgeInsets.only(
-                          top: 10, bottom: 10, left: 25, right: 25),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey, width: 1),
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: Center(
-                        child: Text(_formatDate(selectedNoDate)),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (selectedAvailabilityDate == null || selectedNoDate == null)
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Container(
+            margin: const EdgeInsets.only(left: 15, right: 15),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 const Text(
-                  'Please select availability dates',
-                  style: TextStyle(color: Colors.red),
+                  'Set the availability',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
                 ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Minimum stay',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                      const SizedBox(height: 5),
-                      GestureDetector(
-                        onTap: () async {
-                          String? selectedValue = await showDialog<String>(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: const Text('Select Minimum Stay'),
-                                content: SizedBox(
-                                  width: double.minPositive,
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: months.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return ListTile(
-                                        title: Text(months[index]),
-                                        onTap: () {
-                                          Navigator.pop(context, months[index]);
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                          if (selectedValue != null) {
-                            setState(() {
-                              selectedMinStay = selectedValue;
-                            });
-                          }
-                        },
-                        child: Container(
-                          width: 150,
-                          padding: const EdgeInsets.only(
-                              top: 10, bottom: 10, left: 25, right: 25),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey, width: 1),
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          child: Center(
-                            child: Text(selectedMinStay),
-                          ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => _selectDate(context, true),
+                      child: Container(
+                        width: 150,
+                        padding: const EdgeInsets.only(
+                            top: 10, bottom: 10, left: 25, right: 25),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey, width: 1),
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Center(
+                          child: Text(_formatDate(selectedAvailabilityDate)),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Maximum stay',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                      const SizedBox(height: 5),
-                      GestureDetector(
-                        onTap: () async {
-                          String? selectedValue = await showDialog<String>(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: const Text('Select Maximum Stay'),
-                                content: SizedBox(
-                                  width: double.minPositive,
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: years.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return ListTile(
-                                        title: Text(years[index]),
-                                        onTap: () {
-                                          Navigator.pop(context, years[index]);
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                          if (selectedValue != null) {
-                            setState(() {
-                              selectedMaxStay = selectedValue;
-                            });
-                          }
-                        },
-                        child: Container(
-                          width: 150,
-                          padding: const EdgeInsets.only(
-                              top: 10, bottom: 10, left: 25, right: 25),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey, width: 1),
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          child: Center(
-                            child: Text(selectedMaxStay),
-                          ),
+                    ),
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: () => _selectDate(context, false),
+                      child: Container(
+                        width: 150,
+                        padding: const EdgeInsets.only(
+                            top: 10, bottom: 10, left: 25, right: 25),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey, width: 1),
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Center(
+                          child: Text(_formatDate(selectedNoDate)),
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Are the amenities and utilities included in the rental price?',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: rentalContract,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        rentalContract = value ?? false;
-                      });
-                    },
-                  ),
+                    ),
+                  ],
+                ),
+                if (selectedAvailabilityDate == null || selectedNoDate == null)
                   const Text(
-                    'Rental contract',
-                    style: TextStyle(fontSize: 12),
+                    'Please select availability dates',
+                    style: TextStyle(color: Colors.red),
                   ),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: cleaningService,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        cleaningService = value ?? false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Cleaning Service',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: maintenanceService,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        maintenanceService = value ?? false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Maintenance service',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: lawnCare,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        lawnCare = value ?? false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Lawn care',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: poolAccess,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        poolAccess = value ?? false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Pool access',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: gym,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        gym = value ?? false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Gym',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-            ],
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Minimum stay',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        const SizedBox(height: 5),
+                        GestureDetector(
+                          onTap: () async {
+                            String? selectedValue = await showDialog<String>(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Select Minimum Stay'),
+                                  content: SizedBox(
+                                    width: double.minPositive,
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: months.length,
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        return ListTile(
+                                          title: Text(months[index]),
+                                          onTap: () {
+                                            Navigator.pop(
+                                                context, months[index]);
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                            if (selectedValue != null) {
+                              setState(() {
+                                selectedMinStay = selectedValue;
+                              });
+                            }
+                          },
+                          child: Container(
+                            width: 150,
+                            padding: const EdgeInsets.only(
+                                top: 10, bottom: 10, left: 25, right: 25),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey, width: 1),
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            child: Center(
+                              child: Text(selectedMinStay),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Maximum stay',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        const SizedBox(height: 5),
+                        GestureDetector(
+                          onTap: () async {
+                            String? selectedValue = await showDialog<String>(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Select Maximum Stay'),
+                                  content: SizedBox(
+                                    width: double.minPositive,
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: years.length,
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        return ListTile(
+                                          title: Text(years[index]),
+                                          onTap: () {
+                                            Navigator.pop(
+                                                context, years[index]);
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                            if (selectedValue != null) {
+                              setState(() {
+                                selectedMaxStay = selectedValue;
+                              });
+                            }
+                          },
+                          child: Container(
+                            width: 150,
+                            padding: const EdgeInsets.only(
+                                top: 10, bottom: 10, left: 25, right: 25),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey, width: 1),
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            child: Center(
+                              child: Text(selectedMaxStay),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Are the amenities and utilities included in the rental price?',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: rentalContract,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          rentalContract = value ?? false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Rental contract',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: cleaningService,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          cleaningService = value ?? false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Cleaning Service',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: maintenanceService,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          maintenanceService = value ?? false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Maintenance service',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: lawnCare,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          lawnCare = value ?? false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Lawn care',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: poolAccess,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          poolAccess = value ?? false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Pool access',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: gym,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          gym = value ?? false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Gym',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

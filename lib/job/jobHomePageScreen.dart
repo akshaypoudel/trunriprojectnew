@@ -353,242 +353,193 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
             ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          child: Column(
-            children: [
-              //search bar
-              const SizedBox(height: 10),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            child: Column(
+              children: [
+                //search bar
+                const SizedBox(height: 10),
 
-              Padding(
-                padding: const EdgeInsets.all(1),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.orange.withValues(alpha: 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                    border: Border.all(
-                      color: Colors.orange.withValues(alpha: 0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 14),
-                        child: Icon(
-                          Icons.search,
-                          color: Colors.orange,
-                          size: 24,
+                Padding(
+                  padding: const EdgeInsets.all(1),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.orange.withValues(alpha: 0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
+                      ],
+                      border: Border.all(
+                        color: Colors.orange.withValues(alpha: 0.3),
+                        width: 1,
                       ),
-                      Expanded(
-                        child: TextField(
-                          controller: searchController,
-                          decoration: const InputDecoration(
-                            hintText: 'Search Jobs',
-                            hintStyle: TextStyle(
-                              color: Colors.grey,
+                    ),
+                    child: Row(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 14),
+                          child: Icon(
+                            Icons.search,
+                            color: Colors.orange,
+                            size: 24,
+                          ),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: searchController,
+                            decoration: const InputDecoration(
+                              hintText: 'Search Jobs',
+                              hintStyle: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 15,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding:
+                                  EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            style: const TextStyle(
+                              color: Colors.black87,
                               fontSize: 15,
                             ),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(vertical: 14),
+                            onChanged: (query) {
+                              setState(() {
+                                _searchQuery = query.toLowerCase().trim();
+                              });
+                            },
                           ),
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontSize: 15,
-                          ),
-                          onChanged: (query) {
-                            setState(() {
-                              _searchQuery = query.toLowerCase().trim();
-                            });
-                            // setState(() {
-                            //   filteredEvents =
-                            //       widget.eventList.where((event) {
-                            //     final name = event['eventName']
-                            //             ?.toString()
-                            //             .toLowerCase() ??
-                            //         '';
-                            //     return name.contains(query.toLowerCase());
-                            //   }).toList();
-                            // });
-                          },
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStyledButton(
-                      text: 'Post a Job',
-                      icon: Icons.add_circle_outline,
-                      onPressed: () => Get.to(
-                        () => const AddJobScreen(),
-                      ),
-                    ),
-                  ),
-                  // Expanded(
-                  //   child: ElevatedButton.icon(
-                  //     onPressed: () => Get.to(const AddJobScreen()),
-                  //     icon: const Icon(Icons.add_circle_outline),
-                  //     label: const Text(
-                  //       'Post a Job',
-                  //       style: TextStyle(fontWeight: FontWeight.bold),
-                  //     ),
-                  //     style: ElevatedButton.styleFrom(
-                  //       backgroundColor: Colors.orange.shade50,
-                  //       foregroundColor: Colors.deepOrangeAccent,
-                  //       elevation: 0,
-                  //       shape: RoundedRectangleBorder(
-                  //         borderRadius: BorderRadius.circular(10),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _buildStyledButton(
-                      text: showOnlyMyJobs ? 'Show All' : 'My Posts',
-                      icon: Icons.list_alt,
-                      onPressed: () {
-                        setState(() {
-                          showOnlyMyJobs = !showOnlyMyJobs;
-                        });
-                      },
-                    ),
-                  ),
-
-                  // Expanded(
-                  //   child: ElevatedButton.icon(
-                  //     onPressed: () {
-                  //       setState(() {
-                  //         showOnlyMyJobs = !showOnlyMyJobs;
-                  //       });
-                  //     },
-                  //     icon: const Icon(Icons.list_alt),
-                  //     label: Text(
-                  //       showOnlyMyJobs ? 'Show All' : 'My Posts',
-                  //       style: const TextStyle(fontWeight: FontWeight.bold),
-                  //     ),
-                  //     style: ElevatedButton.styleFrom(
-                  //       backgroundColor: Colors.orange.shade50,
-                  //       foregroundColor: Colors.deepOrangeAccent,
-                  //       elevation: 0,
-                  //       shape: RoundedRectangleBorder(
-                  //         borderRadius: BorderRadius.circular(10),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              StreamBuilder(
-                stream:
-                    FirebaseFirestore.instance.collection('jobs').snapshots(),
-                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                  if (!snapshot.hasData) {
-                    return const CircularProgressIndicator(
-                        color: Colors.orange);
-                  }
-
-                  var jobsDocs = snapshot.data!.docs;
-                  // Convert to Map for filtering and optional geocode
-                  List<Map<String, dynamic>> jobs = jobsDocs
-                      .map((doc) => doc.data() as Map<String, dynamic>)
-                      .toList();
-
-                  // Step 1: Text Search
-                  List<Map<String, dynamic>> filtered = _searchQuery.isEmpty
-                      ? jobs
-                      : jobs.where((job) {
-                          var position = (job['positionName'] ?? '')
-                              .toString()
-                              .toLowerCase();
-                          return position.contains(_searchQuery);
-                        }).toList();
-
-                  // Step 2: My Posts
-                  if (showOnlyMyJobs) {
-                    final uid = AuthServices().getCurrentUser()!.uid;
-                    filtered =
-                        filtered.where((job) => job['uid'] == uid).toList();
-                  }
-
-                  // Step 3: City/Radius filter (if any)
-                  if (activeFilter == ActiveFilter.city) {
-                    filtered = filtered.where((job) {
-                      var city = (job['city'] ?? '').toString().toLowerCase();
-                      return city.contains(selectedCityGlobal.toLowerCase());
-                    }).toList();
-                  } else if (activeFilter == ActiveFilter.radius) {
-                    final uLat = locationProvider.getLatitude;
-                    final uLng = locationProvider.getLongitude;
-                    // We must ensure all jobs have lat/lng before filtering.
-                    // This can be slow, so show a loader via FutureBuilder.
-                    return FutureBuilder(
-                      future: _preloadLatLngsIfMissing(filtered),
-                      builder: (ctx, snap) {
-                        if (snap.connectionState == ConnectionState.waiting) {
-                          return const Padding(
-                            padding: EdgeInsets.all(40),
-                            child: Center(
-                                child: CircularProgressIndicator(
-                                    color: Colors.orange)),
-                          );
-                        }
-                        final filteredRadius = filtered.where((job) {
-                          final lat = parseCoord(job['latitude']);
-                          final lng = parseCoord(job['longitude']);
-                          if (lat == null || lng == null) return false;
-                          final dist = _haversine(uLat, uLng, lat, lng);
-                          return dist <= selectedRadiusGlobal;
-                        }).toList();
-                        if (filteredRadius.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.all(40),
-                            child: Center(
-                                child: Text(
-                              '😕 No matching jobs found.',
-                              style:
-                                  TextStyle(fontSize: 20, color: Colors.grey),
-                            )),
-                          );
-                        }
-                        return _jobList(filteredRadius);
-                      },
-                    );
-                  }
-
-                  if (filtered.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.all(40),
-                      child: Center(
-                        child: Text(
-                          '😕 No matching jobs found.',
-                          style: TextStyle(fontSize: 20, color: Colors.grey),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildStyledButton(
+                        text: 'Post a Job',
+                        icon: Icons.add_circle_outline,
+                        onPressed: () => Get.to(
+                          () => const AddJobScreen(),
                         ),
                       ),
-                    );
-                  }
-                  return _jobList(filtered);
-                },
-              ),
-            ],
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _buildStyledButton(
+                        text: showOnlyMyJobs ? 'Show All' : 'My Posts',
+                        icon: Icons.list_alt,
+                        onPressed: () {
+                          setState(() {
+                            showOnlyMyJobs = !showOnlyMyJobs;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                StreamBuilder(
+                  stream:
+                      FirebaseFirestore.instance.collection('jobs').snapshots(),
+                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (!snapshot.hasData) {
+                      return const CircularProgressIndicator(
+                          color: Colors.orange);
+                    }
+
+                    var jobsDocs = snapshot.data!.docs;
+                    // Convert to Map for filtering and optional geocode
+                    List<Map<String, dynamic>> jobs = jobsDocs
+                        .map((doc) => doc.data() as Map<String, dynamic>)
+                        .toList();
+
+                    // Step 1: Text Search
+                    List<Map<String, dynamic>> filtered = _searchQuery.isEmpty
+                        ? jobs
+                        : jobs.where((job) {
+                            var position = (job['positionName'] ?? '')
+                                .toString()
+                                .toLowerCase();
+                            return position.contains(_searchQuery);
+                          }).toList();
+
+                    // Step 2: My Posts
+                    if (showOnlyMyJobs) {
+                      final uid = AuthServices().getCurrentUser()!.uid;
+                      filtered =
+                          filtered.where((job) => job['uid'] == uid).toList();
+                    }
+
+                    // Step 3: City/Radius filter (if any)
+                    if (activeFilter == ActiveFilter.city) {
+                      filtered = filtered.where((job) {
+                        var city = (job['city'] ?? '').toString().toLowerCase();
+                        return city.contains(selectedCityGlobal.toLowerCase());
+                      }).toList();
+                    } else if (activeFilter == ActiveFilter.radius) {
+                      final uLat = locationProvider.getLatitude;
+                      final uLng = locationProvider.getLongitude;
+                      // We must ensure all jobs have lat/lng before filtering.
+                      // This can be slow, so show a loader via FutureBuilder.
+                      return FutureBuilder(
+                        future: _preloadLatLngsIfMissing(filtered),
+                        builder: (ctx, snap) {
+                          if (snap.connectionState == ConnectionState.waiting) {
+                            return const Padding(
+                              padding: EdgeInsets.all(40),
+                              child: Center(
+                                  child: CircularProgressIndicator(
+                                      color: Colors.orange)),
+                            );
+                          }
+                          final filteredRadius = filtered.where((job) {
+                            final lat = parseCoord(job['latitude']);
+                            final lng = parseCoord(job['longitude']);
+                            if (lat == null || lng == null) return false;
+                            final dist = _haversine(uLat, uLng, lat, lng);
+                            return dist <= selectedRadiusGlobal;
+                          }).toList();
+                          if (filteredRadius.isEmpty) {
+                            return const Padding(
+                              padding: EdgeInsets.all(40),
+                              child: Center(
+                                  child: Text(
+                                '😕 No matching jobs found.',
+                                style:
+                                    TextStyle(fontSize: 20, color: Colors.grey),
+                              )),
+                            );
+                          }
+                          return _jobList(filteredRadius);
+                        },
+                      );
+                    }
+
+                    if (filtered.isEmpty) {
+                      return const Padding(
+                        padding: EdgeInsets.all(40),
+                        child: Center(
+                          child: Text(
+                            '😕 No matching jobs found.',
+                            style: TextStyle(fontSize: 20, color: Colors.grey),
+                          ),
+                        ),
+                      );
+                    }
+                    return _jobList(filtered);
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -666,7 +617,7 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        data['companyAddress'] ?? 'Location',
+                        data['city'] ?? 'Location',
                         style: const TextStyle(fontSize: 13),
                       ),
                     ),

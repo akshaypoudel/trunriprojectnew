@@ -470,6 +470,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                                   builder: (_) => ChatScreen(
                                     receiversName: user['name'],
                                     receiversID: user['email'],
+                                    imageUrl: user['profile'],
                                   ),
                                 ),
                               ).then((_) => _loadChats());

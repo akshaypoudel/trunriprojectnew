@@ -3,7 +3,9 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:map_location_picker/map_location_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:trunriproject/home/constants.dart';
+import 'package:trunriproject/home/provider/location_data.dart';
 
 class LocationPickerScreen extends StatefulWidget {
   const LocationPickerScreen({super.key});
@@ -13,6 +15,9 @@ class LocationPickerScreen extends StatefulWidget {
 }
 
 class _LocationPickerScreenState extends State<LocationPickerScreen> {
+  double initialLat = 0;
+  double initialLong = 0;
+
   void onLocationPicked(
     double lat,
     double lng,
@@ -30,6 +35,16 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<LocationData>(context, listen: false);
+      initialLat = provider.getLatitude;
+      initialLong = provider.getLongitude;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Select Location")),
@@ -39,7 +54,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           initialMapType: MapType.normal,
           zoomControlsEnabled: true,
           liteModeEnabled: false,
-          initialPosition: const LatLng(-33.8568, 151.2153),
+          initialPosition: (initialLong != 0 && initialLong != 0)
+              ? LatLng(initialLat, initialLong)
+              : const LatLng(-33.8568, 151.2153),
           onNext: (result) {
             onLocationPicked(
               result!.geometry.location.lat,

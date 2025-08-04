@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:trunriproject/chat_module/components/chat_bubble.dart';
-import 'package:trunriproject/chat_module/components/chat_inputfield.dart';
-import 'package:trunriproject/chat_module/components/date_bubble.dart';
 import 'package:trunriproject/chat_module/screens/display_group_members.dart';
 import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/chat_module/services/chat_services.dart';
@@ -105,16 +104,19 @@ class _GroupChatScreenState extends State<GroupChatScreen>
   }
 
   Future<void> fetchCurrentUserEmail() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('User')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get();
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('User')
+          .doc(currentUser.uid)
+          .get();
 
-    if (snapshot.exists) {
-      setState(() {
-        currentUserEmail = snapshot.get('email');
-        currentUserName = snapshot.get('name');
-      });
+      if (snapshot.exists) {
+        setState(() {
+          currentUserEmail = snapshot.get('email');
+          currentUserName = currentUser.displayName ?? 'Unknown User';
+        });
+      }
     }
   }
 
@@ -123,7 +125,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       scrollController.animateTo(
         scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
+        curve: Curves.fastOutSlowIn,
       );
     }
   }
@@ -132,6 +134,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     final text = messageController.text.trim();
     if (text.isEmpty || currentUserEmail == null) return;
 
+    HapticFeedback.lightImpact();
     messageController.clear();
     final groupRef =
         FirebaseFirestore.instance.collection('groups').doc(widget.groupId);
@@ -159,8 +162,6 @@ class _GroupChatScreenState extends State<GroupChatScreen>
         .collection('messages')
         .orderBy('timestamp', descending: false)
         .snapshots();
-    // .get();
-    // .get();
   }
 
   String formatTimestamp(Timestamp timestamp) {
@@ -206,110 +207,69 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     }
   }
 
-  Future<String> fetchNameByEmail(String email) async {
-    if (_nameCache.containsKey(email)) return _nameCache[email]!;
-
-    final snapshot = await FirebaseFirestore.instance
-        .collection('User')
-        .where('email', isEqualTo: email)
-        .limit(1)
-        .get();
-
-    final name =
-        snapshot.docs.isNotEmpty ? snapshot.docs.first.get('name') : '';
-    _nameCache[email] = name;
-    return name;
-  }
-
-  Widget buildMessageList() {
-    return StreamBuilder(
-      stream: getGroupMessages(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Center(child: Text('Error loading messages'));
-        }
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        final docs = snapshot.data!.docs;
-
-        return FutureBuilder<Map<String, String>>(
-          future: prefetchAllNames(docs),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) return Container();
-
-            final nameMap = snapshot.data!;
-            final List<Widget> messageWidgets = [];
-            String? lastDateLabel;
-
-            for (var doc in docs) {
-              final data = doc.data() as Map<String, dynamic>;
-              final messageDate = (data['timestamp'] as Timestamp?)?.toDate();
-              if (messageDate == null) continue;
-              final currentLabel = getDateLabel(messageDate);
-              if (lastDateLabel != currentLabel) {
-                messageWidgets.add(DateBubble(date: currentLabel));
-                lastDateLabel = currentLabel;
-              }
-
-              final senderEmail = data['senderID'];
-              final senderName = nameMap[senderEmail] ?? '...';
-
-              final time = messageDate != null
-                  ? formatTimestamp(data['timestamp'])
-                  : '--:--';
-
-              log('sender name map = $nameMap, sender email = $senderEmail and Sender name = $senderName');
-
-              messageWidgets.add(
-                GroupChatBubble(
-                  senderID: senderEmail,
-                  userName: senderName,
-                  text: data['message'] ?? '',
-                  time: time,
-                  isMe: senderEmail == currentUserEmail,
-                ),
-              );
-            }
-
-            if (groupCreatorEmail != null && groupCreatedAt != null) {
-              final groupCreatedDate = formatFullDateWithSuffixFromString(
-                groupCreatedAt!.toDate().toString(),
-              );
-              final creatorName =
-                  nameMap[groupCreatorEmail] ?? groupCreatorEmail!;
-              final memberNames = groupMembers
-                  .where((e) => e != groupCreatorEmail)
-                  .map((e) => nameMap[e] ?? e)
-                  .toList();
-              messageWidgets.insert(
-                0,
-                _buildGroupCreatedBubble(
-                  createdBy: creatorName,
-                  groupCreatedDate: groupCreatedDate,
-                  members: memberNames,
-                ),
-              );
-            }
-
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              scrollToBottom();
-            });
-
-            return ListView(
-              // reverse: true,
-              controller: scrollController,
-              padding: const EdgeInsets.only(bottom: 10),
-              children: messageWidgets,
-            );
-          },
-        );
-      },
-    );
-  }
-
   Future<Map<String, String>> prefetchAllNames(
+      List<DocumentSnapshot> docs) async {
+    final Map<String, String> nameMap = {};
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    for (var doc in docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      final email = data['senderID'];
+
+      if (_nameCache.containsKey(email)) {
+        nameMap[email] = _nameCache[email]!;
+      } else {
+        String name;
+
+        // Use Firebase Auth displayName for current user
+        if (email == currentUser?.email) {
+          name = currentUser?.displayName ?? 'You';
+        } else {
+          // For other users, get from Firestore
+          final snapshot = await FirebaseFirestore.instance
+              .collection('User')
+              .where('email', isEqualTo: email)
+              .limit(1)
+              .get();
+
+          name = snapshot.docs.isNotEmpty
+              ? (snapshot.docs.first.get('name') ?? 'Unknown User')
+              : 'Unknown User';
+        }
+
+        _nameCache[email] = name;
+        nameMap[email] = name;
+      }
+    }
+
+    // Handle group members and creator
+    for (final email in [...groupMembers, groupCreatorEmail]) {
+      if (email != null && !_nameCache.containsKey(email)) {
+        String name;
+
+        if (email == currentUser?.email) {
+          name = currentUser?.displayName ?? 'You';
+        } else {
+          final snapshot = await FirebaseFirestore.instance
+              .collection('User')
+              .where('email', isEqualTo: email)
+              .limit(1)
+              .get();
+
+          name = snapshot.docs.isNotEmpty
+              ? (snapshot.docs.first.get('name') ?? 'Unknown User')
+              : 'Unknown User';
+        }
+
+        _nameCache[email] = name;
+        nameMap[email] = name;
+      }
+    }
+
+    return nameMap;
+  }
+
+  Future<Map<String, String>> prefetchAllNames1(
       List<DocumentSnapshot> docs) async {
     final Map<String, String> nameMap = {};
 
@@ -351,6 +311,358 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     return nameMap;
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        title: _buildProfileSection(),
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/chat_background.jpg'),
+              fit: BoxFit.cover,
+              opacity: 0.6,
+            ),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFFFFFFFF), // Pure white
+                Color(0xFFFFF8F0), // Very light orange tint
+                Color(0xFFFFF0E6), // Light orange
+              ],
+              stops: [0.0, 0.5, 1.0],
+            ),
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: currentUserEmail == null
+                    ? _buildLoadingState()
+                    : _buildMessageListView(),
+              ),
+              _buildModernInputSection(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileSection() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DisplayGroupMembers(groupId: widget.groupId),
+          ),
+        );
+      },
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [Color(0xFFFF6B35), Color.fromARGB(255, 255, 145, 76)],
+              ),
+            ),
+            child: widget.groupImageUrl != null
+                ? ClipOval(
+                    child: Image.network(
+                      widget.groupImageUrl!,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.group,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  )
+                : const Icon(
+                    Icons.group,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  widget.groupName,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  '${groupMembers.length} members',
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageListView() {
+    return StreamBuilder(
+      stream: getGroupMessages(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return _buildErrorState();
+        }
+        if (!snapshot.hasData) {
+          return _buildLoadingState();
+        }
+
+        final docs = snapshot.data!.docs;
+
+        return FutureBuilder<Map<String, String>>(
+          future: prefetchAllNames(docs),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) return _buildLoadingState();
+
+            final nameMap = snapshot.data!;
+            final List<Widget> messageWidgets = [];
+            String? lastDateLabel;
+
+            // Add group creation bubble first
+            if (groupCreatorEmail != null && groupCreatedAt != null) {
+              final groupCreatedDate = formatFullDateWithSuffixFromString(
+                groupCreatedAt!.toDate().toString(),
+              );
+              final creatorName =
+                  nameMap[groupCreatorEmail] ?? groupCreatorEmail!;
+              final memberNames = groupMembers
+                  .where((e) => e != groupCreatorEmail)
+                  .map((e) => nameMap[e] ?? e)
+                  .toList();
+              messageWidgets.add(
+                _buildGroupCreatedBubble(
+                  createdBy: creatorName,
+                  groupCreatedDate: groupCreatedDate,
+                  members: memberNames,
+                ),
+              );
+            }
+
+            for (var doc in docs) {
+              final data = doc.data() as Map<String, dynamic>;
+              final messageDate = (data['timestamp'] as Timestamp?)?.toDate();
+              if (messageDate == null) continue;
+
+              final currentLabel = getDateLabel(messageDate);
+              if (lastDateLabel != currentLabel) {
+                messageWidgets.add(_buildGlassmorphicDateBubble(currentLabel));
+                lastDateLabel = currentLabel;
+              }
+
+              final senderEmail = data['senderID'];
+              final senderName = nameMap[senderEmail] ?? '...';
+              final time = formatTimestamp(data['timestamp']);
+              final isMe = senderEmail == currentUserEmail;
+
+              messageWidgets.add(
+                _buildGroupMessageItem(
+                  senderEmail: senderEmail,
+                  userName: senderName,
+                  text: data['message'] ?? '',
+                  time: time,
+                  isMe: isMe,
+                ),
+              );
+            }
+
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              scrollToBottom();
+            });
+
+            if (messageWidgets.length <= 1) {
+              // Only group creation bubble
+              return _buildEmptyState();
+            }
+
+            return ListView.builder(
+              controller: scrollController,
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+              itemCount: messageWidgets.length,
+              itemBuilder: (context, index) => messageWidgets[index],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildGroupMessageItem({
+    required String senderEmail,
+    required String userName,
+    required String text,
+    required String time,
+    required bool isMe,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
+        child: _buildGlassmorphicGroupMessageBubble(
+          userName: userName,
+          text: text,
+          time: time,
+          isMe: isMe,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassmorphicGroupMessageBubble({
+    required String userName,
+    required String text,
+    required String time,
+    required bool isMe,
+  }) {
+    return IntrinsicWidth(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        child: ClipRRect(
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(20),
+            topRight: const Radius.circular(20),
+            bottomLeft: Radius.circular(isMe ? 20 : 6),
+            bottomRight: Radius.circular(isMe ? 6 : 20),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isMe
+                    ? [
+                        const Color(0xFFFF6B35).withValues(alpha: 0.8),
+                        const Color.fromARGB(255, 255, 125, 44)
+                            .withValues(alpha: 0.7),
+                      ]
+                    : [
+                        Colors.white.withValues(alpha: 0.9),
+                        Colors.white.withValues(alpha: 0.8),
+                      ],
+              ),
+              borderRadius: BorderRadius.only(
+                topLeft: const Radius.circular(20),
+                topRight: const Radius.circular(20),
+                bottomLeft: Radius.circular(isMe ? 20 : 6),
+                bottomRight: Radius.circular(isMe ? 6 : 20),
+              ),
+              border: Border.all(
+                color: isMe
+                    ? const Color(0xFFFF6B35).withValues(alpha: 0.2)
+                    : Colors.orange.shade300,
+                width: 1,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (!isMe) ...[
+                    Text(
+                      userName,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.orange.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                  Text(
+                    text,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isMe ? Colors.white : const Color(0xFF333333),
+                      height: 1.4,
+                      fontWeight: isMe ? FontWeight.w400 : FontWeight.normal,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Text(
+                      time,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isMe ? Colors.white : Colors.grey[600],
+                        fontWeight: isMe ? FontWeight.w500 : FontWeight.normal,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassmorphicDateBubble(String date) {
+    return Container(
+      alignment: Alignment.center,
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: const Color(0xFFFF6B35).withValues(alpha: 0.7),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              date,
+              style: TextStyle(
+                color: Colors.grey[700],
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildGroupCreatedBubble({
     required String createdBy,
     required String groupCreatedDate,
@@ -358,91 +670,269 @@ class _GroupChatScreenState extends State<GroupChatScreen>
   }) {
     final others = members.where((m) => m != createdBy).toList();
 
+    return Container(
+      alignment: Alignment.center,
+      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color(0xFFFF6B35).withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFFFF6B35).withValues(alpha: 0.2),
+                        const Color(0xFFFF8C42).withValues(alpha: 0.2),
+                      ],
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.group,
+                    size: 28,
+                    color: Color(0xFFFF6B35),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '$createdBy created this group',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: Color(0xFF333333),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Group · ${members.length + 1} members',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                ),
+                if (others.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: others
+                        .map((m) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF6B35)
+                                    .withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: const Color(0xFFFF6B35)
+                                      .withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: Text(
+                                m,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.orange.shade700,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ))
+                        .toList(),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernInputSection() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: const Color(0xFFFF6B35).withValues(alpha: 0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 100),
+                      child: TextField(
+                        controller: messageController,
+                        focusNode: _messageFocusNode,
+                        maxLines: null,
+                        textInputAction: TextInputAction.newline,
+                        style: const TextStyle(
+                          color: Color(0xFF333333),
+                          fontSize: 16,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Message to ${widget.groupName}...',
+                          hintStyle: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 16,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _buildSendButton(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSendButton() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.all(5),
+      child: GestureDetector(
+        onTap: sendGroupMessage,
+        child: Container(
+          width: 45,
+          height: 45,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF6B35).withValues(alpha: 0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.send_rounded,
+            color: Colors.white,
+            size: 25,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(14),
+          color: Colors.white.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(20),
+          border:
+              Border.all(color: const Color(0xFFFF6B35).withValues(alpha: 0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.group, size: 32, color: Colors.grey),
-            const SizedBox(height: 8),
-            Text(
-              '$createdBy created this group',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            const SizedBox(
+              width: 40,
+              height: 40,
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6B35)),
+                strokeWidth: 3,
+              ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 16),
             Text(
-              'Group · ${members.length} members',
-              style: const TextStyle(color: Colors.black54),
+              'Loading group chat...',
+              style: TextStyle(
+                color: Colors.grey[700],
+                fontSize: 16,
+              ),
             ),
-            const SizedBox(height: 10),
-            if (others.isNotEmpty)
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: others
-                    .map((m) => Chip(
-                          label: Text(m, style: const TextStyle(fontSize: 12)),
-                          backgroundColor: Colors.orange.shade50,
-                        ))
-                    .toList(),
-              )
           ],
         ),
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: RawMaterialButton(
-          splashColor: Colors.transparent,
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    DisplayGroupMembers(groupId: widget.groupId),
-              ),
-            );
-          },
-          child: Row(
-            children: [
-              if (widget.groupImageUrl != null)
-                CircleAvatar(
-                  backgroundImage: NetworkImage(widget.groupImageUrl!),
-                )
-              else
-                const CircleAvatar(
-                  child: Icon(Icons.group),
-                ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  widget.groupName,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 20),
-                ),
-              ),
-            ],
-          ),
-        ),
-        backgroundColor: Colors.orange.shade100,
+  Widget _buildErrorState() {
+    return Center(
+      child: Text(
+        'Something went wrong. Please try again later.',
+        style: TextStyle(color: Colors.grey[800]),
       ),
-      body: Column(
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(child: buildMessageList()),
-          ChatInputField(
-            focusNode: _messageFocusNode,
-            controller: messageController,
-            onSend: sendGroupMessage,
+          const Icon(
+            Icons.group_outlined,
+            size: 55,
+            color: Color(0xFFFF6B35),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Welcome to ${widget.groupName}!',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Start the group conversation',
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
         ],
       ),

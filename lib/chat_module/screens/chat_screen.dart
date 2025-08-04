@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,9 +14,11 @@ class ChatScreen extends StatefulWidget {
     super.key,
     required this.receiversName,
     required this.receiversID,
+    required this.imageUrl,
   });
   final String receiversName;
   final String receiversID;
+  final String imageUrl;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -91,6 +94,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: _buildProfileSection(),
+        actions: const [],
       ),
       body: SafeArea(
         child: Container(
@@ -150,11 +154,22 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               ], // Orange gradient
             ),
           ),
-          child: const Icon(
-            Icons.person,
-            color: Colors.white,
-            size: 24,
-          ),
+          child: (widget.imageUrl.isNotEmpty)
+              ? CachedNetworkImage(
+                  imageUrl: widget.imageUrl,
+                  imageBuilder: (context, imageProvider) => CircleAvatar(
+                    radius: 23,
+                    backgroundImage: imageProvider,
+                  ),
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                  errorWidget: (context, url, error) => const Icon(Icons.error),
+                )
+              : const Icon(
+                  Icons.person,
+                  color: Colors.white,
+                  size: 24,
+                ),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -298,115 +313,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     }
   }
 
-  Widget buildMessageList() {
-    String? lastNotifiedMessageId;
-    String senderID = availableEmailInDB ?? '';
-
-    return StreamBuilder(
-      stream: chatServices.getMessages(senderID, widget.receiversID),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return _buildErrorState();
-        }
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildLoadingState();
-        }
-
-        final docs = snapshot.data!.docs;
-        final List<Widget> messageWidgets = [];
-        String? lastDateLabel;
-
-        if (docs.isNotEmpty) {
-          final latestDoc = docs.last;
-          final latest = latestDoc.data() as Map<String, dynamic>;
-          final latestId = latestDoc.id;
-          if (latest['senderID'] != availableEmailInDB &&
-              lastNotifiedMessageId != latestId) {
-            lastNotifiedMessageId = latestId;
-          }
-        }
-
-        for (var doc in docs) {
-          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          DateTime messageDate = (data['timestamp'] as Timestamp).toDate();
-          String currentDateLabel = getDateLabel(messageDate);
-
-          if (lastDateLabel != currentDateLabel) {
-            messageWidgets.add(_buildGlassmorphicDateBubble(currentDateLabel));
-            lastDateLabel = currentDateLabel;
-          }
-
-          messageWidgets.add(buildMessageItem(doc));
-        }
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          scrollToBottom();
-        });
-
-        if (messageWidgets.isEmpty) {
-          return _buildEmptyState();
-        }
-
-        return ListView.builder(
-          controller: scrollController,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-          itemCount: messageWidgets.length,
-          itemBuilder: (context, index) => messageWidgets[index],
-        );
-      },
-    );
-  }
-
-  Widget _buildErrorState() {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(32),
-        margin: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(20),
-          border:
-              Border.all(color: const Color(0xFFFF6B35).withValues(alpha: 0.2)),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 64,
-              color: Colors.grey[600],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Something went wrong',
-              style: TextStyle(
-                color: Colors.grey[800],
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Please try again later',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildLoadingState() {
     return Center(
       child: Container(
@@ -447,220 +353,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         ),
       ),
     );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(32),
-        margin: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(20),
-          border:
-              Border.all(color: const Color(0xFFFF6B35).withValues(alpha: 0.2)),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.chat_bubble_outline_rounded,
-                size: 48,
-                color: Color(0xFFFF6B35),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Start the conversation',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[800],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Send your first message to ${widget.receiversName}',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlassmorphicDateBubble(String date) {
-    return Container(
-      alignment: Alignment.center,
-      margin: const EdgeInsets.symmetric(vertical: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(15),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.8),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: const Color(0xFFFF6B35).withValues(alpha: 0.7),
-                width: 1,
-              ),
-            ),
-            child: Text(
-              date,
-              style: TextStyle(
-                color: Colors.grey[700],
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildMessageItem(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    String formattedTime = formatTimestamp(data['timestamp']);
-    bool isMe = data['senderID'] == availableEmailInDB;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
-        ),
-        child: _buildGlassmorphicMessageBubble(
-          text: data['message'] ?? 'no message',
-          time: formattedTime,
-          isMe: isMe,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlassmorphicMessageBubble({
-    required String text,
-    required String time,
-    required bool isMe,
-  }) {
-    return Hero(
-      tag: '${text}_$time',
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 2),
-        child: ClipRRect(
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(20),
-            topRight: const Radius.circular(20),
-            bottomLeft: Radius.circular(isMe ? 20 : 2),
-            bottomRight: Radius.circular(isMe ? 2 : 20),
-          ),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isMe
-                      ? [
-                          const Color(0xFFFF6B35).withValues(
-                              alpha: 0.8), // Orange for sent messages
-                          const Color.fromARGB(255, 255, 125, 44)
-                              .withValues(alpha: 0.7),
-                        ]
-                      : [
-                          Colors.white.withValues(
-                              alpha: 0.9), // White for received messages
-                          Colors.white.withValues(alpha: 0.8),
-                        ],
-                ),
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(20),
-                  topRight: const Radius.circular(20),
-                  bottomLeft: Radius.circular(isMe ? 20 : 6),
-                  bottomRight: Radius.circular(isMe ? 6 : 20),
-                ),
-                border: Border.all(
-                  color: isMe
-                      ? const Color(0xFFFF6B35).withValues(alpha: 0.2)
-                      : Colors.orange.shade300,
-                  width: 1,
-                ),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      text,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: isMe ? Colors.white : const Color(0xFF333333),
-                        height: 1.4,
-                        fontWeight: isMe ? FontWeight.w500 : FontWeight.normal,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          time,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isMe ? Colors.white : Colors.grey[600],
-                            fontWeight:
-                                isMe ? FontWeight.w500 : FontWeight.normal,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  String getDateLabel(DateTime messageDate) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-    final messageDay =
-        DateTime(messageDate.year, messageDate.month, messageDate.day);
-
-    if (messageDay == today) {
-      return 'Today';
-    } else if (messageDay == yesterday) {
-      return 'Yesterday';
-    } else {
-      return DateFormat('d MMMM yyyy').format(messageDate);
-    }
   }
 
   void fetchUserEmailFromDB() async {
@@ -780,10 +472,10 @@ class MessageListView extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(
-                  color: const Color(0xFFFF6B35).withOpacity(0.7),
+                  color: const Color(0xFFFF6B35).withValues(alpha: 0.7),
                   width: 1,
                 ),
               ),
@@ -801,7 +493,10 @@ class MessageListView extends StatelessWidget {
       );
 
   Widget buildMessageItem(
-      BuildContext context, DocumentSnapshot doc, String senderID) {
+    BuildContext context,
+    DocumentSnapshot doc,
+    String senderID,
+  ) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     String formattedTime = formatTimestamp(data['timestamp']);
     bool isMe = data['senderID'] == senderID;
@@ -827,40 +522,39 @@ class MessageListView extends StatelessWidget {
     required String time,
     required bool isMe,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 2),
-      child: ClipRRect(
-        borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(20),
-          topRight: const Radius.circular(20),
-          bottomLeft: Radius.circular(isMe ? 20 : 6),
-          bottomRight: Radius.circular(isMe ? 6 : 20),
-        ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+    return IntrinsicWidth(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        child: ClipRRect(
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(20),
+            topRight: const Radius.circular(20),
+            bottomLeft: Radius.circular(isMe ? 20 : 6),
+            bottomRight: Radius.circular(isMe ? 6 : 20),
+          ),
           child: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isMe
                     ? [
-                        const Color(0xFFFF6B35).withOpacity(0.8),
+                        const Color(0xFFFF6B35).withValues(alpha: 0.8),
                         const Color.fromARGB(255, 255, 125, 44)
-                            .withOpacity(0.7),
+                            .withValues(alpha: 0.7),
                       ]
                     : [
-                        Colors.white.withOpacity(0.9),
-                        Colors.white.withOpacity(0.8),
+                        Colors.white.withValues(alpha: 0.9),
+                        Colors.white.withValues(alpha: 0.8),
                       ],
               ),
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(20),
                 topRight: const Radius.circular(20),
-                bottomLeft: Radius.circular(isMe ? 20 : 6),
-                bottomRight: Radius.circular(isMe ? 6 : 20),
+                bottomLeft: Radius.circular(isMe ? 20 : 2),
+                bottomRight: Radius.circular(isMe ? 2 : 20),
               ),
               border: Border.all(
                 color: isMe
-                    ? const Color(0xFFFF6B35).withOpacity(0.2)
+                    ? const Color(0xFFFF6B35).withValues(alpha: 0.2)
                     : Colors.orange.shade300,
                 width: 1,
               ),
@@ -872,11 +566,13 @@ class MessageListView extends StatelessWidget {
                 children: [
                   Text(
                     text,
+                    softWrap: true,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 16,
                       color: isMe ? Colors.white : const Color(0xFF333333),
                       height: 1.4,
-                      fontWeight: isMe ? FontWeight.w500 : FontWeight.normal,
+                      fontWeight: isMe ? FontWeight.w400 : FontWeight.normal,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -884,6 +580,8 @@ class MessageListView extends StatelessWidget {
                     alignment: Alignment.bottomRight,
                     child: Text(
                       time,
+                      softWrap: true,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12,
                         color: isMe ? Colors.white : Colors.grey[600],

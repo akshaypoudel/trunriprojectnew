@@ -177,335 +177,337 @@ class _PropertyScreenState extends State<PropertyScreen> {
           child: const Icon(Icons.arrow_back_ios),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          margin: const EdgeInsets.only(left: 20, right: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 30),
-              const Text(
-                'Is there a lift?',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Radio<bool>(
-                    value: true,
-                    activeColor: const Color(0xffFF730A),
-                    groupValue: isLiftAvailable,
-                    onChanged: (value) {
-                      setState(() {
-                        isLiftAvailable = value!;
-                      });
-                    },
-                  ),
-                  const Text('Yes'),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Radio<bool>(
-                    value: false,
-                    activeColor: const Color(0xffFF730A),
-                    groupValue: isLiftAvailable,
-                    onChanged: (value) {
-                      setState(() {
-                        isLiftAvailable = value!;
-                      });
-                    },
-                  ),
-                  const Text('No'),
-                ],
-              ),
-              if (showError && !isLiftAvailable)
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Container(
+            margin: const EdgeInsets.only(left: 20, right: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 30),
                 const Text(
-                  'Please specify if there is a lift',
-                  style: TextStyle(color: Colors.red),
+                  'Is there a lift?',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
                 ),
-              const SizedBox(height: 10),
-              const Text(
-                'How many bedrooms are available?',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              const SizedBox(height: 10),
-              _buildCounterRow(
-                  'Single Bedrooms', 'singleBadRoom', singleBadRoom),
-              const SizedBox(height: 5),
-              Divider(thickness: 1, color: Colors.grey.shade300),
-              const SizedBox(height: 5),
-              _buildCounterRow(
-                  'Double Bedrooms', 'doubleBadRoom', doubleBadRoom),
-              if (showError && singleBadRoom == 0 && doubleBadRoom == 0)
-                const Text(
-                  'Please add at least one bedroom',
-                  style: TextStyle(color: Colors.red),
-                ),
-              const SizedBox(height: 20),
-              const Text(
-                'How many bathrooms are available?',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              const SizedBox(height: 10),
-              _buildCounterRow('Bathrooms', 'bathrooms', bathrooms),
-              const SizedBox(height: 5),
-              Divider(thickness: 1, color: Colors.grey.shade300),
-              const SizedBox(height: 5),
-              _buildCounterRow('Toilets', 'toilets', toilets),
-              if (showError && bathrooms == 0 && toilets == 0)
-                const Text(
-                  'Please add at least one bathroom or toilet',
-                  style: TextStyle(color: Colors.red),
-                ),
-              const SizedBox(height: 20),
-              const Text(
-                'Who is currently living in the property?',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              const SizedBox(height: 10),
-              _buildCounterRow('Female', 'livingFemale', livingFemale),
-              const SizedBox(height: 5),
-              Divider(thickness: 1, color: Colors.grey.shade300),
-              const SizedBox(height: 5),
-              _buildCounterRow('Male', 'livingMale', livingMale),
-              const SizedBox(height: 5),
-              Divider(thickness: 1, color: Colors.grey.shade300),
-              const SizedBox(height: 5),
-              Row(
-                children: [
-                  Checkbox(
-                    value: livingNonBinary,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        livingNonBinary = value!;
-                      });
-                    },
-                  ),
-                  const Text('Non-Binary'),
-                ],
-              ),
-              if (showError &&
-                  livingFemale == 0 &&
-                  livingMale == 0 &&
-                  !livingNonBinary)
-                const Text(
-                  'Please add at least one occupant',
-                  style: TextStyle(color: Colors.red),
-                ),
-              const SizedBox(height: 20),
-              const Text(
-                'Is there a bed in the room?',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Radio<bool>(
-                    value: true,
-                    activeColor: const Color(0xffFF730A),
-                    groupValue: isBedInRoom,
-                    onChanged: (value) {
-                      setState(() {
-                        isBedInRoom = value!;
-                      });
-                    },
-                  ),
-                  const Text('Yes'),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Radio<bool>(
-                    value: false,
-                    activeColor: const Color(0xffFF730A),
-                    groupValue: isBedInRoom,
-                    onChanged: (value) {
-                      setState(() {
-                        isBedInRoom = value!;
-                      });
-                    },
-                  ),
-                  const Text('No'),
-                ],
-              ),
-              if (showError && !isBedInRoom)
-                const Text(
-                  'Please specify if there is a bed in the room',
-                  style: TextStyle(color: Colors.red),
-                ),
-              const SizedBox(height: 20),
-              const Text(
-                'Room amenities',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                children: [
-                  for (String amenity in [
-                    'Wardrobe',
-                    'Air conditioning',
-                    'Heating controls',
-                    'WI-FI',
-                    'Curtains',
-                    'Shelves'
-                  ])
-                    GestureDetector(
-                      onTap: () {
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Radio<bool>(
+                      value: true,
+                      activeColor: const Color(0xffFF730A),
+                      groupValue: isLiftAvailable,
+                      onChanged: (value) {
                         setState(() {
-                          if (roomAmenities.contains(amenity)) {
-                            roomAmenities.remove(amenity);
-                          } else {
-                            roomAmenities.add(amenity);
-                          }
+                          isLiftAvailable = value!;
                         });
                       },
-                      child: Container(
-                        margin: const EdgeInsets.all(5),
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: roomAmenities.contains(amenity)
-                              ? const Color(0xffFF730A)
-                              : Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Text(amenity),
-                      ),
                     ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Property amenities',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                children: [
-                  for (String amenity in [
-                    'Gym',
-                    'Garden',
-                    'Laundry facilities',
-                    'Swimming pool',
-                    'Garage',
-                    'Parking space',
-                    'Television',
-                    'Iron',
-                    'Refrigerator',
-                    'Microwave',
-                    'Dishwasher',
-                    'Bath tub',
-                    'Grill',
-                    'Fire pit',
-                    'Smoke alarm',
-                    'Security system',
-                    'Balcony',
-                    'Deck',
-                    'Sound system',
-                  ])
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          if (propertyAmenities.contains(amenity)) {
-                            propertyAmenities.remove(amenity);
-                          } else {
-                            propertyAmenities.add(amenity);
-                          }
-                        });
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.all(5),
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: propertyAmenities.contains(amenity)
-                              ? const Color(0xffFF730A)
-                              : Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Text(amenity),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Are there any house rules',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                children: [
-                  for (String amenity in [
-                    'No smoking',
-                    'No loud music after 9pm',
-                    'No drinking',
-                    'No pets',
-                    'No guests',
-                    'No parties'
-                  ])
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          if (homeRules.contains(amenity)) {
-                            homeRules.remove(amenity);
-                          } else {
-                            homeRules.add(amenity);
-                          }
-                        });
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.all(5),
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: homeRules.contains(amenity)
-                              ? const Color(0xffFF730A)
-                              : Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Text(amenity),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 30),
-              if (showError &&
-                  (roomAmenities.isEmpty ||
-                      propertyAmenities.isEmpty ||
-                      homeRules.isEmpty))
-                const Text(
-                  'Please fill all the fields before continuing',
-                  style: TextStyle(color: Colors.red),
+                    const Text('Yes'),
+                  ],
                 ),
-              const SizedBox(height: 30),
-            ],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Radio<bool>(
+                      value: false,
+                      activeColor: const Color(0xffFF730A),
+                      groupValue: isLiftAvailable,
+                      onChanged: (value) {
+                        setState(() {
+                          isLiftAvailable = value!;
+                        });
+                      },
+                    ),
+                    const Text('No'),
+                  ],
+                ),
+                if (showError && !isLiftAvailable)
+                  const Text(
+                    'Please specify if there is a lift',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                const SizedBox(height: 10),
+                const Text(
+                  'How many bedrooms are available?',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
+                ),
+                const SizedBox(height: 10),
+                _buildCounterRow(
+                    'Single Bedrooms', 'singleBadRoom', singleBadRoom),
+                const SizedBox(height: 5),
+                Divider(thickness: 1, color: Colors.grey.shade300),
+                const SizedBox(height: 5),
+                _buildCounterRow(
+                    'Double Bedrooms', 'doubleBadRoom', doubleBadRoom),
+                if (showError && singleBadRoom == 0 && doubleBadRoom == 0)
+                  const Text(
+                    'Please add at least one bedroom',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                const SizedBox(height: 20),
+                const Text(
+                  'How many bathrooms are available?',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
+                ),
+                const SizedBox(height: 10),
+                _buildCounterRow('Bathrooms', 'bathrooms', bathrooms),
+                const SizedBox(height: 5),
+                Divider(thickness: 1, color: Colors.grey.shade300),
+                const SizedBox(height: 5),
+                _buildCounterRow('Toilets', 'toilets', toilets),
+                if (showError && bathrooms == 0 && toilets == 0)
+                  const Text(
+                    'Please add at least one bathroom or toilet',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Who is currently living in the property?',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
+                ),
+                const SizedBox(height: 10),
+                _buildCounterRow('Female', 'livingFemale', livingFemale),
+                const SizedBox(height: 5),
+                Divider(thickness: 1, color: Colors.grey.shade300),
+                const SizedBox(height: 5),
+                _buildCounterRow('Male', 'livingMale', livingMale),
+                const SizedBox(height: 5),
+                Divider(thickness: 1, color: Colors.grey.shade300),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: livingNonBinary,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          livingNonBinary = value!;
+                        });
+                      },
+                    ),
+                    const Text('Non-Binary'),
+                  ],
+                ),
+                if (showError &&
+                    livingFemale == 0 &&
+                    livingMale == 0 &&
+                    !livingNonBinary)
+                  const Text(
+                    'Please add at least one occupant',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Is there a bed in the room?',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Radio<bool>(
+                      value: true,
+                      activeColor: const Color(0xffFF730A),
+                      groupValue: isBedInRoom,
+                      onChanged: (value) {
+                        setState(() {
+                          isBedInRoom = value!;
+                        });
+                      },
+                    ),
+                    const Text('Yes'),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Radio<bool>(
+                      value: false,
+                      activeColor: const Color(0xffFF730A),
+                      groupValue: isBedInRoom,
+                      onChanged: (value) {
+                        setState(() {
+                          isBedInRoom = value!;
+                        });
+                      },
+                    ),
+                    const Text('No'),
+                  ],
+                ),
+                if (showError && !isBedInRoom)
+                  const Text(
+                    'Please specify if there is a bed in the room',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Room amenities',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  children: [
+                    for (String amenity in [
+                      'Wardrobe',
+                      'Air conditioning',
+                      'Heating controls',
+                      'WI-FI',
+                      'Curtains',
+                      'Shelves'
+                    ])
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (roomAmenities.contains(amenity)) {
+                              roomAmenities.remove(amenity);
+                            } else {
+                              roomAmenities.add(amenity);
+                            }
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(5),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: roomAmenities.contains(amenity)
+                                ? const Color(0xffFF730A)
+                                : Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Text(amenity),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Property amenities',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  children: [
+                    for (String amenity in [
+                      'Gym',
+                      'Garden',
+                      'Laundry facilities',
+                      'Swimming pool',
+                      'Garage',
+                      'Parking space',
+                      'Television',
+                      'Iron',
+                      'Refrigerator',
+                      'Microwave',
+                      'Dishwasher',
+                      'Bath tub',
+                      'Grill',
+                      'Fire pit',
+                      'Smoke alarm',
+                      'Security system',
+                      'Balcony',
+                      'Deck',
+                      'Sound system',
+                    ])
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (propertyAmenities.contains(amenity)) {
+                              propertyAmenities.remove(amenity);
+                            } else {
+                              propertyAmenities.add(amenity);
+                            }
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(5),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: propertyAmenities.contains(amenity)
+                                ? const Color(0xffFF730A)
+                                : Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Text(amenity),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Are there any house rules',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  children: [
+                    for (String amenity in [
+                      'No smoking',
+                      'No loud music after 9pm',
+                      'No drinking',
+                      'No pets',
+                      'No guests',
+                      'No parties'
+                    ])
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (homeRules.contains(amenity)) {
+                              homeRules.remove(amenity);
+                            } else {
+                              homeRules.add(amenity);
+                            }
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(5),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: homeRules.contains(amenity)
+                                ? const Color(0xffFF730A)
+                                : Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Text(amenity),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 30),
+                if (showError &&
+                    (roomAmenities.isEmpty ||
+                        propertyAmenities.isEmpty ||
+                        homeRules.isEmpty))
+                  const Text(
+                    'Please fill all the fields before continuing',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                const SizedBox(height: 30),
+              ],
+            ),
           ),
         ),
       ),

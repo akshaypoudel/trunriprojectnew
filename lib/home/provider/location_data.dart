@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'dart:developer';
-import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:trunriproject/widgets/helper.dart';
 
@@ -58,6 +59,7 @@ class LocationData extends ChangeNotifier {
 
   /////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////
   String _nativeState = '';
   String _nativeCity = '';
   String _suburb = '';
@@ -181,6 +183,7 @@ class LocationData extends ChangeNotifier {
         final zip = addressSnapshot['zipcode'] ?? '';
         final suburb = addressSnapshot['suburb'] ?? '';
         final fullAddress = '$suburb, $city, $state, $zip, $country';
+        _zipcode = zip;
         _usersAddress = fullAddress;
 
         final lat = addressSnapshot['latitude'] ?? '';
@@ -202,6 +205,7 @@ class LocationData extends ChangeNotifier {
         }
 
         _shortFormAddress = '📍 $city, ${getStateShortForm(state)}';
+
         notifyListeners();
       } else {
         log('addressSnapshot is null or not a Map');
@@ -210,62 +214,6 @@ class LocationData extends ChangeNotifier {
       log('Document does not exist');
     }
   }
-
-  // Future<void> fetchUserAddressAndLocation1(
-  //     {required bool isInAustralia}) async {
-  //   dynamic addressSnapshot1;
-  //   if (isInAustralia) {
-  //     addressSnapshot1 = await firestore
-  //         .collection('currentLocation')
-  //         .doc(auth.currentUser!.uid)
-  //         .get();
-  //   } else {
-  //     addressSnapshot1 = await firestore
-  //         .collection('nativeAddress')
-  //         .doc(auth.currentUser!.uid)
-  //         .get();
-  //   }
-  //   if (addressSnapshot1.exists) {
-  //     Map<String, dynamic>? addressSnapshot;
-  //     if (isInAustralia) {
-  //       addressSnapshot = addressSnapshot1.data() as Map<String, dynamic>?;
-  //     } else {
-  //       addressSnapshot =
-  //           (addressSnapshot1.data() as Map<String, dynamic>?)?['nativeAddress']
-  //               as Map<String, dynamic>?;
-  //     }
-  //     // final street = addressSnapshot.data()['Street'] ?? '';
-  //     final city = addressSnapshot?['city'] ?? '';
-  //     _nativeCity = city;
-  //     // final town = addressSnapshot.data()['town'] ?? '';
-  //     final state = addressSnapshot?['state'] ?? '';
-  //     _nativeState = state;
-  //     final country = addressSnapshot?['country'] ?? '';
-  //     final zip = addressSnapshot?['zipcode'] ?? '';
-  //     final suburb = addressSnapshot?['suburb'] ?? '';
-  //     final fullAddress = '$suburb, $city, $state, $zip, $country';
-  //     _usersAddress = fullAddress;
-  //     final lat = addressSnapshot?['latitude'] ?? '';
-  //     final long = addressSnapshot?['longitude'] ?? '';
-  //     if (lat is double && long is double) {
-  //       _latitude = lat;
-  //       _longitude = long;
-  //     } else if (lat is String && long is String) {
-  //       _latitude = lat.toNum.toDouble();
-  //       _longitude = long.toNum.toDouble();
-  //     }
-  //     final radius = addressSnapshot?['radiusFilter'] ?? 50;
-  //     if (radius is int) {
-  //       _radiusFilter = radius;
-  //     } else if (radius is double) {
-  //       _radiusFilter = radius.toInt();
-  //     }
-  //     _shortFormAddress = '📍 $city, ${getStateShortForm(state)}';
-  //     notifyListeners();
-  //   } else {
-  //     log('currentLocation doesnt exists');
-  //   }
-  // }
 
   String getStateShortForm(String stateName) {
     List<String> words = stateName.trim().split(RegExp(r'\s+'));

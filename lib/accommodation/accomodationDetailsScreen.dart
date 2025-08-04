@@ -82,178 +82,183 @@ class _AccommodationDetailsScreenState
         title: const Text("Accommodation Details"),
         foregroundColor: Colors.black,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // 🖼 Image slider
-                  if (images.isNotEmpty)
-                    Column(
-                      children: [
-                        SizedBox(
-                          height: 220,
-                          child: PageView.builder(
-                            controller: _pageController,
-                            itemCount: images.length,
-                            onPageChanged: (index) =>
-                                setState(() => currentPageIndex = index),
-                            itemBuilder: (_, index) => ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Image.network(images[index],
-                                  fit: BoxFit.cover, width: double.infinity),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // 🖼 Image slider
+                    if (images.isNotEmpty)
+                      Column(
+                        children: [
+                          SizedBox(
+                            height: 220,
+                            child: PageView.builder(
+                              controller: _pageController,
+                              itemCount: images.length,
+                              onPageChanged: (index) =>
+                                  setState(() => currentPageIndex = index),
+                              itemBuilder: (_, index) => ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.network(images[index],
+                                    fit: BoxFit.cover, width: double.infinity),
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        SmoothPageIndicator(
-                          controller: _pageController,
-                          count: images.length,
-                          effect: ExpandingDotsEffect(
-                            activeDotColor: Colors.orange,
-                            dotColor: Colors.grey.shade400,
-                            dotHeight: 8,
-                            dotWidth: 8,
+                          const SizedBox(height: 8),
+                          SmoothPageIndicator(
+                            controller: _pageController,
+                            count: images.length,
+                            effect: ExpandingDotsEffect(
+                              activeDotColor: Colors.orange,
+                              dotColor: Colors.grey.shade400,
+                              dotHeight: 8,
+                              dotWidth: 8,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
 
-                  // 🏠 Details
-                  buildInfoCard(
-                      "Title", data['Give your listing a title'] ?? 'No Title'),
-                  buildInfoCard("Description",
-                      data['Add a description'] ?? 'No Description'),
-                  buildInfoCard("Address", data['fullAddress'] ?? ''),
-                  buildInfoCard("City", data['city'] ?? ''),
-                  buildInfoCard("State", data['state'] ?? ''),
-                  buildInfoCard("Room Type", data['roomType'] ?? ''),
-                  buildInfoCard("Price Range",
-                      "${data['currentRangeValues']?['start'] ?? 0} - ${data['currentRangeValues']?['end'] ?? 0}"),
+                    // 🏠 Details
+                    buildInfoCard("Title",
+                        data['Give your listing a title'] ?? 'No Title'),
+                    buildInfoCard("Description",
+                        data['Add a description'] ?? 'No Description'),
+                    buildInfoCard("Address", data['fullAddress'] ?? ''),
+                    buildInfoCard("City", data['city'] ?? ''),
+                    buildInfoCard("State", data['state'] ?? ''),
+                    buildInfoCard("Room Type", data['roomType'] ?? ''),
+                    buildInfoCard("Price Range",
+                        "${data['currentRangeValues']?['start'] ?? 0} - ${data['currentRangeValues']?['end'] ?? 0}"),
 
-                  // Room Info
-                  buildInfoCard("Bathrooms", "${data['bathrooms'] ?? 0}"),
-                  buildInfoCard("Toilets", "${data['toilets'] ?? 0}"),
-                  buildInfoCard(
-                      "Single Bed Rooms", "${data['singleBadRoom'] ?? 0}"),
-                  buildInfoCard(
-                      "Double Bed Rooms", "${data['doubleBadRoom'] ?? 0}"),
-
-                  // Preferences
-                  buildBoolInfo("For Couples", data['isCouples'] ?? false),
-                  buildBoolInfo("For Students", data['isStudents'] ?? false),
-                  buildBoolInfo("For Employees", data['isEmployees'] ?? false),
-                  buildBoolInfo("For Families", data['isFamilies'] ?? false),
-                  buildBoolInfo(
-                      "For Individuals", data['isIndividuals'] ?? false),
-
-                  // Services
-                  buildBoolInfo(
-                      "Cleaning Service", data['cleaningService'] ?? false),
-                  buildBoolInfo(
-                      "Lift Available", data['isLiftAvailable'] ?? false),
-                  buildBoolInfo("Gym", data['gym'] ?? false),
-                  buildBoolInfo("Pool", data['poolAccess'] ?? false),
-                  buildBoolInfo("Lawn Care", data['lawnCare'] ?? false),
-                  buildBoolInfo(
-                      "Maintenance", data['maintenanceService'] ?? false),
-
-                  // Availability
-                  if (data['selectedAvailabilityDate'] != null)
-                    buildInfoCard("Available From",
-                        data['selectedAvailabilityDate'].toDate().toString()),
-                  buildInfoCard("Minimum Stay", data['selectedMinStay'] ?? '-'),
-                  buildInfoCard("Maximum Stay", data['selectedMaxStay'] ?? '-'),
-
-                  // Amenities
-                  if (data['roomAmenities'] != null)
-                    buildInfoCard("Room Amenities",
-                        (data['roomAmenities'] as List).join(", ")),
-                  if (data['propertyAmenities'] != null)
-                    buildInfoCard("Property Amenities",
-                        (data['propertyAmenities'] as List).join(", ")),
-
-                  // Rules
-                  if (data['homeRules'] != null)
+                    // Room Info
+                    buildInfoCard("Bathrooms", "${data['bathrooms'] ?? 0}"),
+                    buildInfoCard("Toilets", "${data['toilets'] ?? 0}"),
                     buildInfoCard(
-                        "Home Rules", (data['homeRules'] as List).join(", ")),
+                        "Single Bed Rooms", "${data['singleBadRoom'] ?? 0}"),
+                    buildInfoCard(
+                        "Double Bed Rooms", "${data['doubleBadRoom'] ?? 0}"),
 
-                  const SizedBox(height: 16),
-                ],
+                    // Preferences
+                    buildBoolInfo("For Couples", data['isCouples'] ?? false),
+                    buildBoolInfo("For Students", data['isStudents'] ?? false),
+                    buildBoolInfo(
+                        "For Employees", data['isEmployees'] ?? false),
+                    buildBoolInfo("For Families", data['isFamilies'] ?? false),
+                    buildBoolInfo(
+                        "For Individuals", data['isIndividuals'] ?? false),
+
+                    // Services
+                    buildBoolInfo(
+                        "Cleaning Service", data['cleaningService'] ?? false),
+                    buildBoolInfo(
+                        "Lift Available", data['isLiftAvailable'] ?? false),
+                    buildBoolInfo("Gym", data['gym'] ?? false),
+                    buildBoolInfo("Pool", data['poolAccess'] ?? false),
+                    buildBoolInfo("Lawn Care", data['lawnCare'] ?? false),
+                    buildBoolInfo(
+                        "Maintenance", data['maintenanceService'] ?? false),
+
+                    // Availability
+                    if (data['selectedAvailabilityDate'] != null)
+                      buildInfoCard("Available From",
+                          data['selectedAvailabilityDate'].toDate().toString()),
+                    buildInfoCard(
+                        "Minimum Stay", data['selectedMinStay'] ?? '-'),
+                    buildInfoCard(
+                        "Maximum Stay", data['selectedMaxStay'] ?? '-'),
+
+                    // Amenities
+                    if (data['roomAmenities'] != null)
+                      buildInfoCard("Room Amenities",
+                          (data['roomAmenities'] as List).join(", ")),
+                    if (data['propertyAmenities'] != null)
+                      buildInfoCard("Property Amenities",
+                          (data['propertyAmenities'] as List).join(", ")),
+
+                    // Rules
+                    if (data['homeRules'] != null)
+                      buildInfoCard(
+                          "Home Rules", (data['homeRules'] as List).join(", ")),
+
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
-          ),
-          (posterId != AuthServices().getCurrentUser()!.uid)
-              ? Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+            (posterId != AuthServices().getCurrentUser()!.uid)
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        onPressed: () {
+                          Get.to(
+                            () => ContextChatScreen(
+                              postId: postId,
+                              postType: postType,
+                              posterId: posterId,
+                              seekerId: seekerId,
+                              postTitle: postTitle,
+                              city: postCity,
+                              state: postState,
+                              posterName: posterName,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.message_outlined),
+                        label: const Text(
+                          "Inquire Now",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                       ),
-                      onPressed: () {
-                        Get.to(
-                          () => ContextChatScreen(
-                            postId: postId,
-                            postType: postType,
-                            posterId: posterId,
-                            seekerId: seekerId,
-                            postTitle: postTitle,
-                            city: postCity,
-                            state: postState,
-                            posterName: posterName,
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
                           ),
-                        );
-                      },
-                      icon: const Icon(Icons.message_outlined),
-                      label: const Text(
-                        "Inquire Now",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        onPressed: () {
+                          Get.to(
+                            () => const MyBottomNavBar(
+                              index: 2,
+                              indexForChat: 0,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.message_outlined),
+                        label: const Text(
+                          "See Who Inquired",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
                       ),
                     ),
                   ),
-                )
-              : Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      onPressed: () {
-                        Get.to(
-                          () => const MyBottomNavBar(
-                            index: 2,
-                            indexForChat: 0,
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.message_outlined),
-                      label: const Text(
-                        "See Who Inquired",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                    ),
-                  ),
-                ),
-        ],
+          ],
+        ),
       ),
     );
   }

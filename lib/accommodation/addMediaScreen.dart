@@ -118,81 +118,83 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
             },
             child: const Icon(Icons.arrow_back_ios)),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          margin: const EdgeInsets.only(left: 15, right: 15),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Add some photos',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 25, right: 25),
-                child: ImageWidget(
-                  files: selectedFiles,
-                  validation: true,
-                  imageOnly: true,
-                  filesPicked: (List<File> pickedFiles) {
-                    setState(() {
-                      selectedFiles = pickedFiles;
-                    });
-                  },
-                ),
-              ),
-              if (selectedFiles.length < 3)
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Container(
+            margin: const EdgeInsets.only(left: 15, right: 15),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 const Text(
-                  'Please add at least 3 photos',
-                  style: TextStyle(color: Colors.red),
+                  'Add some photos',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
                 ),
-              const SizedBox(height: 20),
-              const Text(
-                'Give your listing a title',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              TextFormField(
-                controller: titleController,
-                decoration: const InputDecoration(
-                  hintText: 'No deposit room in Tooley Street',
-                  hintStyle:
-                      TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+                Padding(
+                  padding: const EdgeInsets.only(left: 25, right: 25),
+                  child: ImageWidget(
+                    files: selectedFiles,
+                    validation: true,
+                    imageOnly: true,
+                    filesPicked: (List<File> pickedFiles) {
+                      setState(() {
+                        selectedFiles = pickedFiles;
+                      });
+                    },
+                  ),
                 ),
-              ),
-              if (titleController.text.trim().isEmpty)
+                if (selectedFiles.length < 3)
+                  const Text(
+                    'Please add at least 3 photos',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                const SizedBox(height: 20),
                 const Text(
-                  'Please enter a title',
-                  style: TextStyle(color: Colors.red),
+                  'Give your listing a title',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
                 ),
-              const SizedBox(height: 20),
-              const Text(
-                'Add a description',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              TextFormField(
-                controller: descriptionController,
-                decoration: const InputDecoration(
-                  hintText: 'No deposit room in Tooley Street',
-                  hintStyle:
-                      TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+                TextFormField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    hintText: 'No deposit room in Tooley Street',
+                    hintStyle:
+                        TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+                  ),
                 ),
-              ),
-              if (descriptionController.text.trim().isEmpty)
+                if (titleController.text.trim().isEmpty)
+                  const Text(
+                    'Please enter a title',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                const SizedBox(height: 20),
                 const Text(
-                  'Please enter a description',
-                  style: TextStyle(color: Colors.red),
+                  'Add a description',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
                 ),
-            ],
+                TextFormField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(
+                    hintText: 'No deposit room in Tooley Street',
+                    hintStyle:
+                        TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+                  ),
+                ),
+                if (descriptionController.text.trim().isEmpty)
+                  const Text(
+                    'Please enter a description',
+                    style: TextStyle(color: Colors.red),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

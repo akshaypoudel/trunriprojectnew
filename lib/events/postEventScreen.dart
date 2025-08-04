@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:map_location_picker/map_location_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart';
@@ -221,14 +222,7 @@ class _PostEventScreenState extends State<PostEventScreen> {
             .setEventList(eventList);
         // Get.to(EventDiscoveryScreen(eventList: eventList));
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (c) => EventDiscoveryScreen(
-              eventList: eventList,
-            ),
-          ),
-        );
+        Get.back();
       });
 
       NewHelper.hideLoader(loader);
@@ -251,291 +245,293 @@ class _PostEventScreenState extends State<PostEventScreen> {
               },
               child: const Icon(Icons.arrow_back_ios)),
           title: const Text('Post Your Event')),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: Column(
-            children: [
-              const SizedBox(
-                height: 10,
-              ),
-              CommonTextField(
-                controller: eventNameController,
-                hintText: 'Event Name',
-                keyboardType: TextInputType.text,
-                validator: MultiValidator([
-                  RequiredValidator(errorText: 'Event Name is required'),
-                ]).call,
-              ),
-              CommonTextField(
-                controller: descriptionController,
-                hintText: 'Description',
-                // controller: passwordController,
-                keyboardType: TextInputType.text,
-                validator: MultiValidator([
-                  RequiredValidator(errorText: 'Description is required'),
-                ]).call,
-              ),
-
-              Padding(
-                padding: const EdgeInsets.only(
-                    left: 25, right: 25, top: 8.0, bottom: 8),
-                child: DropdownButtonFormField(
-                  items: [
-                    'Music',
-                    'Traditional',
-                    'Business',
-                    'Community & Culture',
-                    'Health & Fitness',
-                    'Fashion',
-                    'other'
-                  ]
-                      .map((category) => DropdownMenuItem(
-                          value: category, child: Text(category)))
-                      .toList(),
-                  dropdownColor: Colors.white,
-                  onChanged: (value) {
-                    selectedCategories.add(value!);
-                  },
-                  decoration: InputDecoration(
-                      fillColor: Colors.grey.shade100,
-                      filled: true,
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                      counterStyle: GoogleFonts.roboto(
-                          color: AppTheme.secondaryColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400),
-                      counter: const Offstage(),
-                      errorMaxLines: 2,
-                      labelStyle: GoogleFonts.roboto(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500),
-                      hintStyle: GoogleFonts.urbanist(
-                          color: const Color(0xFF86888A),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400),
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 16, horizontal: 14),
-                      disabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.shade100),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.shade100),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.shade100),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey.shade100),
-                          borderRadius: BorderRadius.circular(15)),
-                      hintText: "Select Category"),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 10,
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                    left: 25, right: 25, top: 8.0, bottom: 8),
-                child: DropdownButtonFormField<String>(
-                  value: selectedEventTypePrice,
-                  items: ['Free', 'Paid']
-                      .map((category) => DropdownMenuItem(
-                          value: category, child: Text(category)))
-                      .toList(),
-                  dropdownColor: Colors.white,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedEventTypePrice = value!;
-                    });
-                  },
-                  decoration: InputDecoration(
-                      fillColor: Colors.grey.shade100,
-                      filled: true,
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                      counterStyle: GoogleFonts.roboto(
-                          color: AppTheme.secondaryColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400),
-                      counter: const Offstage(),
-                      errorMaxLines: 2,
-                      labelStyle: GoogleFonts.roboto(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500),
-                      hintStyle: GoogleFonts.urbanist(
-                          color: const Color(0xFF86888A),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400),
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 16, horizontal: 14),
-                      disabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.shade100),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.shade100),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.shade100),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey.shade100),
-                          borderRadius: BorderRadius.circular(15)),
-                      hintText: "Event Type"),
-                ),
-              ),
-
-              // Show TextFormField only if "Paid" is selected
-              if (selectedEventTypePrice == 'Paid')
                 CommonTextField(
-                  controller: ticketPriceController,
-                  hintText: 'Ticket Price',
-                  prefix:
-                      const Text("\$ ", style: TextStyle(color: Colors.grey)),
-                  keyboardType: TextInputType.number,
+                  controller: eventNameController,
+                  hintText: 'Event Name',
+                  keyboardType: TextInputType.text,
                   validator: MultiValidator([
-                    RequiredValidator(errorText: 'Ticket Price is required'),
+                    RequiredValidator(errorText: 'Event Name is required'),
                   ]).call,
                 ),
-              Padding(
-                padding: const EdgeInsets.only(
-                    left: 25, right: 25, top: 8.0, bottom: 8),
-                child: DropdownButtonFormField(
-                  items: ['Online', 'Offline']
-                      .map((category) => DropdownMenuItem(
-                          value: category, child: Text(category)))
-                      .toList(),
-                  dropdownColor: Colors.white,
-                  onChanged: (value) {
-                    selectedEventTypes.add(value!);
-                  },
-                  decoration: InputDecoration(
-                      fillColor: Colors.grey.shade100,
-                      filled: true,
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                      counterStyle: GoogleFonts.roboto(
-                          color: AppTheme.secondaryColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400),
-                      counter: const Offstage(),
-                      errorMaxLines: 2,
-                      labelStyle: GoogleFonts.roboto(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500),
-                      hintStyle: GoogleFonts.urbanist(
-                          color: const Color(0xFF86888A),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400),
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 16, horizontal: 14),
-                      disabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.shade100),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.shade100),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.shade100),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey.shade100),
-                          borderRadius: BorderRadius.circular(15)),
-                      hintText: "Event Type"),
+                CommonTextField(
+                  controller: descriptionController,
+                  hintText: 'Description',
+                  // controller: passwordController,
+                  keyboardType: TextInputType.text,
+                  validator: MultiValidator([
+                    RequiredValidator(errorText: 'Description is required'),
+                  ]).call,
                 ),
-              ),
-              GestureDetector(
-                onTap: () => _selectDate(context),
-                child: AbsorbPointer(
-                  child: CommonTextField(
-                    hintText: selectedDate ?? 'Event Date',
-                    keyboardType: TextInputType.text,
-                    validator: MultiValidator([
-                      RequiredValidator(errorText: 'Event Date is required'),
-                    ]).call,
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => _selectTime(context),
-                child: AbsorbPointer(
-                  child: CommonTextField(
-                    hintText: selectedTime ?? 'Event Time',
-                    keyboardType: TextInputType.text,
-                    validator: MultiValidator([
-                      RequiredValidator(errorText: 'Event Time is required'),
-                    ]).call,
-                  ),
-                ),
-              ),
 
-              CommonTextField(
-                onTap: () => showAddressModal(context),
-                controller: locationController,
-                hintText: 'Location',
-                // controller: passwordController,
-                keyboardType: TextInputType.text,
-                validator: MultiValidator([
-                  RequiredValidator(errorText: 'Location is required'),
-                ]).call,
-              ),
-              CommonTextField(
-                controller: contactInformationController,
-                hintText: 'Contact Information',
-                // controller: passwordController,
-                keyboardType: TextInputType.text,
-                validator: MultiValidator([
-                  RequiredValidator(
-                      errorText: 'Contact Information is required'),
-                ]).call,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 25.0, right: 25),
-                child: MultiImageWidget(
-                  files: selectedFiles,
-                  title: 'Upload Business Photos'.tr,
-                  validation: true,
-                  imageOnly: true,
-                  filesPicked: (List<File> pickedFiles) {
-                    setState(() {
-                      selectedFiles = pickedFiles;
-                    });
-                  },
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  submitEvent();
-                },
-                child: Container(
-                  margin: const EdgeInsets.only(
-                      left: 25, right: 25, top: 30, bottom: 10),
-                  width: size.width,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xffFF730A),
-                    borderRadius: BorderRadius.circular(15),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      left: 25, right: 25, top: 8.0, bottom: 8),
+                  child: DropdownButtonFormField(
+                    items: [
+                      'Music',
+                      'Traditional',
+                      'Business',
+                      'Community & Culture',
+                      'Health & Fitness',
+                      'Fashion',
+                      'other'
+                    ]
+                        .map((category) => DropdownMenuItem(
+                            value: category, child: Text(category)))
+                        .toList(),
+                    dropdownColor: Colors.white,
+                    onChanged: (value) {
+                      selectedCategories.add(value!);
+                    },
+                    decoration: InputDecoration(
+                        fillColor: Colors.grey.shade100,
+                        filled: true,
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                        counterStyle: GoogleFonts.roboto(
+                            color: AppTheme.secondaryColor,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400),
+                        counter: const Offstage(),
+                        errorMaxLines: 2,
+                        labelStyle: GoogleFonts.roboto(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500),
+                        hintStyle: GoogleFonts.urbanist(
+                            color: const Color(0xFF86888A),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 16, horizontal: 14),
+                        disabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey.shade100),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey.shade100),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey.shade100),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        border: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey.shade100),
+                            borderRadius: BorderRadius.circular(15)),
+                        hintText: "Select Category"),
                   ),
-                  child: const Center(
-                    child: Text(
-                      "Publish Event",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 22,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      left: 25, right: 25, top: 8.0, bottom: 8),
+                  child: DropdownButtonFormField<String>(
+                    value: selectedEventTypePrice,
+                    items: ['Free', 'Paid']
+                        .map((category) => DropdownMenuItem(
+                            value: category, child: Text(category)))
+                        .toList(),
+                    dropdownColor: Colors.white,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedEventTypePrice = value!;
+                      });
+                    },
+                    decoration: InputDecoration(
+                        fillColor: Colors.grey.shade100,
+                        filled: true,
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                        counterStyle: GoogleFonts.roboto(
+                            color: AppTheme.secondaryColor,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400),
+                        counter: const Offstage(),
+                        errorMaxLines: 2,
+                        labelStyle: GoogleFonts.roboto(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500),
+                        hintStyle: GoogleFonts.urbanist(
+                            color: const Color(0xFF86888A),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 16, horizontal: 14),
+                        disabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey.shade100),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey.shade100),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey.shade100),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        border: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey.shade100),
+                            borderRadius: BorderRadius.circular(15)),
+                        hintText: "Event Type"),
+                  ),
+                ),
+
+                // Show TextFormField only if "Paid" is selected
+                if (selectedEventTypePrice == 'Paid')
+                  CommonTextField(
+                    controller: ticketPriceController,
+                    hintText: 'Ticket Price',
+                    prefix:
+                        const Text("\$ ", style: TextStyle(color: Colors.grey)),
+                    keyboardType: TextInputType.number,
+                    validator: MultiValidator([
+                      RequiredValidator(errorText: 'Ticket Price is required'),
+                    ]).call,
+                  ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      left: 25, right: 25, top: 8.0, bottom: 8),
+                  child: DropdownButtonFormField(
+                    items: ['Online', 'Offline']
+                        .map((category) => DropdownMenuItem(
+                            value: category, child: Text(category)))
+                        .toList(),
+                    dropdownColor: Colors.white,
+                    onChanged: (value) {
+                      selectedEventTypes.add(value!);
+                    },
+                    decoration: InputDecoration(
+                        fillColor: Colors.grey.shade100,
+                        filled: true,
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                        counterStyle: GoogleFonts.roboto(
+                            color: AppTheme.secondaryColor,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400),
+                        counter: const Offstage(),
+                        errorMaxLines: 2,
+                        labelStyle: GoogleFonts.roboto(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500),
+                        hintStyle: GoogleFonts.urbanist(
+                            color: const Color(0xFF86888A),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 16, horizontal: 14),
+                        disabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey.shade100),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey.shade100),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey.shade100),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        border: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey.shade100),
+                            borderRadius: BorderRadius.circular(15)),
+                        hintText: "Event Type"),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => _selectDate(context),
+                  child: AbsorbPointer(
+                    child: CommonTextField(
+                      hintText: selectedDate ?? 'Event Date',
+                      keyboardType: TextInputType.text,
+                      validator: MultiValidator([
+                        RequiredValidator(errorText: 'Event Date is required'),
+                      ]).call,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => _selectTime(context),
+                  child: AbsorbPointer(
+                    child: CommonTextField(
+                      hintText: selectedTime ?? 'Event Time',
+                      keyboardType: TextInputType.text,
+                      validator: MultiValidator([
+                        RequiredValidator(errorText: 'Event Time is required'),
+                      ]).call,
+                    ),
+                  ),
+                ),
+
+                CommonTextField(
+                  onTap: () => showAddressModal(context),
+                  controller: locationController,
+                  hintText: 'Location',
+                  // controller: passwordController,
+                  keyboardType: TextInputType.text,
+                  validator: MultiValidator([
+                    RequiredValidator(errorText: 'Location is required'),
+                  ]).call,
+                ),
+                CommonTextField(
+                  controller: contactInformationController,
+                  hintText: 'Contact Information',
+                  // controller: passwordController,
+                  keyboardType: TextInputType.text,
+                  validator: MultiValidator([
+                    RequiredValidator(
+                        errorText: 'Contact Information is required'),
+                  ]).call,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 25.0, right: 25),
+                  child: MultiImageWidget(
+                    files: selectedFiles,
+                    title: 'Upload Business Photos'.tr,
+                    validation: true,
+                    imageOnly: true,
+                    filesPicked: (List<File> pickedFiles) {
+                      setState(() {
+                        selectedFiles = pickedFiles;
+                      });
+                    },
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    submitEvent();
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(
+                        left: 25, right: 25, top: 30, bottom: 10),
+                    width: size.width,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffFF730A),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        "Publish Event",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 22,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -90,7 +90,7 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
             'posterName': AuthServices().getCurrentUserDisplayName(),
           });
         }
-        Get.to(const MyBottomNavBar());
+        Get.offAll(const MyBottomNavBar());
         NewHelper.hideLoader(loader);
         showSnackBar(context, 'Your property lisitng saved');
       } else {
@@ -133,244 +133,246 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
           child: const Icon(Icons.arrow_back_ios),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          margin: const EdgeInsets.only(left: 15, right: 15),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Who would you prefer to live in the property?',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Choose at least one option.',
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.black),
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: male,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        male = value ?? false;
-                        showGenderError = false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Male',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: female,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        female = value ?? false;
-                        showGenderError = false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Female',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: nonBinary,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        nonBinary = value ?? false;
-                        showGenderError = false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Non-binary',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-              if (showGenderError)
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Container(
+            margin: const EdgeInsets.only(left: 15, right: 15),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 const Text(
-                  'Please select at least one gender',
-                  style: TextStyle(color: Colors.red),
+                  'Who would you prefer to live in the property?',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
                 ),
-              const SizedBox(height: 10),
-              const Text(
-                'What is the preferred age group?',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Text(
-                  '${_currentRangeValues.start.round()} to ${_currentRangeValues.end.round()} years old',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-              RangeSlider(
-                values: _currentRangeValues,
-                min: 0,
-                max: 100,
-                divisions: 100,
-                activeColor: const Color(0xffFF730A),
-                labels: RangeLabels(
-                  _currentRangeValues.start.round().toString(),
-                  _currentRangeValues.end.round().toString(),
-                ),
-                onChanged: (RangeValues values) {
-                  setState(() {
-                    _currentRangeValues = values;
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Who are you looking to accommodate in your rental home?',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: isStudents,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        isStudents = value ?? false;
-                        showSituationError = false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Students',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: isEmployees,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        isEmployees = value ?? false;
-                        showSituationError = false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Employees',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: isFamilies,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        isFamilies = value ?? false;
-                        showSituationError = false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Families',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: isSingle,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        isSingle = value ?? false;
-                        showSituationError = false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Single',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: isIndividuals,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        isIndividuals = value ?? false;
-                        showSituationError = false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Individuals',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: isCouples,
-                    activeColor: const Color(0xffFF730A),
-                    onChanged: (value) {
-                      setState(() {
-                        isCouples = value ?? false;
-                        showSituationError = false;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Couples',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-              if (showSituationError)
+                const SizedBox(height: 20),
                 const Text(
-                  'Please select at least one situation',
-                  style: TextStyle(color: Colors.red),
+                  'Choose at least one option.',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black),
                 ),
-            ],
+                Row(
+                  children: [
+                    Checkbox(
+                      value: male,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          male = value ?? false;
+                          showGenderError = false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Male',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: female,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          female = value ?? false;
+                          showGenderError = false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Female',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: nonBinary,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          nonBinary = value ?? false;
+                          showGenderError = false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Non-binary',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                if (showGenderError)
+                  const Text(
+                    'Please select at least one gender',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                const SizedBox(height: 10),
+                const Text(
+                  'What is the preferred age group?',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
+                ),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: Text(
+                    '${_currentRangeValues.start.round()} to ${_currentRangeValues.end.round()} years old',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+                RangeSlider(
+                  values: _currentRangeValues,
+                  min: 0,
+                  max: 100,
+                  divisions: 100,
+                  activeColor: const Color(0xffFF730A),
+                  labels: RangeLabels(
+                    _currentRangeValues.start.round().toString(),
+                    _currentRangeValues.end.round().toString(),
+                  ),
+                  onChanged: (RangeValues values) {
+                    setState(() {
+                      _currentRangeValues = values;
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Who are you looking to accommodate in your rental home?',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black),
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: isStudents,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          isStudents = value ?? false;
+                          showSituationError = false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Students',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: isEmployees,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          isEmployees = value ?? false;
+                          showSituationError = false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Employees',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: isFamilies,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          isFamilies = value ?? false;
+                          showSituationError = false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Families',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: isSingle,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          isSingle = value ?? false;
+                          showSituationError = false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Single',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: isIndividuals,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          isIndividuals = value ?? false;
+                          showSituationError = false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Individuals',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: isCouples,
+                      activeColor: const Color(0xffFF730A),
+                      onChanged: (value) {
+                        setState(() {
+                          isCouples = value ?? false;
+                          showSituationError = false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      'Couples',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                if (showSituationError)
+                  const Text(
+                    'Please select at least one situation',
+                    style: TextStyle(color: Colors.red),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
