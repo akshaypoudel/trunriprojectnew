@@ -15,7 +15,12 @@ import 'flatmatesScreen.dart';
 
 class AddMediaScreen extends StatefulWidget {
   final String formID;
-  const AddMediaScreen({super.key, required this.formID});
+  final Map<String, dynamic> data;
+  const AddMediaScreen({
+    super.key,
+    required this.formID,
+    required this.data,
+  });
 
   @override
   State<AddMediaScreen> createState() => _AddMediaScreenState();
@@ -57,26 +62,35 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
         imageUrls.add(downloadUrl);
       }
 
-      QuerySnapshot querySnapshot = await _firestore
-          .collection('accommodation')
-          .where('formID', isEqualTo: widget.formID)
-          .get();
+      // QuerySnapshot querySnapshot = await _firestore
+      //     .collection('accommodation')
+      //     .where('formID', isEqualTo: widget.formID)
+      //     .get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        for (var doc in querySnapshot.docs) {
-          await _firestore.collection('accommodation').doc(doc.id).update({
-            'images': imageUrls,
-            'Give your listing a title': titleController.text.trim(),
-            'Add a description': descriptionController.text.trim(),
-          });
-        }
-        Get.to(() => FlatmateScreen(formID: widget.formID));
-        NewHelper.hideLoader(loader);
-        showSnackBar(context, 'Media saved');
-      } else {
-        NewHelper.hideLoader(loader);
-        log('No matching document found');
-      }
+      // if (querySnapshot.docs.isNotEmpty) {
+      //   for (var doc in querySnapshot.docs) {
+      //     await _firestore.collection('accommodation').doc(doc.id).update({
+      //       'images': imageUrls,
+      //       'Give your listing a title': titleController.text.trim(),
+      //       'Add a description': descriptionController.text.trim(),
+      //     });
+      //   }
+
+      Map<String, dynamic> newData = {
+        'images': imageUrls,
+        'Give your listing a title': titleController.text.trim(),
+        'Add a description': descriptionController.text.trim(),
+      };
+
+      widget.data.addAll(newData);
+
+      Get.to(() => FlatmateScreen(formID: widget.formID, data: widget.data));
+      NewHelper.hideLoader(loader);
+      showSnackBar(context, 'Media saved');
+      // } else {
+      //   NewHelper.hideLoader(loader);
+      //   log('No matching document found');
+      // }
     } else {
       NewHelper.hideLoader(loader);
       log('No user logged in');

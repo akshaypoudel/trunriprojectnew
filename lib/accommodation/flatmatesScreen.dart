@@ -11,7 +11,12 @@ import '../widgets/helper.dart';
 
 class FlatmateScreen extends StatefulWidget {
   final String formID;
-  const FlatmateScreen({super.key, required this.formID});
+  final Map<String, dynamic> data;
+  const FlatmateScreen({
+    super.key,
+    required this.formID,
+    required this.data,
+  });
 
   @override
   State<FlatmateScreen> createState() => _FlatmateScreenState();
@@ -74,6 +79,7 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
       if (querySnapshot.docs.isNotEmpty) {
         for (var doc in querySnapshot.docs) {
           await _firestore.collection('accommodation').doc(doc.id).update({
+            ...widget.data,
             'male': male,
             'female': female,
             'nonBinary': nonBinary,
@@ -88,6 +94,8 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
               'end': _currentRangeValues.end,
             },
             'posterName': AuthServices().getCurrentUserDisplayName(),
+            'status': 'pending',
+            'isReported': false,
           });
         }
         Get.offAll(const MyBottomNavBar());

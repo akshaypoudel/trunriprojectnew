@@ -176,6 +176,8 @@ class _AddJobScreenState extends State<AddJobScreen> {
       'fullAddress': fullAddressController.text,
       'latitude': selectedLat,
       'longitude': selectedLng,
+      'status': 'pending',
+      'isReported': false,
     }).then((value) {
       showSnackBar(context, 'Job Added Successfully');
       // Get.to(const JobHomePageScreen());

@@ -210,6 +210,9 @@ class _PostEventScreenState extends State<PostEventScreen> {
         'longitude': selectedLng,
         'contactInformation': contactInformationController.text.trim(),
         'photo': imageUrls, // Sending multiple images
+        'uid': AuthServices().getCurrentUser()!.uid,
+        'status': 'pending',
+        'isReported': false,
       }, SetOptions(merge: true)).then((value) async {
         QuerySnapshot snapshot =
             await FirebaseFirestore.instance.collection('MakeEvent').get();
@@ -409,41 +412,42 @@ class _PostEventScreenState extends State<PostEventScreen> {
                       selectedEventTypes.add(value!);
                     },
                     decoration: InputDecoration(
-                        fillColor: Colors.grey.shade100,
-                        filled: true,
-                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                        counterStyle: GoogleFonts.roboto(
-                            color: AppTheme.secondaryColor,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w400),
-                        counter: const Offstage(),
-                        errorMaxLines: 2,
-                        labelStyle: GoogleFonts.roboto(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500),
-                        hintStyle: GoogleFonts.urbanist(
-                            color: const Color(0xFF86888A),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w400),
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 16, horizontal: 14),
-                        disabledBorder: OutlineInputBorder(
+                      fillColor: Colors.grey.shade100,
+                      filled: true,
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                      counterStyle: GoogleFonts.roboto(
+                          color: AppTheme.secondaryColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400),
+                      counter: const Offstage(),
+                      errorMaxLines: 2,
+                      labelStyle: GoogleFonts.roboto(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500),
+                      hintStyle: GoogleFonts.urbanist(
+                          color: const Color(0xFF86888A),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 14),
+                      disabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey.shade100),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey.shade100),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey.shade100),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      border: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.grey.shade100),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey.shade100),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey.shade100),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        border: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey.shade100),
-                            borderRadius: BorderRadius.circular(15)),
-                        hintText: "Event Type"),
+                          borderRadius: BorderRadius.circular(15)),
+                      hintText: "Event Type",
+                    ),
                   ),
                 ),
                 GestureDetector(

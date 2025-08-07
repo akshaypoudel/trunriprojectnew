@@ -105,160 +105,153 @@ class ResturentItemListScreen extends StatelessWidget {
                         ),
                       ),
                     )
-                  : Expanded(
-                      child: GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: filteredRestaurants.length,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 18,
-                          childAspectRatio: 3 / 5.4,
-                        ),
-                        itemBuilder: (context, index) {
-                          final restaurant = filteredRestaurants[index];
-                          final name = restaurant['name'] ?? 'Unknown';
-                          final address =
-                              restaurant['vicinity'] ?? 'No Address';
-                          final rating =
-                              (restaurant['rating'] as num?)?.toDouble() ?? 0.0;
-                          final photoReference = restaurant['photos'] != null
-                              ? restaurant['photos'][0]['photo_reference']
-                              : null;
-                          final photoUrl = photoReference != null
-                              ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoReference&key=${Constants.API_KEY}'
-                              : 'https://via.placeholder.com/400';
-                          final openingHours =
-                              restaurant['opening_hours'] ?? {};
+                  : GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: filteredRestaurants.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 18,
+                        childAspectRatio: 3 / 5.4,
+                      ),
+                      itemBuilder: (context, index) {
+                        final restaurant = filteredRestaurants[index];
+                        final name = restaurant['name'] ?? 'Unknown';
+                        final address = restaurant['vicinity'] ?? 'No Address';
+                        final rating =
+                            (restaurant['rating'] as num?)?.toDouble() ?? 0.0;
+                        final photoReference = restaurant['photos'] != null
+                            ? restaurant['photos'][0]['photo_reference']
+                            : null;
+                        final photoUrl = photoReference != null
+                            ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoReference&key=${Constants.API_KEY}'
+                            : 'https://via.placeholder.com/400';
+                        final openingHours = restaurant['opening_hours'] ?? {};
 
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.orange.withValues(alpha: 0.1),
-                                  blurRadius: 6,
-                                  spreadRadius: 2,
-                                  offset: const Offset(0, 4),
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.orange.withValues(alpha: 0.1),
+                                blurRadius: 6,
+                                spreadRadius: 2,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(12)),
+                                child: CachedNetworkImage(
+                                  imageUrl: photoUrl,
+                                  height: 120,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
                                 ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(
-                                      top: Radius.circular(12)),
-                                  child: CachedNetworkImage(
-                                    imageUrl: photoUrl,
-                                    height: 120,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        name,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      name,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.star,
+                                          size: 14,
+                                          color: Colors.orange,
                                         ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.star,
-                                            size: 14,
-                                            color: Colors.orange,
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          rating.toString(),
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black54,
                                           ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            rating.toString(),
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black54,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        address,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.grey,
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const Spacer(),
-                                GestureDetector(
-                                  onTap: () {
-                                    Get.to(
-                                      ResturentDetailsScreen(
-                                        name: name,
-                                        rating: rating,
-                                        desc: 'No Description Available',
-                                        openingTime: 'Not Available',
-                                        closingTime: openingHours['closing'] ??
-                                            'Not Available',
-                                        address: address,
-                                        image: photoUrl,
-                                        isOpenNow: openingHours['open_now'],
-                                      ),
-                                      arguments: [
-                                        restaurant['geometry']['location']
-                                            ['lat'],
-                                        restaurant['geometry']['location']
-                                            ['lng'],
                                       ],
-                                    );
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 10,
-                                        horizontal: 12,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      address,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey,
                                       ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Text(
-                                        'View Details',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Spacer(),
+                              GestureDetector(
+                                onTap: () {
+                                  Get.to(
+                                    ResturentDetailsScreen(
+                                      name: name,
+                                      rating: rating,
+                                      desc: 'No Description Available',
+                                      openingTime: 'Not Available',
+                                      closingTime: openingHours['closing'] ??
+                                          'Not Available',
+                                      address: address,
+                                      image: photoUrl,
+                                      isOpenNow: openingHours['open_now'],
+                                    ),
+                                    arguments: [
+                                      restaurant['geometry']['location']['lat'],
+                                      restaurant['geometry']['location']['lng'],
+                                    ],
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 10,
+                                      horizontal: 12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      'View Details',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
             ],
           ),

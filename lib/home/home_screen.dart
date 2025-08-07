@@ -79,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       Provider.of<ChatProvider>(context, listen: false).fetchUserProfileImage();
       await fetchAddressData();
+      await isUserinAustraliaOrNot();
     });
 
     fetchImageData();
