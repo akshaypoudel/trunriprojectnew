@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -44,7 +45,31 @@ class _SignInScreenState extends State<SignInScreen> {
     return query.docs.isNotEmpty;
   }
 
-  void requestForOtp() async {
+  Future<bool> checkIfUserIsBlockedByPhone(String phone) async {
+    final query = await FirebaseFirestore.instance
+        .collection('User')
+        .where('phoneNumber', isEqualTo: phone)
+        .limit(1)
+        .get();
+
+    if (query.docs.isNotEmpty) {
+      final userData = query.docs.first.data();
+      if (userData['isBlocked'] == true) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  void requestForOtp(String phone) async {
+    final isUserBlocked = await checkIfUserIsBlockedByPhone(phone);
+    if (isUserBlocked) {
+      log('user is blocked');
+      showSnackBar(context, "User is Blocked by Admin");
+      return;
+    }
+
     String completePhoneNum = '$code${phoneController.text.trim()}';
 
     OverlayEntry loader = NewHelper.overlayLoader(context);
@@ -160,7 +185,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       '$code${phoneController.text.trim()}',
                     );
                     if (exist) {
-                      requestForOtp();
+                      requestForOtp('$code${phoneController.text.trim()}');
                     } else {
                       showSnackBar(context, "User Doesn't Exists");
                     }

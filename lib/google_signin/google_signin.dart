@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/currentLocation.dart';
@@ -19,6 +18,8 @@ class CustomGoogleSignin {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
     try {
+      final user = FirebaseAuth.instance.currentUser;
+
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       final GoogleSignInAuthentication? googleAuth =
           await googleUser?.authentication;
@@ -38,21 +39,32 @@ class CustomGoogleSignin {
           context,
         );
       } else {
-        final user = FirebaseAuth.instance.currentUser;
         if (user != null) {
           await PresenceService.setUserOnline();
         }
       }
 
-      if (!isNewUser) {
-        showSnackBar(context, "User Log In Successfull");
-      } else {
+      if (isNewUser) {
         showSnackBar(context, "User Registered Successfully");
       }
 
       if (isNewUser) {
         checkIfUserInAustralia();
       } else {
+        final userDoc = await FirebaseFirestore.instance
+            .collection('User')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .get();
+
+        if (userDoc.exists && userDoc.data()?['isBlocked'] == true) {
+          //signout users
+          GoogleSignIn().signOut();
+          FirebaseAuth.instance.signOut();
+
+          showSnackBar(context, "User is Blocked by Admin");
+          return;
+        }
+
         Navigator.of(context).pushAndRemoveUntil(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
@@ -73,6 +85,9 @@ class CustomGoogleSignin {
           ),
           (Route<dynamic> route) => false,
         );
+      }
+      if (!isNewUser) {
+        showSnackBar(context, "User Log In Successfull");
       }
     } on Exception catch (e) {
       log('exception->$e');
@@ -96,6 +111,7 @@ class CustomGoogleSignin {
       'isOnline': true,
       'lastSeen': Timestamp.now(),
       'isSubscribed': false,
+      'isBlocked': false,
       'subscriptionExpiry': DateTime.now(),
       'friends': [],
       'friendRequests': {

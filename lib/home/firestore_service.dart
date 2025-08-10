@@ -4,6 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:path/path.dart' as path;
 import '../widgets/helper.dart';
 
@@ -22,11 +25,68 @@ class FirebaseFireStoreService {
   String get phoneNumber => auth.currentUser!.phoneNumber!;
 
   Future<bool> checkUserProfile() async {
+    try {
+      final docSnapshot =
+          await fireStore.collection(profileCollection).doc(userId).get();
+
+      // log('Checking profile for userID: $userId');
+
+      if (!docSnapshot.exists) {
+        // log('User profile does not exist.');
+        return false; // Or true if you want to allow unregistered users
+      }
+
+      final data = docSnapshot.data();
+
+      // Defensive check
+      if (data == null || !data.containsKey('isBlocked')) {
+        log('User profile missing "isBlocked" field. Assuming not blocked.');
+        return true;
+      }
+
+      final bool isBlocked = data['isBlocked'] == true;
+
+      if (isBlocked) {
+        log('User is blocked');
+        Get.snackbar(
+          'Access Denied',
+          'User is blocked by Admin',
+          backgroundColor: const Color(0xff0ff730a),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return false; // 🚫 Don't allow sign-in
+      }
+
+      log('User is not blocked');
+      return true; // ✅ Allow sign-in
+    } catch (e, stack) {
+      log('Error checking user profile: $e');
+      log('Stack trace: $stack');
+      Get.snackbar(
+        'Access Denied',
+        'Access is Denied',
+        backgroundColor: const Color(0xff0ff730a),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return false; // Fallback to block if something goes wrong
+    }
+  }
+
+  Future<bool> checkUserProfile1() async {
     final response =
         await fireStore.collection(profileCollection).doc(userId).get();
     log('user current uid ppp : $userId');
     if (response.exists) {
-      return true;
+      // return true;
+
+      bool isBlocked = response.data()!['isBlocked'];
+      if (isBlocked) {
+        return false; //means, don't allow user to signin.
+      } else {
+        return true;
+      }
     }
     return false;
   }

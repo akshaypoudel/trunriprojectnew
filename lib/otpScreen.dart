@@ -78,6 +78,7 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
       'isOnline': true,
       'lastSeen': Timestamp.now(),
       'isSubscribed': false,
+      'isBlocked': false,
       'subscriptionExpiry': DateTime.now(),
       'friends': [],
       'friendRequests': {
