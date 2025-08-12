@@ -1,6 +1,15 @@
-// ignore: constant_identifier_names
-
 class Constants {
-  static const String API_KEY = 'AIzaSyDDl-_JOy_bj4MyQhYbKbGkZ0sfpbTZDNU';
-  static const String RAZORPAY_KEY = 'rzp_test_QXKKLlzZ8sGdkE';
+  static String _API_KEY = 'AIzaSyB7alyJjGKtzTgmMFlf_iuidTLPZS13GgU';
+  static String _RAZORPAY_KEY = 'rzp_test_QXKKLlzZ8sGdkE';
+
+  static String get API_KEY => _API_KEY;
+  static String get RAZORPAY_KEY => _RAZORPAY_KEY;
+
+  void setApiKey(String newKey) {
+    _API_KEY = newKey;
+  }
+
+  void setRazorPayKey(String newKey) {
+    _RAZORPAY_KEY = newKey;
+  }
 }

@@ -63,22 +63,6 @@ class _LocationScreenState extends State<LocationScreen> {
     User? user = _auth.currentUser;
 
     if (user != null) {
-      // QuerySnapshot querySnapshot = await _firestore
-      //     .collection('accommodation')
-      //     .where('formID', isEqualTo: widget.formID)
-      //     .get();
-
-      // if (querySnapshot.docs.isNotEmpty) {
-      // for (var doc in querySnapshot.docs) {
-      // await _firestore.collection('accommodation').doc(doc.id).update({
-      //   'state': stateController.text.trim(),
-      //   'city': cityController.text.trim(),
-      //   'fullAddress': addressController.text.trim(),
-      //   'lat': selectedLat,
-      //   'long': selectedLng,
-      // });
-      // }
-
       final Map<String, dynamic> newData = {
         'state': stateController.text.trim(),
         'city': cityController.text.trim(),
@@ -92,10 +76,6 @@ class _LocationScreenState extends State<LocationScreen> {
       NewHelper.hideLoader(loader);
       Get.to(() => PropertyScreen(formID: widget.formID, data: widget.data));
       showSnackBar(context, 'Location saved');
-      // } else {
-      // NewHelper.hideLoader(loader);
-      // log('No matching document found');
-      // }
     } else {
       NewHelper.hideLoader(loader);
       log('No user logged in');

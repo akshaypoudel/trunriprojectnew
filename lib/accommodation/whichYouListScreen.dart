@@ -29,10 +29,6 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
 
     if (user != null) {
       formID = uuid.v4();
-      // log(formID.toString());
-      // await _firestore
-      //     .collection('accommodation')
-      //     .add({'uid': user.uid, 'roomType': text, 'formID': formID});
 
       final Map<String, dynamic> data = {
         'uid': user.uid,
@@ -42,7 +38,6 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
       NewHelper.hideLoader(loader);
 
       Get.to(() => LocationScreen(formID: formID, data: data));
-      // showSnackBar(context, 'Selected');
     } else {
       NewHelper.hideLoader(loader);
       log('No user logged in');

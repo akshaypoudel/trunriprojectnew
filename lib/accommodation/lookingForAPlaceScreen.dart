@@ -449,7 +449,7 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
                   children: [
                     Text(
                       // data['city'] ?? 'Unknown City',
-                      data['Give your listing a title'] ?? 'No Title',
+                      data['title'] ?? 'No Title',
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,

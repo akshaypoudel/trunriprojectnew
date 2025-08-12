@@ -32,7 +32,7 @@ class _AccommodationDetailsScreenState
     const String postType = 'accommodation';
     final String posterId = data['uid'] as String; // host’s user ID
     final String seekerId = _firebaseAuth.currentUser!.uid;
-    final String postTitle = data['Give your listing a title'] as String;
+    final String postTitle = data['title'] as String;
     final String postCity = data['city'];
     final String postState = data['state'];
     final String posterName = data['posterName'];
@@ -124,10 +124,9 @@ class _AccommodationDetailsScreenState
                       ),
 
                     // 🏠 Details
-                    buildInfoCard("Title",
-                        data['Give your listing a title'] ?? 'No Title'),
-                    buildInfoCard("Description",
-                        data['Add a description'] ?? 'No Description'),
+                    buildInfoCard("Title", data['title'] ?? 'No Title'),
+                    buildInfoCard(
+                        "Description", data['description'] ?? 'No Description'),
                     buildInfoCard("Address", data['fullAddress'] ?? ''),
                     buildInfoCard("City", data['city'] ?? ''),
                     buildInfoCard("State", data['state'] ?? ''),

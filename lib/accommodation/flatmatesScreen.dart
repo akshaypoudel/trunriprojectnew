@@ -71,42 +71,31 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
     Overlay.of(context).insert(loader);
     User? user = _auth.currentUser;
     if (user != null) {
-      QuerySnapshot querySnapshot = await _firestore
-          .collection('accommodation')
-          .where('formID', isEqualTo: widget.formID)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        for (var doc in querySnapshot.docs) {
-          await _firestore.collection('accommodation').doc(doc.id).update({
-            ...widget.data,
-            'male': male,
-            'female': female,
-            'nonBinary': nonBinary,
-            'isStudents': isStudents,
-            'isEmployees': isEmployees,
-            'isFamilies': isFamilies,
-            'isSingle': isSingle,
-            'isIndividuals': isIndividuals,
-            'isCouples': isCouples,
-            'currentRangeValues': {
-              'start': _currentRangeValues.start,
-              'end': _currentRangeValues.end,
-            },
-            'posterName': AuthServices().getCurrentUserDisplayName(),
-            'status': 'pending',
-            'isReported': false,
-          });
-        }
-        Get.offAll(const MyBottomNavBar());
-        NewHelper.hideLoader(loader);
-        showSnackBar(context, 'Your property lisitng saved');
-      } else {
-        NewHelper.hideLoader(loader);
-        log('No matching document found');
-      }
+      await _firestore.collection('accommodation').doc(widget.formID).set({
+        ...widget.data,
+        'male': male,
+        'female': female,
+        'nonBinary': nonBinary,
+        'isStudents': isStudents,
+        'isEmployees': isEmployees,
+        'isFamilies': isFamilies,
+        'isSingle': isSingle,
+        'isIndividuals': isIndividuals,
+        'isCouples': isCouples,
+        'currentRangeValues': {
+          'start': _currentRangeValues.start,
+          'end': _currentRangeValues.end,
+        },
+        'posterName': AuthServices().getCurrentUserDisplayName(),
+        'status': 'pending',
+        'isReported': false,
+      }, SetOptions(merge: true));
+      Get.offAll(const MyBottomNavBar());
+      NewHelper.hideLoader(loader);
+      showSnackBar(context, 'Your property lisitng saved');
     } else {
-      log('No user logged in');
+      NewHelper.hideLoader(loader);
+      log('No matching document found');
     }
   }
 

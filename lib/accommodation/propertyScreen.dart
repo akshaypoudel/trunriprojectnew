@@ -125,35 +125,6 @@ class _PropertyScreenState extends State<PropertyScreen> {
     Overlay.of(context).insert(loader);
     User? user = _auth.currentUser;
     if (user != null) {
-      // QuerySnapshot querySnapshot = await _firestore
-      //     .collection('accommodation')
-      //     .where('formID', isEqualTo: widget.formID)
-      //     .get();
-
-      // if (querySnapshot.docs.isNotEmpty) {
-      //   for (var doc in querySnapshot.docs) {
-      //     await _firestore.collection('accommodation').doc(doc.id).update({
-      //       'singleBadRoom': singleBadRoom,
-      //       'doubleBadRoom': doubleBadRoom,
-      //       'bathrooms': bathrooms,
-      //       'toilets': toilets,
-      //       'livingFemale': livingFemale,
-      //       'livingMale': livingMale,
-      //       'livingNonBinary': livingNonBinary,
-      //       'isLiftAvailable': isLiftAvailable,
-      //       'isBedInRoom': isBedInRoom,
-      //       'roomAmenities': roomAmenities,
-      //       'propertyAmenities': propertyAmenities,
-      //       'homeRules': homeRules,
-      //     });
-      //   }
-      //   Get.to(() => AvailabilityAndPriceScreen(formID: widget.formID));
-      //   NewHelper.hideLoader(loader);
-      //   showSnackBar(context, 'Property saved');
-      // } else {
-      //   NewHelper.hideLoader(loader);
-      //   log('No matching document found');
-      // }
       Map<String, dynamic> newData = {
         'singleBadRoom': singleBadRoom,
         'doubleBadRoom': doubleBadRoom,

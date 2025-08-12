@@ -50,6 +50,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool isInAustralia = false;
   bool isNavigating = false;
+  bool _isLoading = false;
+
   static bool isShownLocationInfoDialog = false;
 
   List<dynamic> _restaurants = [];
@@ -70,19 +72,69 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _handleLocationSource();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await Provider.of<LocationData>(context, listen: false)
-          .fetchUserAddressAndLocation(
-        isInAustralia: isInAustralia,
-      );
+    _initializeApp();
 
-      Provider.of<ChatProvider>(context, listen: false).fetchUserProfileImage();
-      await fetchAddressData();
-      await isUserinAustraliaOrNot();
-    });
+    // Move the WidgetsBinding callback here instead of build()
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   final locationData = Provider.of<LocationData>(context, listen: false);
+    //   if (!locationData.isLocationFetched && !_isLoading) {
+    //     _fetchAllNearbyPlaces(
+    //       locationData.getLatitude,
+    //       locationData.getLongitude,
+    //       locationData.getNativeRadiusFilter,
+    //     );
+    //     locationData.setIsLocationFetched(true);
+    //   }
+    // });
+  }
 
-    fetchImageData();
+  Future<void> _initializeApp() async {
+    try {
+      // Set loading state
+      if (mounted) {
+        setState(() {
+          _isLoading = true;
+        });
+      }
+
+      // Step 1: Handle location source first
+      await _handleLocationSource();
+
+      // Step 2: Fetch user address and location data
+      if (mounted) {
+        await Provider.of<LocationData>(context, listen: false)
+            .fetchUserAddressAndLocation(isInAustralia: isInAustralia);
+      }
+
+      // Step 3: Fetch address data and set initial values
+      if (mounted) {
+        await fetchAddressData();
+      }
+
+      // Step 4: Fetch user profile image (non-blocking)
+      if (mounted) {
+        Provider.of<ChatProvider>(context, listen: false)
+            .fetchUserProfileImage();
+      }
+
+      // Step 5: Fetch image data for banners
+      await fetchImageData();
+
+      // All initialization complete
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      log('Initialization error: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        showSnackBar(context, 'Failed to initialize app data');
+      }
+    }
   }
 
   @override
@@ -101,7 +153,6 @@ class _HomeScreenState extends State<HomeScreen> {
       usersLongitude = provider.getLongitude.toString();
       usersRadiusFilter = provider.getNativeRadiusFilter;
     });
-    log('full addr === $addressText');
   }
 
   void onLocationChanged(
@@ -145,8 +196,15 @@ class _HomeScreenState extends State<HomeScreen> {
         radiusFilter: selectedAddress['radiusFilter'],
         isLocationFetched: false,
       );
-
-      await fetchAddressData();
+      if (!provider.isLocationFetched) {
+        await fetchAddressData();
+        _fetchAllNearbyPlaces(
+          lat.toNum.toDouble(),
+          lon.toNum.toDouble(),
+          selectedAddress['radiusFilter'],
+        );
+        provider.setIsLocationFetched(true);
+      }
     } catch (e) {
       log("Navigation Error: $e");
     } finally {
@@ -154,56 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void onLocationChanged1(
-    String address,
-    int radiusFilter,
-    String lat,
-    String lng,
-  ) async {
-    // bool isInAustralia =  _handleLocationSource();
-    Map<String, dynamic> selectedAddress = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => CurrentAddress(
-          isProfileScreen: true,
-          savedAddress: address,
-          latitude: lat,
-          longitude: lng,
-          radiusFilter: radiusFilter,
-          isInAustralia: isInAustralia,
-        ),
-      ),
-    );
-
-    final provider = Provider.of<LocationData>(context, listen: false);
-    // ignore: unnecessary_null_comparison
-    if (selectedAddress.isNotEmpty) {
-      String lat = selectedAddress['latitude'];
-      String lon = selectedAddress['longitude'];
-      setState(() {
-        final shortFormAddress =
-            '📍 ${selectedAddress['city']}, ${provider.getStateShortForm(selectedAddress['state'])}';
-
-        provider.setAllLocationData(
-          lat: lat.toNum.toDouble(),
-          long: lon.toNum.toDouble(),
-          fullAddress: selectedAddress['address'],
-          shortFormAddress: shortFormAddress,
-          radiusFilter: selectedAddress['radiusFilter'],
-          isLocationFetched: false,
-        );
-        addressController.text = shortFormAddress;
-      });
-    }
-  }
-
   Future<void> _handleLocationSource() async {
-    // final prefs = await SharedPreferences.getInstance();
-
-    // // Check if dialog has been shown
-    // final hasShownLocationDialog =
-    //     prefs.getBool('hasShownLocationDialog') ?? false;
-
     final position = await Geolocator.getCurrentPosition();
     final placemarks =
         await placemarkFromCoordinates(position.latitude, position.longitude);
@@ -220,19 +229,12 @@ class _HomeScreenState extends State<HomeScreen> {
         isInAustralia = false;
       });
       getCurrentLocationByAddress();
-      // _showLocationInfoDialog(isInAustralia: isInAustralia);
     }
 
     if (!isShownLocationInfoDialog) {
       isShownLocationInfoDialog = true;
       _showLocationInfoDialog(isInAustralia: isInAustralia);
     }
-
-    // if (!hasShownLocationDialog) {
-    //   _showLocationInfoDialog(isInAustralia: isInAustralia);
-
-    //   await prefs.setBool('hasShownLocationDialog', true);
-    // }
   }
 
   void _showLocationInfoDialog({required bool isInAustralia}) {
@@ -268,19 +270,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _fetchBasedOn(
-    double lat,
-    double long,
-    int radiusFilter,
-  ) {
-    serviceController.currentlat = lat;
-    serviceController.currentlong = long;
-
-    _fetchIndianRestaurants(lat, long, radiusFilter);
-    _fetchGroceryStores(lat, long, radiusFilter);
-    _fetchTemples(lat, long, radiusFilter);
-  }
-
   Future<void> getCurrentLocationByAddress() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final doc = await FirebaseFirestore.instance
@@ -304,10 +293,12 @@ class _HomeScreenState extends State<HomeScreen> {
       longitude = double.parse(lng);
     }
 
+    log('final lat and log in native addr === $latitude, $longitude, $radiusFilter');
+
     if (radiusFilter is int) {
-      _fetchBasedOn(latitude, longitude, radiusFilter);
+      _fetchAllNearbyPlaces(latitude, longitude, radiusFilter);
     } else if (radiusFilter is double) {
-      _fetchBasedOn(latitude, longitude, radiusFilter.toInt());
+      _fetchAllNearbyPlaces(latitude, longitude, radiusFilter.toInt());
     }
   }
 
@@ -334,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (permission == LocationPermission.deniedForever) {
       showSnackBar(
         context,
-        'Location Permission is Denied Forever. Can\'t Access Location',
+        'Location Permission is Denied Forever. Please give location permission from your phone settings.',
       );
     }
 
@@ -361,40 +352,37 @@ class _HomeScreenState extends State<HomeScreen> {
       long = usersLongitude.toNum.toDouble();
     });
 
-    _fetchIndianRestaurants(lat, long, usersRadiusFilter);
-    _fetchGroceryStores(lat, long, usersRadiusFilter);
-    _fetchTemples(lat, long, usersRadiusFilter);
+    _fetchAllNearbyPlaces(lat, long, usersRadiusFilter);
   }
 
-  Future<void> _fetchIndianRestaurants(
+  Future<List<dynamic>> _fetchIndianRestaurants(
     double latitude,
     double longitude,
     int radiusFilter,
   ) async {
     try {
-      final provider = Provider.of<LocationData>(context, listen: false);
       final radiusInMeters = radiusFilter * 1000;
       final url =
           'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radiusInMeters&type=restaurant&keyword=indian&key=${Constants.API_KEY}';
+
+      log('restauraunt url = $url');
 
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        setState(() {
-          _restaurants = data['results'];
-          provider.setRestaurauntList(_restaurants);
-        });
-      } else {
-        // throw Exception('Failed to fetch data');
-        showSnackBar(context, 'Failed to Fetch Restauraunt Data');
+        // setState(() {
+        //   _restaurants = data['results'];
+        // });
+        return data['results'];
       }
     } catch (e) {
       log('error ====== $e');
     }
+    return [];
   }
 
-  Future<void> _fetchGroceryStores(
+  Future<List<dynamic>> _fetchGroceryStores(
     double latitude,
     double longitude,
     int radiusFilter,
@@ -408,18 +396,20 @@ class _HomeScreenState extends State<HomeScreen> {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      if (mounted) {
-        setState(() {
-          _groceryStores = data['results'];
-          provider.setGroceryList(_groceryStores);
-        });
-      }
+      // if (mounted) {
+      //   setState(() {
+      //     _groceryStores = data['results'];
+      //     provider.setGroceryList(_groceryStores);
+      //   });
+      // }
+      return data['results'];
     } else {
       showSnackBar(context, 'Failed to Fetch Grocery Stores Data');
+      return [];
     }
   }
 
-  Future<void> _fetchTemples(
+  Future<List<dynamic>> _fetchTemples(
     double latitude,
     double longitude,
     int radiusFilter,
@@ -433,19 +423,21 @@ class _HomeScreenState extends State<HomeScreen> {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      if (mounted) {
-        setState(() {
-          _temples = data['results'];
-          _temples = _temples.where((temple) {
-            return temple['photos'] != null &&
-                temple['photos'][0]['photo_reference'] != null;
-          }).toList();
-          provider.setTemplessList(_temples);
-        });
-      }
+      // if (mounted) {
+      //   setState(() {
+      //     _temples = data['results'];
+      //     _temples = _temples.where((temple) {
+      //       return temple['photos'] != null &&
+      //           temple['photos'][0]['photo_reference'] != null;
+      //     }).toList();
+      //     provider.setTemplessList(_temples);
+      //   });
+      // }
+      return data['results'];
     } else {
       // throw Exception('Failed to fetch data');
       showSnackBar(context, 'Failed to Fetch Temples Data');
+      return [];
     }
   }
 
@@ -482,19 +474,38 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _fetchAllNearbyPlaces(
+      double lat, double long, int radiusFilter) async {
+    try {
+      // Fetch all data simultaneously
+      final results = await Future.wait([
+        _fetchIndianRestaurants(lat, long, radiusFilter),
+        _fetchGroceryStores(lat, long, radiusFilter),
+        _fetchTemples(lat, long, radiusFilter),
+      ]);
+
+      // Update all data in a single setState to minimize rebuilds
+      if (mounted) {
+        setState(() {
+          _restaurants = results[0];
+          _groceryStores = results[1];
+          _temples = results[2];
+        });
+
+        // Update providers after state is set
+        final provider = Provider.of<LocationData>(context, listen: false);
+        provider.setRestaurauntList(_restaurants);
+        provider.setGroceryList(_groceryStores);
+        provider.setTemplessList(_temples);
+      }
+    } catch (e) {
+      log('Error fetching nearby places: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final locationData = Provider.of<LocationData>(context, listen: false);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!locationData.isLocationFetched) {
-        _fetchBasedOn(
-          locationData.getLatitude,
-          locationData.getLongitude,
-          locationData.getNativeRadiusFilter,
-        );
-        locationData.setIsLocationFetched(true);
-      }
-    });
 
     return Scaffold(
       extendBody: true,
@@ -507,112 +518,135 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           child: Stack(
             children: [
-              Positioned.fill(
-                top: 130,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: RefreshIndicator.adaptive(
-                  onRefresh: () async {
-                    isUserinAustraliaOrNot();
-                  },
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    child: Column(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [],
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 2,
-                        ),
-                        GetBannersVisual(
-                          onPageChanged: (value, _) {
-                            sliderIndex.value = value.toDouble();
-                          },
-                        ),
-                        Obx(
-                          () => DotsIndicator(
-                            dotsCount: 3,
-                            position: sliderIndex.value.toInt(),
-                            decorator: DotsDecorator(
-                              activeColor: Colors.orange,
-                              size: const Size.square(8.0),
-                              activeSize: const Size(18.0, 8.0),
-                              activeShape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5.0),
-                              ),
+              (_isLoading)
+                  ? const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(color: Colors.orange),
+                          SizedBox(height: 16),
+                          Text(
+                            'Loading...',
+                            style: TextStyle(
+                              color: Colors.orange,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        GetCategoriesVisuals(
-                          restaurants: _restaurants,
-                          temples: _temples,
-                          groceryStores: _groceryStores,
-                          eventList: locationData.getEventList,
-                          accomodationList: locationData.getAccomodationList,
-                        ),
-                        NearbyEventsVisual(isInAustralia: isInAustralia),
-                        const SizedBox(height: 20),
-                        NearbyRestaurauntsVisual(
-                            restaurants: _restaurants,
-                            isInAustralia: isInAustralia),
-                        const SizedBox(height: 20),
-                        NearbyGroceryStoresVisual(
-                          groceryStores: _groceryStores,
-                          isInAustralia: isInAustralia,
-                        ),
-                        const SizedBox(height: 20),
-                        NearbyAccomodationVisual(
-                          isInAustralia: isInAustralia,
-                        ),
-                        const SizedBox(height: 20),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: SectionTitle(
-                            title: "Find Your Job",
-                            press: () {
-                              Get.to(const JobHomePageScreen());
-                            },
-                          ),
-                        ),
-                        NearbyJobsVisual(isInAustralia: isInAustralia),
-                        const SizedBox(height: 20),
-                        Column(
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: SectionTitle(
-                                title: (isInAustralia)
-                                    ? "Near By Temples"
-                                    : "Temples",
-                                press: () {
-                                  Get.to(
-                                    TempleHomePageScreen(
-                                      templesList: _temples,
-                                    ),
-                                  );
+                        ],
+                      ),
+                    )
+                  : Positioned.fill(
+                      top: 130,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: RefreshIndicator(
+                        backgroundColor: Colors.white,
+                        color: Colors.orange,
+                        onRefresh: () async {
+                          isUserinAustraliaOrNot();
+                        },
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: Column(
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 20),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [],
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 2,
+                              ),
+                              GetBannersVisual(
+                                onPageChanged: (value, _) {
+                                  sliderIndex.value = value.toDouble();
                                 },
                               ),
-                            ),
-                            NearbyTemplesVisual(
-                              templesList: _temples,
-                              isInAustralia: isInAustralia,
-                            ),
-                          ],
+                              Obx(
+                                () => DotsIndicator(
+                                  dotsCount: 3,
+                                  position: sliderIndex.value.toInt(),
+                                  decorator: DotsDecorator(
+                                    activeColor: Colors.orange,
+                                    size: const Size.square(8.0),
+                                    activeSize: const Size(18.0, 8.0),
+                                    activeShape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5.0),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              GetCategoriesVisuals(
+                                restaurants: _restaurants,
+                                temples: _temples,
+                                groceryStores: _groceryStores,
+                                eventList: locationData.getEventList,
+                                accomodationList:
+                                    locationData.getAccomodationList,
+                              ),
+                              NearbyEventsVisual(isInAustralia: isInAustralia),
+                              const SizedBox(height: 20),
+                              NearbyRestaurauntsVisual(
+                                  restaurants: _restaurants,
+                                  isInAustralia: isInAustralia),
+                              const SizedBox(height: 20),
+                              NearbyGroceryStoresVisual(
+                                groceryStores: _groceryStores,
+                                isInAustralia: isInAustralia,
+                              ),
+                              const SizedBox(height: 20),
+                              NearbyAccomodationVisual(
+                                isInAustralia: isInAustralia,
+                              ),
+                              const SizedBox(height: 20),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 20),
+                                child: SectionTitle(
+                                  title: "Find Your Job",
+                                  press: () {
+                                    Get.to(const JobHomePageScreen());
+                                  },
+                                ),
+                              ),
+                              NearbyJobsVisual(isInAustralia: isInAustralia),
+                              const SizedBox(height: 20),
+                              Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20),
+                                    child: SectionTitle(
+                                      title: (isInAustralia)
+                                          ? "Near By Temples"
+                                          : "Temples",
+                                      press: () {
+                                        Get.to(
+                                          TempleHomePageScreen(
+                                            templesList: _temples,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  NearbyTemplesVisual(
+                                    templesList: _temples,
+                                    isInAustralia: isInAustralia,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 60),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 60),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              ),
               Positioned(
                 top: 0,
                 left: 0,

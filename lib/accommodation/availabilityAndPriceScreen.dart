@@ -46,30 +46,6 @@ class _AvailabilityAndPriceScreenState
     Overlay.of(context).insert(loader);
     User? user = _auth.currentUser;
     if (user != null) {
-      // QuerySnapshot querySnapshot = await _firestore
-      //     .collection('accommodation')
-      //     .where('formID', isEqualTo: widget.formID)
-      //     .get();
-
-      // if (querySnapshot.docs.isNotEmpty) {
-      //   for (var doc in querySnapshot.docs) {
-      //     await _firestore.collection('accommodation').doc(doc.id).update({
-      //       'selectedAvailabilityDate': selectedAvailabilityDate,
-      //       'selectedNoDate': selectedNoDate,
-      //       'selectedMinStay': selectedMinStay,
-      //       'selectedMaxStay': selectedMaxStay,
-      //       'billsInclude': billsInclude,
-      //       'noDepositRequired': noDepositRequired,
-      //       'rentalContract': rentalContract,
-      //       'cleaningService': cleaningService,
-      //       'cityHallRegistrationSupport': cityHallRegistrationSupport,
-      //       'maintenanceService': maintenanceService,
-      //       'lawnCare': lawnCare,
-      //       'poolAccess': poolAccess,
-      //       'gym': gym,
-      //     });
-      //   }
-
       Map<String, dynamic> newData = {
         'selectedAvailabilityDate': selectedAvailabilityDate,
         'selectedNoDate': selectedNoDate,
@@ -91,10 +67,6 @@ class _AvailabilityAndPriceScreenState
       Get.to(() => AddMediaScreen(formID: widget.formID, data: widget.data));
       NewHelper.hideLoader(loader);
       showSnackBar(context, 'Availability and price saved');
-      // } else {
-      //   NewHelper.hideLoader(loader);
-      //   log('No matching document found');
-      // }
     } else {
       NewHelper.hideLoader(loader);
       log('No user logged in');
