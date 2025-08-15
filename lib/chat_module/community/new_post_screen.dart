@@ -143,7 +143,7 @@ class _NewPostScreenState extends State<NewPostScreen> {
                           border: Border.all(color: Colors.orange.shade100),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.orange.withOpacity(0.05),
+                              color: Colors.orange.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
@@ -195,7 +195,7 @@ class _NewPostScreenState extends State<NewPostScreen> {
                               border: Border.all(color: Colors.orange.shade100),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.orange.withOpacity(0.05),
+                                  color: Colors.orange.withValues(alpha: 0.05),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -249,7 +249,7 @@ class _NewPostScreenState extends State<NewPostScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orange.withOpacity(0.08),
+                    color: Colors.orange.withValues(alpha: 0.08),
                     blurRadius: 10,
                     offset: const Offset(0, -2),
                   ),

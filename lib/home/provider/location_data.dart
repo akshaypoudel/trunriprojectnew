@@ -22,6 +22,8 @@ class LocationData extends ChangeNotifier {
 
   String _usersAddress = '';
   String _shortFormAddress = '';
+
+  String _userCountry = '';
   // final String _state = '';
   // final String _city = '';
 
@@ -33,6 +35,7 @@ class LocationData extends ChangeNotifier {
 
   double get getLatitude => _latitude;
   double get getLongitude => _longitude;
+  String get getUserCountry => _userCountry;
   // int get getRadiusFilter => _radiusFilter;
   String get getUsersAddress => _usersAddress;
   String get getShortFormAddress => _shortFormAddress;
@@ -58,6 +61,11 @@ class LocationData extends ChangeNotifier {
   }
 
   /////////////////////////////////////////////////////////////
+
+  void setUserCountry(String country) {
+    _userCountry = country;
+    notifyListeners();
+  }
 
 //////////////////////////////////////////////////
   String _nativeState = '';

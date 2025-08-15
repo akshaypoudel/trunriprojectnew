@@ -1,12 +1,19 @@
 import 'dart:async';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/signUpScreen.dart';
 import 'package:trunriproject/signinscreen.dart';
 import 'package:trunriproject/widgets/appTheme.dart';
+import 'package:trunriproject/widgets/helper.dart';
 
 import 'home/bottom_bar.dart';
 import 'home/firestore_service.dart';
@@ -20,9 +27,30 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   bool isCheckingUserLoginData = true;
+  bool _hasConnection = true;
+  bool _isChecking = true;
 
   checkLogin() async {
     await Future.delayed(const Duration(seconds: 2)); // short delay
+
+    LocationPermission permission;
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        showSnackBar(context, 'Location Permission Not Given.');
+      } else {
+        final position = await Geolocator.getCurrentPosition();
+        final placemarks = await placemarkFromCoordinates(
+            position.latitude, position.longitude);
+
+        final country = placemarks.first.country;
+
+        final provider = Provider.of<LocationData>(context, listen: false);
+        provider.setUserCountry(country ?? '');
+      }
+    }
+
     User? currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
       bool userExists = await FirebaseFireStoreService().checkUserProfile();
@@ -42,23 +70,112 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _checkConnection();
+    if (!_hasConnection) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       checkLogin();
     });
+  }
+
+  Future<void> _checkConnection() async {
+    setState(() {
+      _isChecking = true;
+    });
+
+    // First check if device is connected to Wi-Fi or Mobile data
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      setState(() {
+        _hasConnection = false;
+        _isChecking = false;
+      });
+      return;
+    }
+
+    // Double-check with a ping (actual internet access)
+    try {
+      final result =
+          await http.get(Uri.parse("https://www.google.com")).timeout(
+                const Duration(seconds: 5),
+              );
+      setState(() {
+        _hasConnection = result.statusCode == 200;
+        _isChecking = false;
+      });
+    } catch (_) {
+      setState(() {
+        _hasConnection = false;
+        _isChecking = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     if (isCheckingUserLoginData) {
-      return Scaffold(
+      return const Scaffold(
         body: Center(
           child: Text(
             'TruNri',
-            style: GoogleFonts.caveat(
-              color: AppTheme.blackColor,
+            style: TextStyle(
               fontSize: 100,
-              fontWeight: FontWeight.w600,
+              color: AppTheme.blackColor,
+              fontFamily: 'Caveat',
+            ),
+          ),
+        ),
+      );
+    }
+    if (_isChecking) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (!_hasConnection) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.wifi_off_rounded,
+                  color: Colors.deepOrangeAccent,
+                  size: 60,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  "Please connect to the internet",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: _checkConnection,
+                  icon: const Icon(
+                    Icons.refresh,
+                    color: Colors.white,
+                  ),
+                  label: const Text(
+                    "Retry Connection",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepOrangeAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                )
+              ],
             ),
           ),
         ),

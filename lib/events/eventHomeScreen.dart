@@ -336,7 +336,8 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category Chips
+                  //Category Chips
+
                   Container(
                     height: 50,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -709,52 +710,125 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                             );
                           },
                         ),
+                  const SizedBox(height: 120),
                 ],
               ),
             ),
           ),
           floatingActionButton: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 12.0, right: 8.0),
+              padding: const EdgeInsets.only(bottom: 7, right: 7),
               child: Container(
                 decoration: BoxDecoration(
-                  shape: BoxShape.rectangle,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.deepOrange,
+                      Colors.orange.shade600,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  // Multi-layered border effect
                   border: Border.all(
-                    color: Colors.orangeAccent.withValues(alpha: 0.8),
-                    width: 2,
+                    color: Colors.white,
+                    width: 1.5,
                   ),
                   boxShadow: [
+                    // Outer glow effect
                     BoxShadow(
-                      color: Colors.orangeAccent.withValues(alpha: 0.6),
-                      blurRadius: 12,
+                      color: Colors.deepOrange.withValues(alpha: 0.6),
+                      blurRadius: 25,
+                      spreadRadius: 3,
+                      offset: const Offset(0, 8),
+                    ),
+                    // Sharp shadow for depth
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 15,
                       spreadRadius: 1,
+                      offset: const Offset(0, 6),
+                    ),
+                    // Inner highlight
+                    BoxShadow(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      blurRadius: 5,
+                      spreadRadius: -2,
+                      offset: const Offset(-2, -2),
                     ),
                   ],
                 ),
-                child: FloatingActionButton.extended(
-                  onPressed: () {
-                    if (provider.isUserSubscribed) {
-                      Get.to(() => const PostEventScreen());
-                    } else {
-                      _showSubscriptionDialog();
-                    }
-                  },
-                  icon: const Icon(Icons.add, size: 20, color: Colors.white),
-                  label: const Text(
-                    'Post',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
+                // Add an inner container for additional border layers
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius:
+                        BorderRadius.circular(21), // Slightly smaller radius
+                    border: Border.all(
+                      color: Colors.orange.shade200.withValues(alpha: 0.8),
+                      width: 1.5,
                     ),
                   ),
-                  backgroundColor: Colors.orange,
-                  elevation: 20,
-                  extendedPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                  child: FloatingActionButton.extended(
+                    onPressed: () {
+                      if (provider.isUserSubscribed) {
+                        Get.to(() => const PostEventScreen());
+                      } else {
+                        _showSubscriptionDialog();
+                      }
+                    },
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    extendedPadding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(21),
+                    ),
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            // Border for the icon container
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.add_rounded,
+                            size: 27,
+                            color: Colors.deepOrange,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        const Text(
+                          'Post',
+                          style: TextStyle(
+                            fontSize: 17,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                                color: Colors.black26,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -69,23 +69,12 @@ class _HomeScreenState extends State<HomeScreen> {
   String usersLongitude = '';
   int usersRadiusFilter = 50;
 
+  bool _isRefreshing = false;
+
   @override
   void initState() {
     super.initState();
     _initializeApp();
-
-    // Move the WidgetsBinding callback here instead of build()
-    // WidgetsBinding.instance.addPostFrameCallback((_) async {
-    //   final locationData = Provider.of<LocationData>(context, listen: false);
-    //   if (!locationData.isLocationFetched && !_isLoading) {
-    //     _fetchAllNearbyPlaces(
-    //       locationData.getLatitude,
-    //       locationData.getLongitude,
-    //       locationData.getNativeRadiusFilter,
-    //     );
-    //     locationData.setIsLocationFetched(true);
-    //   }
-    // });
   }
 
   Future<void> _initializeApp() async {
@@ -213,13 +202,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _handleLocationSource() async {
-    final position = await Geolocator.getCurrentPosition();
-    final placemarks =
-        await placemarkFromCoordinates(position.latitude, position.longitude);
+    // final position = await Geolocator.getCurrentPosition();
+    // final placemarks =
+    //     await placemarkFromCoordinates(position.latitude, position.longitude);
 
-    final country = placemarks.first.country;
+    // final country = placemarks.first.country;
 
-    if (country == "Australia") {
+    final provider = Provider.of<LocationData>(context, listen: false);
+
+    if (provider.getUserCountry == "Australia") {
       setState(() {
         isInAustralia = true;
       });
@@ -296,38 +287,38 @@ class _HomeScreenState extends State<HomeScreen> {
     log('final lat and log in native addr === $latitude, $longitude, $radiusFilter');
 
     if (radiusFilter is int) {
-      _fetchAllNearbyPlaces(latitude, longitude, radiusFilter);
+      await _fetchAllNearbyPlaces(latitude, longitude, radiusFilter);
     } else if (radiusFilter is double) {
-      _fetchAllNearbyPlaces(latitude, longitude, radiusFilter.toInt());
+      await _fetchAllNearbyPlaces(latitude, longitude, radiusFilter.toInt());
     }
   }
 
   Future<void> _getCurrentLocation() async {
-    bool isServiceEnabled;
-    LocationPermission permission;
+    // bool isServiceEnabled;
+    // LocationPermission permission;
     double lat = 0;
     double long = 0;
 
-    isServiceEnabled = await Geolocator.isLocationServiceEnabled();
+    // isServiceEnabled = await Geolocator.isLocationServiceEnabled();
 
-    if (!isServiceEnabled) {
-      //showSnackBar(context, 'Location Service Not Enabled');
-    }
+    // if (!isServiceEnabled) {
+    //   //showSnackBar(context, 'Location Service Not Enabled');
+    // }
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // showSnackBar(context, 'Location Permission Not Given.');
-      }
-    }
+    // permission = await Geolocator.checkPermission();
+    // if (permission == LocationPermission.denied) {
+    //   permission = await Geolocator.requestPermission();
+    //   if (permission == LocationPermission.denied) {
+    //     // showSnackBar(context, 'Location Permission Not Given.');
+    //   }
+    // }
 
-    if (permission == LocationPermission.deniedForever) {
-      showSnackBar(
-        context,
-        'Location Permission is Denied Forever. Please give location permission from your phone settings.',
-      );
-    }
+    // if (permission == LocationPermission.deniedForever) {
+    //   showSnackBar(
+    //     context,
+    //     'Location Permission is Denied Forever. Please give location permission from your phone settings.',
+    //   );
+    // }
 
     dynamic addressSnapshot = await firestore
         .collection('currentLocation')
@@ -352,7 +343,7 @@ class _HomeScreenState extends State<HomeScreen> {
       long = usersLongitude.toNum.toDouble();
     });
 
-    _fetchAllNearbyPlaces(lat, long, usersRadiusFilter);
+    await _fetchAllNearbyPlaces(lat, long, usersRadiusFilter);
   }
 
   Future<List<dynamic>> _fetchIndianRestaurants(
@@ -459,13 +450,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> isUserinAustraliaOrNot() async {
-    final position = await Geolocator.getCurrentPosition();
-    final placemarks =
-        await placemarkFromCoordinates(position.latitude, position.longitude);
+    final provider = Provider.of<LocationData>(context, listen: false);
 
-    final country = placemarks.first.country;
-
-    if (country == "Australia") {
+    if (provider.getUserCountry == "Australia") {
       isInAustralia = true;
       _getCurrentLocation();
     } else {
@@ -503,6 +490,22 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _handleRefresh() async {
+    setState(() {
+      _isRefreshing = true;
+    });
+
+    // Wait for the location determination
+    await isUserinAustraliaOrNot();
+
+    // Add a small delay to ensure all state updates are complete
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    setState(() {
+      _isRefreshing = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final locationData = Provider.of<LocationData>(context, listen: false);
@@ -518,16 +521,16 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           child: Stack(
             children: [
-              (_isLoading)
-                  ? const Center(
+              (_isLoading || _isRefreshing)
+                  ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          CircularProgressIndicator(color: Colors.orange),
-                          SizedBox(height: 16),
+                          const CircularProgressIndicator(color: Colors.orange),
+                          const SizedBox(height: 16),
                           Text(
-                            'Loading...',
-                            style: TextStyle(
+                            (_isRefreshing) ? 'Refreshing...' : 'Loading...',
+                            style: const TextStyle(
                               color: Colors.orange,
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -544,9 +547,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: RefreshIndicator(
                         backgroundColor: Colors.white,
                         color: Colors.orange,
-                        onRefresh: () async {
-                          isUserinAustraliaOrNot();
-                        },
+                        onRefresh: _handleRefresh,
                         child: SingleChildScrollView(
                           padding: const EdgeInsets.symmetric(vertical: 5),
                           child: Column(

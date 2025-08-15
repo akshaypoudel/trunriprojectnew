@@ -139,47 +139,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {});
   }
 
-  // Future<bool> _handleLocationSource() async {
-  //   bool hasPermission = await _handleLocationPermission();
-  //   if (!hasPermission) {
-  //     log('no permissionlllllllllllllllllllll');
-  //     return false;
-  //   }
-  //   final position = await Geolocator.getCurrentPosition();
-  //   final placemarks =
-  //       await placemarkFromCoordinates(position.latitude, position.longitude);
-  //   final country = placemarks.first.country;
-  //   if (country == "Australia") {
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // }
-
-  // Future<bool> _handleLocationPermission() async {
-  //   // radiusFilter = widget.radiusFilter;
-  //   bool isServiceEnabled;
-  //   LocationPermission permission;
-  //   isServiceEnabled = await Geolocator.isLocationServiceEnabled();
-  //   if (!isServiceEnabled) {
-  //     showSnackBar(context, 'Location Service Not Enabled');
-  //   }
-  //   permission = await Geolocator.checkPermission();
-  //   if (permission == LocationPermission.denied) {
-  //     permission = await Geolocator.requestPermission();
-  //     if (permission == LocationPermission.denied) {
-  //       showSnackBar(context, 'Location Permission Not Given.');
-  //     }
-  //   }
-  //   if (permission == LocationPermission.deniedForever) {
-  //     showSnackBar(
-  //       context,
-  //       'Location Permission is Denied Forever. Can\'t Access Location',
-  //     );
-  //   }
-  //   return true;
-  // }
-
   @override
   void dispose() {
     nameController.dispose();
@@ -189,50 +148,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final subscriptionProvider =
-    // Provider.of<SubscriptionData>(context, listen: false);
-
     return Consumer<LocationData>(
       builder: (BuildContext context, LocationData value, Widget? child) {
-        // final address = value.getUsersAddress;
-        // final shortFormAddress = value.getShortFormAddress;
-        // addressController.text = shortFormAddress;
-        // final latitude = value.getLatitude;
-        // final longitude = value.getLongitude;
-        // final radiusFilter = value.getNativeRadiusFilter;
-
         return Scaffold(
           backgroundColor: Colors.white,
           extendBody: true,
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            title: const Text('Profile'),
-            automaticallyImplyLeading: false,
-            actions: [
-              GestureDetector(
-                onTap: () {
-                  if (isEditing) {
-                    updateProfile();
-                  }
-                  setState(() {
-                    isEditing = !isEditing;
-                  });
-                },
-                child: isEditing
-                    ? const Text(
-                        'save',
-                        style: TextStyle(color: Colors.green, fontSize: 17),
-                      )
-                    : Image.asset(
-                        'assets/images/edit.png',
-                        height: 30,
-                      ),
-              ),
-              const SizedBox(
-                width: 15,
-              )
-            ],
-          ),
+          appBar: _buildAppBar(),
           body: dataLoaded
               ? Container(
                   height: Get.height,
@@ -346,17 +267,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             fontSize: 14,
                                             color: Colors.black),
                                       ),
-                                      // ShowAddressText(
-                                      //   controller: addressController,
-                                      //   onTap: () {
-                                      //     onLocationChanged(
-                                      //       address,
-                                      //       radiusFilter,
-                                      //       latitude.toString(),
-                                      //       longitude.toString(),
-                                      //     );
-                                      //   },
-                                      // ),
                                     ],
                                   ),
                                 ),
@@ -365,177 +275,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             const SizedBox(
                               height: 40,
                             ),
-                            Consumer<SubscriptionData>(
-                              builder: (context, subscriptionProvider, _) {
-                                return subscriptionProvider.isUserSubscribed
-                                    ? alreadySubscribedProButton(context)
-                                    : buildTryProButton(context);
-                              },
-                            ),
-
-                            ListTile(
-                              leading: Image.asset(
-                                'assets/images/address.png',
-                                height: 30,
-                              ),
-                              title: const Text('Address'),
-                              trailing: const Icon(
-                                Icons.arrow_forward_ios_outlined,
-                                size: 15,
-                              ),
-                              onTap: () {
-                                Get.to(const AddressListScreen());
-                              },
-                            ),
-                            // const Divider(
-                            //   height: 10,
-                            // ),
-                            // ListTile(
-                            //   onTap: () {
-                            //     Get.to(const RecoveryPasswordScreen());
-                            //   },
-                            //   leading: Image.asset(
-                            //     'assets/images/password.png',
-                            //     height: 30,
-                            //   ),
-                            //   title: const Text('Change Password'),
-                            //   trailing: const Icon(
-                            //     Icons.arrow_forward_ios_outlined,
-                            //     size: 15,
-                            //   ),
-                            // ),
-                            // const Divider(
-                            //   height: 10,
-                            // ),
-                            // ListTile(
-                            //   leading: Image.asset(
-                            //     'assets/images/language.png',
-                            //     height: 30,
-                            //   ),
-                            //   title: const Text('Change Language'),
-                            //   trailing: const Icon(
-                            //     Icons.arrow_forward_ios_outlined,
-                            //     size: 15,
-                            //   ),
-                            // ),
-                            // const Divider(
-                            //   height: 10,
-                            // ),
-                            // ListTile(
-                            //   leading: Image.asset(
-                            //     'assets/images/notification.png',
-                            //     height: 30,
-                            //   ),
-                            //   title: const Text('Notification preferences'),
-                            //   trailing: const Icon(
-                            //     Icons.arrow_forward_ios_outlined,
-                            //     size: 15,
-                            //   ),
-                            // ),
-                            const Divider(
-                              height: 10,
-                            ),
-                            ListTile(
-                              leading: Image.asset(
-                                'assets/images/feedback.png',
-                                height: 30,
-                              ),
-                              title: const Text('Feedback'),
-                              trailing: const Icon(
-                                Icons.arrow_forward_ios_outlined,
-                                size: 15,
-                              ),
-                            ),
-                            const Divider(
-                              height: 10,
-                            ),
-                            ListTile(
-                              onTap: () {
-                                Share.share('https://www.google.co.in/');
-                              },
-                              leading: Image.asset(
-                                'assets/images/share.png',
-                                height: 30,
-                              ),
-                              title: const Text('Share App'),
-                              trailing: const Icon(
-                                Icons.arrow_forward_ios_outlined,
-                                size: 15,
-                              ),
-                            ),
-                            const Divider(
-                              height: 10,
-                            ),
-                            ListTile(
-                              onTap: () {
-                                launchUrlString("tel://+917665096245");
-                              },
-                              leading: Image.asset(
-                                'assets/images/contact.png',
-                                height: 30,
-                              ),
-                              title: const Text('Contact Us'),
-                              trailing: const Icon(
-                                Icons.arrow_forward_ios_outlined,
-                                size: 15,
-                              ),
-                            ),
-                            const Divider(
-                              height: 10,
-                            ),
-                            GestureDetector(
-                              onTap: () async {
-                                PresenceService.setUserOffline();
-                                GoogleSignIn().signOut();
-                                FirebaseAuth.instance.signOut().then((value) {
-                                  Get.offAll(const SignInScreen());
-                                  showSnackBar(
-                                    context,
-                                    "Logged Out Successfully",
-                                  );
-                                });
-
-                                final prefs =
-                                    await SharedPreferences.getInstance();
-                                await prefs.remove('hasShownLocationDialog');
-                              },
-                              child: ListTile(
-                                leading: Image.asset(
-                                  'assets/images/logout.png',
-                                  height: 30,
-                                ),
-                                title: const Text('LogOut'),
-                                trailing: const Icon(
-                                  Icons.arrow_forward_ios_outlined,
-                                  size: 15,
-                                ),
-                              ),
-                            ),
-                            //const Divider(
-                            //  height: 10,
-                            //),
-                            // GestureDetector(
-                            //   onTap: () async {
-                            //     User? user = FirebaseAuth.instance.currentUser;
-                            //     await user!.delete();
-                            //     GoogleSignIn().signOut();
-                            //     showSnackBar(
-                            //         context, "Your account has been deleted");
-                            //     Get.to(const SignUpScreen());
-                            //   },
-                            //   child: ListTile(
-                            //     leading: Image.asset(
-                            //       'assets/images/delete.png',
-                            //       height: 30,
-                            //     ),
-                            //     title: const Text('Delete Account'),
-                            //     trailing: const Icon(
-                            //       Icons.arrow_forward_ios_outlined,
-                            //       size: 15,
-                            //     ),
-                            //   ),
-                            // ),
-                            const SizedBox(height: 85),
+                            _buildSubscriptionSection(),
+                            const SizedBox(height: 45),
+                            _buildMenuSection(),
+                            const SizedBox(height: 95),
                           ],
                         ),
                       ),
@@ -552,38 +295,78 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget buildTryProButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.topCenter,
+  Widget _buildSubscriptionSection() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      child: Consumer<SubscriptionData>(
+        builder: (context, subscriptionProvider, _) {
+          return subscriptionProvider.isUserSubscribed
+              ? _buildProUserCard()
+              : _buildTryProCard();
+        },
+      ),
+    );
+  }
+
+  Widget _buildTryProCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.white,
+            Colors.orange.shade50,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.orange.shade200, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
         children: [
           Container(
-            height: 55,
-            width: Get.width,
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(color: Colors.orange, width: 1.5),
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white54,
-                  Colors.orangeAccent.shade100,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.orange.shade100.withValues(alpha: 0.3),
-                  offset: const Offset(0, 4),
-                  blurRadius: 10,
-                ),
-              ],
+              color: Colors.orange.shade100,
+              shape: BoxShape.circle,
             ),
-            child: RawMaterialButton(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15)),
+            child: Image.asset(
+              'assets/icons/crown.png',
+              height: 40,
+              width: 40,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Unlock TruNri Pro',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Colors.deepOrange,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Get premium features and enhanced experience',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
@@ -592,36 +375,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 );
               },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Try TruNri Pro',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.deepOrange,
-                    ),
-                  ),
-                ],
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepOrange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
               ),
-            ),
-          ),
-
-          // Crown image floating above
-          Positioned(
-            top: -55,
-            child: Container(
-              height: 80,
-              width: 80,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(6.0),
-                child: Image.asset(
-                  'assets/icons/crown.png',
-                  fit: BoxFit.contain,
+              child: Text(
+                'Try Pro Now',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -631,57 +398,280 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget alreadySubscribedProButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+  Widget _buildProUserCard() {
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => const SubscriptionSuccessScreen());
+      },
       child: Container(
-        height: 50,
-        width: Get.width,
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: BoxBorder.all(color: Colors.orange, width: 1.5),
           gradient: LinearGradient(
             colors: [
-              Colors.white54,
-              Colors.red.shade50,
+              Colors.orange.shade50,
+              Colors.white,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.orange.shade300, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              offset: const Offset(0, 4),
-              blurRadius: 10,
-            )
+              color: Colors.orange.withValues(alpha: 0.2),
+              blurRadius: 20,
+              offset: const Offset(0, 5),
+            ),
           ],
         ),
-        child: RawMaterialButton(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (c) => const SubscriptionSuccessScreen(),
-              ),
-            );
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Image.asset(
-                'assets/icons/crown.png',
-                height: 80,
-                width: 80,
-              ),
-              Text(
-                'You are a Pro TruNri',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.orange,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.deepOrange, Colors.orange.shade400],
                 ),
+                shape: BoxShape.circle,
+              ),
+              child: Image.asset(
+                'assets/icons/crown.png',
+                height: 32,
+                width: 32,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'TruNri Pro Member',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.deepOrange,
+                    ),
+                  ),
+                  Text(
+                    'Enjoying premium features',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.verified,
+              color: Colors.green.shade500,
+              size: 24,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _handleLogout() async {
+    PresenceService.setUserOffline();
+    GoogleSignIn().signOut();
+    FirebaseAuth.instance.signOut().then((value) {
+      Get.offAll(const SignInScreen());
+      showSnackBar(
+        context,
+        "Logged Out Successfully",
+      );
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('hasShownLocationDialog');
+  }
+
+  Widget _buildMenuSection() {
+    final menuItems = [
+      MenuItemData(
+        title: 'Address',
+        icon: Icons.location_on_outlined,
+        onTap: () => Get.to(const AddressListScreen()),
+      ),
+      MenuItemData(
+        title: 'Feedback',
+        icon: Icons.feedback_outlined,
+        onTap: () {},
+      ),
+      MenuItemData(
+        title: 'Share App',
+        icon: Icons.share_outlined,
+        onTap: () => Share.share('https://www.google.co.in/'),
+      ),
+      MenuItemData(
+        title: 'Contact Us',
+        icon: Icons.phone_outlined,
+        onTap: () => launchUrlString("tel://+917665096245"),
+      ),
+      MenuItemData(
+        title: 'Log Out',
+        icon: Icons.logout_outlined,
+        onTap: _handleLogout,
+        isDestructive: true,
+      ),
+    ];
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 5),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: menuItems.asMap().entries.map((entry) {
+          final index = entry.key;
+          final item = entry.value;
+          final isLast = index == menuItems.length - 1;
+
+          return Column(
+            children: [
+              _buildMenuItem(item),
+              if (!isLast)
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  height: 1,
+                  color: Colors.grey.shade100,
+                ),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  dynamic _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      flexibleSpace: FlexibleSpaceBar(
+        title: Text(
+          'Profile',
+          style: GoogleFonts.poppins(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF1A1A1A),
+          ),
+        ),
+        centerTitle: false,
+        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+      ),
+      actions: [
+        Container(
+          margin: const EdgeInsets.only(right: 16, top: 8),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(25),
+              onTap: () {
+                if (isEditing) {
+                  updateProfile();
+                }
+                setState(() {
+                  isEditing = !isEditing;
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color:
+                      isEditing ? Colors.green.shade50 : Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(25),
+                  border: Border.all(
+                    color: isEditing ? Colors.green : Colors.deepOrange,
+                    width: 1,
+                  ),
+                ),
+                child: isEditing
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.check,
+                              color: Colors.green, size: 20),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Save',
+                            style: GoogleFonts.poppins(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      )
+                    : const Icon(
+                        Icons.edit_outlined,
+                        color: Colors.deepOrange,
+                        size: 20,
+                      ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMenuItem(MenuItemData item) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: item.onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: item.isDestructive
+                      ? Colors.red.shade50
+                      : Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  item.icon,
+                  color: item.isDestructive
+                      ? Colors.red.shade500
+                      : Colors.deepOrange,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  item.title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: item.isDestructive
+                        ? Colors.red.shade600
+                        : const Color(0xFF1A1A1A),
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.grey.shade400,
+                size: 16,
               ),
             ],
           ),
@@ -689,4 +679,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+}
+
+class MenuItemData {
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool isDestructive;
+
+  MenuItemData({
+    required this.title,
+    required this.icon,
+    required this.onTap,
+    this.isDestructive = false,
+  });
 }

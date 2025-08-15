@@ -127,7 +127,7 @@ class _SearchFieldState extends State<SearchField> {
 
     final item = selectedItem.toLowerCase();
 
-    if (item.contains("restaurants")) {
+    if (item.contains("restaurant")) {
       Get.to(
         ResturentItemListScreen(
           restaurant_List: Provider.of<LocationData>(context, listen: false)
