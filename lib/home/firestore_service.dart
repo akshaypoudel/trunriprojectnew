@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:path/path.dart' as path;
+import 'package:provider/provider.dart';
+import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
 import '../widgets/helper.dart';
 
 enum UpdateType { set, update }
@@ -101,15 +103,22 @@ class FirebaseFireStoreService {
   }) async {
     String? imageUrl;
     OverlayEntry loader = NewHelper.overlayLoader(context);
+    final provider = Provider.of<ChatProvider>(context, listen: false);
+
     try {
       if (allowChange) {
         Overlay.of(context).insert(loader);
         imageUrl = await getProfileImageUrl(profileImage);
+        if (provider.getProfileImage != imageUrl) {
+          provider.setProfileImage(imageUrl);
+        }
       }
       await fireStore.collection(profileCollection).doc(userId).update({
         "name": name,
         "address": address,
-        "profile": imageUrl,
+        "profile": (provider.getProfileImage != imageUrl)
+            ? imageUrl
+            : provider.getProfileImage,
       });
 
       showSnackBar(context, "Profile updated");

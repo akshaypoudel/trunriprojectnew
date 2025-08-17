@@ -9,6 +9,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
@@ -50,6 +51,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       showSnackBar(context, "Returning From Method");
       return;
     }
+
     try {
       await fireStoreService.updateProfile(
         address: '',

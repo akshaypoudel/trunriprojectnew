@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; // Assuming you're using GetX for navigation
+import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart'; // Assuming you're using GetX for navigation
 
 class PostTile extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -28,25 +30,25 @@ class PostTile extends StatefulWidget {
 
 class _PostTileState extends State<PostTile> with TickerProviderStateMixin {
   bool _isReplyFieldVisible = false;
-  late AnimationController _likeAnimationController;
-  late Animation<double> _likeAnimation;
+  // late AnimationController _likeAnimationController;
+  // late Animation<double> _likeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _likeAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    _likeAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
-      CurvedAnimation(
-          parent: _likeAnimationController, curve: Curves.elasticOut),
-    );
+    // _likeAnimationController = AnimationController(
+    //   duration: const Duration(milliseconds: 200),
+    //   vsync: this,
+    // );
+    // _likeAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
+    //   CurvedAnimation(
+    //       parent: _likeAnimationController, curve: Curves.elasticOut),
+    // );
   }
 
   @override
   void dispose() {
-    _likeAnimationController.dispose();
+    // _likeAnimationController.dispose();
     super.dispose();
   }
 
@@ -62,7 +64,8 @@ class _PostTileState extends State<PostTile> with TickerProviderStateMixin {
     final isLiked = widget.post['isLiked'] ?? false;
     final likeCount = widget.post['likeCount'] ?? 0;
     final replyCount = widget.post['replyCount'];
-    final replies = widget.post['replies'];
+
+    final List<Map<String, dynamic>> replies = widget.post['replies'] ?? [];
 
     final timeAgo =
         timestamp != null ? _timeAgo(timestamp.toDate()) : 'Just now';
@@ -70,7 +73,7 @@ class _PostTileState extends State<PostTile> with TickerProviderStateMixin {
     return GestureDetector(
       onTap: widget.onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -113,17 +116,40 @@ class _PostTileState extends State<PostTile> with TickerProviderStateMixin {
                       child: CircleAvatar(
                         radius: 22,
                         backgroundColor: Colors.orange.withValues(alpha: 0.1),
-                        backgroundImage:
-                            (profileUrl != null && profileUrl.isNotEmpty)
-                                ? NetworkImage(profileUrl)
-                                : null,
+                        // backgroundImage:
+                        //     (profileUrl != null && profileUrl.isNotEmpty)
+                        //         ? NetworkImage(profileUrl)
+                        //         : null,
                         child: (profileUrl == null || profileUrl.isEmpty)
                             ? Icon(
                                 Icons.person_rounded,
                                 color: Colors.orange.shade400,
                                 size: 24,
                               )
-                            : null,
+                            : ClipOval(
+                                child: CachedNetworkImage(
+                                  imageUrl: profileUrl,
+                                  width: 44,
+                                  height: 44,
+                                  placeholder: (context, url) => Container(
+                                    width: 40,
+                                    height: 40,
+                                    color: Colors.orange.withValues(alpha: 0.1),
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.deepOrange,
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) => Icon(
+                                    Icons.person_rounded,
+                                    color: Colors.orange.shade400,
+                                    size: 24,
+                                  ),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -205,11 +231,69 @@ class _PostTileState extends State<PostTile> with TickerProviderStateMixin {
                   _buildTagsSection(tags),
                 ],
 
-                const SizedBox(height: 16),
+                //extra space section
+                const SizedBox(height: 10),
+                const Divider(
+                  thickness: .5,
+                ),
+
+                const SizedBox(height: 10),
+
+                //total Replies Text
+                GestureDetector(
+                  onTap: () {},
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.orange.shade50,
+                          Colors.orange.shade100,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.orange.shade200,
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.orange.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.comment_rounded,
+                          size: 13,
+                          color: Colors.deepOrange,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '$replyCount Replies',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.deepOrange,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
 
                 // Single reply preview (if replies exist)
                 if (replies.isNotEmpty) ...[
-                  _buildSingleReplyPreview(replies),
+                  _buildSingleReplyPreview(replies[0]),
                   const SizedBox(height: 12),
                   _buildShowMoreRepliesButton(replyCount, postId),
                   const SizedBox(height: 12),
@@ -244,65 +328,6 @@ class _PostTileState extends State<PostTile> with TickerProviderStateMixin {
       ),
       child: Row(
         children: [
-          // Like button
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                _likeAnimationController.forward().then((_) {
-                  _likeAnimationController.reverse();
-                });
-                if (widget.onLike != null) {
-                  widget.onLike!();
-                }
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: isLiked
-                      ? Colors.red.withValues(alpha: 0.1)
-                      : Colors.grey.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isLiked
-                        ? Colors.red.withValues(alpha: 0.2)
-                        : Colors.grey.withValues(alpha: 0.15),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AnimatedBuilder(
-                      animation: _likeAnimation,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: _likeAnimation.value,
-                          child: Icon(
-                            isLiked ? Icons.favorite : Icons.favorite_border,
-                            size: 18,
-                            color: isLiked ? Colors.red : Colors.grey.shade600,
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      likeCount > 0 ? '$likeCount' : 'Like',
-                      style: TextStyle(
-                        color: isLiked ? Colors.red : Colors.grey.shade600,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
           // Reply button
           Expanded(
             child: GestureDetector(
@@ -341,11 +366,7 @@ class _PostTileState extends State<PostTile> with TickerProviderStateMixin {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      _isReplyFieldVisible
-                          ? 'Cancel'
-                          : replyCount > 0
-                              ? '$replyCount ${replyCount == 1 ? 'Reply' : 'Replies'}'
-                              : 'Reply',
+                      _isReplyFieldVisible ? 'Cancel' : 'Reply',
                       style: TextStyle(
                         color: Colors.orange.shade600,
                         fontSize: 14,
@@ -363,9 +384,9 @@ class _PostTileState extends State<PostTile> with TickerProviderStateMixin {
   }
 
   Widget _buildSingleReplyPreview(Map<String, dynamic> reply) {
-    final replyUsername = reply['username'] ?? 'Unknown';
-    final replyContent = reply['content'] ?? '';
-    final replyProfileUrl = reply['profileUrl'];
+    final replyUsername = reply['userName'] ?? 'Unknown';
+    final replyContent = reply['reply'] ?? '';
+    final replyProfileUrl = reply['userImage'];
     final replyTimestamp = reply['timestamp'] as Timestamp?;
     final replyTimeAgo =
         replyTimestamp != null ? _timeAgo(replyTimestamp.toDate()) : 'Just now';

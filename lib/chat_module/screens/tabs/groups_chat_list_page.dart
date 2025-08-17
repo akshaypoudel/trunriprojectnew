@@ -219,19 +219,65 @@ class _GroupsChatPageState extends State<GroupsChatPage>
         return Scaffold(
           backgroundColor: Colors.white,
           body: _buildChatList(),
-          floatingActionButton: FloatingActionButton(
-            backgroundColor: Colors.orange.shade50,
-            onPressed: () {
-              if (provider.isUserSubscribed) {
-                Get.to(() => const GroupChatCreateScreen());
-              } else {
-                _showSubscriptionDialog();
-              }
-            },
-            child: const Icon(
-              Icons.add,
-              size: 30,
-              color: Colors.orange,
+          floatingActionButton: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white,
+                  Colors.orange.shade50,
+                  Colors.orange.shade100,
+                  Colors.white,
+                ],
+                stops: const [0.0, 0.3, 0.7, 1.0],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.all(4),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.deepOrangeAccent,
+                    Colors.orange.shade400,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(
+                  color: Colors.orange.shade200,
+                  width: 1,
+                ),
+              ),
+              child: FloatingActionButton(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                onPressed: () {
+                  if (provider.isUserSubscribed) {
+                    Get.to(() => const GroupChatCreateScreen());
+                  } else {
+                    _showSubscriptionDialog();
+                  }
+                },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.add_rounded,
+                  size: 32,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
