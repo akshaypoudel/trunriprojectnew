@@ -23,8 +23,8 @@ class GroceryStoreListScreen extends StatelessWidget {
             'Grocery Stores Near You',
             style: TextStyle(
                 fontSize: 21,
-                fontWeight: FontWeight.bold,
-                color: Colors.orange),
+                // fontWeight: FontWeight.bold,
+                color: Colors.black),
           ),
         ),
         body: SafeArea(
@@ -40,13 +40,13 @@ class GroceryStoreListScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.orange.withValues(alpha: 0.1),
+                        color: Colors.deepOrangeAccent.withValues(alpha: 0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
                     ],
                     border: Border.all(
-                      color: Colors.orange.withValues(alpha: 0.3),
+                      color: Colors.deepOrangeAccent.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
@@ -56,7 +56,7 @@ class GroceryStoreListScreen extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 14),
                         child: Icon(
                           Icons.search,
-                          color: Colors.orange,
+                          color: Colors.deepOrangeAccent,
                           size: 24,
                         ),
                       ),
@@ -178,7 +178,7 @@ class GroceryStoreListScreen extends StatelessWidget {
                                         const Icon(
                                           Icons.star,
                                           size: 14,
-                                          color: Colors.orange,
+                                          color: Colors.deepOrange,
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
@@ -234,8 +234,16 @@ class GroceryStoreListScreen extends StatelessWidget {
                                       horizontal: 12,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.orange,
+                                      // color: Colors.orange,
                                       borderRadius: BorderRadius.circular(8),
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.deepOrange,
+                                          Colors.orange.shade600,
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
                                     ),
                                     child: const Text(
                                       'View Details',

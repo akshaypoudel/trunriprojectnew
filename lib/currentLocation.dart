@@ -54,17 +54,67 @@ class _CurrentAddressState extends State<CurrentAddress> {
   String? street, city, state, country, zipcode, town;
   String suburb = '';
 
-  // String googleApikey = "AIzaSyAP9njE_z7lH2tii68WLoQGju0DF8KryXA";
   CameraPosition? cameraPosition;
   String location = "Enter Your Address Here";
-  final Set<Marker> markers = {};
+  // final Set<Marker> markers = {};
+  final Set<Circle> circles = {}; // Added for radius circle
   final String appLanguage = "English";
   String latitude1 = '';
   String longitude1 = '';
   int? radiusFilter;
+  double sliderValue = 25.0; // Added slider value
+
+  // Calculate zoom level based on radius
+  double _getZoomLevel(double radius) {
+    if (radius <= 1) return 14.0;
+    if (radius <= 5) return 13.0;
+    if (radius <= 10) return 11.5;
+    if (radius <= 25) return 10.0;
+    if (radius <= 50) return 9.0;
+    return 8.0;
+  }
+
+  // Update map zoom and circle based on radius
+  void _updateMapRadius(double radius) {
+    if (latitude1.isNotEmpty &&
+        longitude1.isNotEmpty &&
+        mapController != null) {
+      final zoom = _getZoomLevel(radius);
+
+      mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(double.parse(latitude1), double.parse(longitude1)),
+            zoom: zoom,
+          ),
+        ),
+      );
+
+      _updateRadiusCircle(radius);
+    }
+  }
+
+  // Update the radius circle on map
+  void _updateRadiusCircle(double radius) {
+    if (latitude1.isNotEmpty && longitude1.isNotEmpty) {
+      circles.clear();
+      circles.add(
+        Circle(
+          circleId: const CircleId('radius_circle'),
+          center: LatLng(double.parse(latitude1), double.parse(longitude1)),
+          radius: radius * 1000, // Convert km to meters
+          fillColor: AppTheme.primaryColor.withValues(alpha: 0.15),
+          strokeColor: AppTheme.primaryColor,
+          strokeWidth: 2,
+        ),
+      );
+      setState(() {});
+    }
+  }
 
   Future<bool> _handleLocationPermission() async {
     radiusFilter = widget.radiusFilter;
+    sliderValue = widget.radiusFilter.toDouble(); // Initialize slider
     bool isServiceEnabled;
     LocationPermission permission;
 
@@ -108,30 +158,32 @@ class _CurrentAddressState extends State<CurrentAddress> {
       double long = _currentPosition!.longitude;
       latitude1 = _currentPosition!.latitude.toString();
       longitude1 = _currentPosition!.longitude.toString();
-      // radiusFilter =
 
       if (widget.isProfileScreen) {
         if (widget.latitude.isNotEmpty && widget.longitude.isNotEmpty) {
           lat = widget.latitude.toNum.toDouble();
           long = widget.longitude.toNum.toDouble();
+          latitude1 = widget.latitude;
+          longitude1 = widget.longitude;
         }
-        // lat = latlng[0];
-        // long = latlng[1];
       }
+
+      final zoom = _getZoomLevel(sliderValue);
       mapController!.animateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(
             target: LatLng(lat, long),
-            zoom: 15,
+            zoom: zoom,
           ),
         ),
       );
-      _onAddMarkerButtonPressed(
-        LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-        "current location",
-      );
-      //setState(() {});
-      // location = _currentAddress!;
+      // _onAddMarkerButtonPressed(
+      //   LatLng(double.parse(latitude1), double.parse(longitude1)),
+      //   "current location",
+      // );
+
+      // Add initial radius circle
+      _updateRadiusCircle(sliderValue);
     }).catchError((e) {
       debugPrint(e);
     });
@@ -208,7 +260,6 @@ class _CurrentAddressState extends State<CurrentAddress> {
   }
 
   Future<void> updateCurrentLocation({required bool isInAustralia}) async {
-    // log('radius filter ----------- $radiusFilter');
     if (_address == widget.savedAddress &&
         radiusFilter == widget.radiusFilter) {
       Navigator.pop(context);
@@ -251,13 +302,11 @@ class _CurrentAddressState extends State<CurrentAddress> {
           });
         } else {
           await userRef.update({
-            // 'Street': street,
             'nativeAddress': {
               'city': city,
               'state': state,
               'country': country,
               'zipcode': zipcode,
-              // 'town': town,
               'latitude': latitude1,
               'longitude': longitude1,
               'radiusFilter': radiusFilter,
@@ -300,33 +349,35 @@ class _CurrentAddressState extends State<CurrentAddress> {
         .asUint8List();
   }
 
-  Future<void> _onAddMarkerButtonPressed(LatLng lastMapPosition, markerTitle,
-      {allowZoomIn = true}) async {
-    final Uint8List markerIcon =
-        await getBytesFromAsset('assets/icons/location.png', 140);
-    markers.clear();
-    markers.add(
-      Marker(
-        markerId: MarkerId(lastMapPosition.toString()),
-        position: lastMapPosition,
-        infoWindow: const InfoWindow(
-          title: "",
-        ),
-        icon: BitmapDescriptor.bytes(markerIcon),
-      ),
-    );
-    // BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan,)));
-    if (googleMapController.isCompleted) {
-      mapController!.animateCamera(CameraUpdate.newCameraPosition(
-          CameraPosition(
-              target: lastMapPosition, zoom: allowZoomIn ? 14 : 11)));
-    }
-    setState(() {});
-  }
+  // Future<void> _onAddMarkerButtonPressed(LatLng lastMapPosition, markerTitle,
+  //     {allowZoomIn = true}) async {
+  //   final Uint8List markerIcon =
+  //       await getBytesFromAsset('assets/icons/location.png', 140);
+  //   markers.clear();
+  //   markers.add(
+  //     Marker(
+  //       markerId: MarkerId(lastMapPosition.toString()),
+  //       position: lastMapPosition,
+  //       infoWindow: const InfoWindow(
+  //         title: "",
+  //       ),
+  //       icon: BitmapDescriptor.bytes(markerIcon),
+  //     ),
+  //   );
+  //   if (googleMapController.isCompleted) {
+  //     final zoom = _getZoomLevel(sliderValue);
+  //     mapController!.animateCamera(CameraUpdate.newCameraPosition(
+  //         CameraPosition(
+  //             target: lastMapPosition, zoom: allowZoomIn ? zoom : 11)));
+  //   }
+  //   setState(() {});
+  // }
 
   @override
   void initState() {
     super.initState();
+    radiusFilter = widget.radiusFilter;
+    sliderValue = widget.radiusFilter.toDouble();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       _getCurrentPosition();
     });
@@ -334,8 +385,7 @@ class _CurrentAddressState extends State<CurrentAddress> {
 
   @override
   void dispose() {
-    mapController!.dispose();
-
+    mapController?.dispose();
     super.dispose();
   }
 
@@ -348,20 +398,118 @@ class _CurrentAddressState extends State<CurrentAddress> {
         FocusManager.instance.primaryFocus!.unfocus();
       },
       child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 2,
+          title: InkWell(
+            onTap: () async {
+              var place = await PlacesAutocomplete.show(
+                  context: context,
+                  apiKey: Constants.API_KEY,
+                  mode: Mode.overlay,
+                  types: [],
+                  strictbounds: false,
+                  onError: (err) {
+                    log("error.....   ${err.errorMessage}");
+                  });
+              if (place != null) {
+                setState(() {
+                  _address = place.description.toString();
+                });
+                final plist = GoogleMapsPlaces(
+                  apiKey: Constants.API_KEY,
+                  apiHeaders: await const GoogleApiHeaders().getHeaders(),
+                );
+                String placeid = place.placeId ?? "0";
+                final detail = await plist.getDetailsByPlaceId(placeid);
+                final geometry = detail.result.geometry!;
+                final lat = geometry.location.lat;
+                final lang = geometry.location.lng;
+                var newlatlang = LatLng(lat, lang);
+                setState(() {
+                  _address = place.description.toString();
+                  latitude1 = lat.toString();
+                  longitude1 = lang.toString();
+                  // _onAddMarkerButtonPressed(
+                  //     LatLng(lat, lang), place.description);
+                });
+
+                final zoom = _getZoomLevel(sliderValue);
+                mapController?.animateCamera(CameraUpdate.newCameraPosition(
+                    CameraPosition(target: newlatlang, zoom: zoom)));
+
+                List<Placemark> placemarks =
+                    await placemarkFromCoordinates(lat, lang);
+                Placemark placemark = placemarks.first;
+                setState(() {
+                  street = placemark.street ?? '';
+                  city = placemark.locality ?? '';
+                  state = placemark.administrativeArea ?? '';
+                  country = placemark.country ?? '';
+                  zipcode = placemark.postalCode ?? '';
+                  town = placemark.subAdministrativeArea ?? '';
+                  fullAddress =
+                      '$street, $town, $city, $state, $zipcode, $country';
+                  _address = fullAddress;
+                });
+
+                // Update circle for new location
+                _updateRadiusCircle(sliderValue);
+              }
+            },
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 12),
+                  const Icon(
+                    Icons.search,
+                    color: AppTheme.primaryColor,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Search For Locations',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.my_location,
+                    color: Colors.grey[400],
+                    size: 16,
+                  ),
+                  const SizedBox(width: 12),
+                ],
+              ),
+            ),
+          ),
+          titleSpacing: 8,
+        ),
         body: Stack(
           children: [
             GoogleMap(
                 zoomGesturesEnabled: true,
                 initialCameraPosition: const CameraPosition(
                   target: LatLng(0, 0),
-                  zoom: 14.0, //initial zoom level
+                  zoom: 14.0,
                 ),
                 mapType: MapType.normal,
                 onMapCreated: (controller) {
                   mapController = controller;
-                  //setState(() async {});
+                  googleMapController.complete(controller);
                 },
-                // markers: markers,
+                //markers: markers,
+                circles: circles,
                 onCameraMove: (CameraPosition cameraPositions) {
                   cameraPosition = cameraPositions;
                 },
@@ -379,13 +527,11 @@ class _CurrentAddressState extends State<CurrentAddress> {
                     });
 
                     if (placemarks.isEmpty) {
-                      // No address found at this location; hide address in UI
                       setState(() {
                         _address = "";
                         fullAddress = "";
                         street = city = state = country = zipcode = town = null;
                       });
-                      // You may show a snackbar or other feedback here if desired
                       return;
                     }
 
@@ -399,15 +545,12 @@ class _CurrentAddressState extends State<CurrentAddress> {
                     final hasCountry = placemark.country != null &&
                         placemark.country!.isNotEmpty;
 
-                    // Validate required fields (customize as needed)
                     if (!hasPostal || !hasCity || !hasState || !hasCountry) {
                       setState(() {
                         _address = "";
                         fullAddress = "";
                         street = city = state = country = zipcode = town = null;
                       });
-                      // Optionally show a message/snackbar for the user
-                      // showSnackBar(context, "Complete address not available at this location");
                       return;
                     }
 
@@ -430,16 +573,15 @@ class _CurrentAddressState extends State<CurrentAddress> {
                       fullAddress = composedAddress;
                       _address = composedAddress;
                     });
+
+                    // Update circle when location changes
+                    _updateRadiusCircle(sliderValue);
                   } catch (error) {
-                    // Handle all errors gracefully (network, permissions, etc.)
                     setState(() {
                       _address = "";
                       fullAddress = "";
                       street = city = state = country = zipcode = town = null;
                     });
-                    // Optionally log or show error feedback to the user
-                    // log("Reverse geocoding failed: $error");
-                    // showSnackBar(context, "Could not retrieve address for this position");
                   }
                 }),
             const Center(
@@ -448,13 +590,80 @@ class _CurrentAddressState extends State<CurrentAddress> {
                 style: TextStyle(fontSize: 45),
               ),
             ),
+
+            // Radius Slider (moved up since search bar is now in AppBar)
             Positioned(
-              top: 70,
-              child: RadiusSlider(
-                initialRadius: 50,
-                onRadiusChanged: (a) {},
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 70, // Slightly taller to accommodate ruler
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(
+                      8), // Minimal rounding for rectangle
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.orange.withValues(alpha: 0.2),
+                      spreadRadius: 0,
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // Slider section
+                    Expanded(
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          activeTrackColor: Colors.orange,
+                          inactiveTrackColor:
+                              Colors.orange.withValues(alpha: 0.2),
+                          thumbColor: Colors.orange,
+                          overlayColor: Colors.orange.withValues(alpha: 0.1),
+                          trackHeight: 4,
+                          thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 8,
+                          ),
+                        ),
+                        child: Slider(
+                          value: sliderValue,
+                          min: 1.0,
+                          max: 100.0,
+                          divisions: 33, // 33 divisions (1-100 range)
+                          onChanged: (double value) {
+                            setState(() {
+                              sliderValue = value;
+                              radiusFilter = value.round();
+                            });
+                            _updateMapRadius(value);
+                          },
+                        ),
+                      ),
+                    ),
+                    // const SizedBox(height: 8),
+                    // Ruler markings
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildRulerMark('1 km'),
+                          _buildRulerMark('25'),
+                          _buildRulerMark('50'),
+                          _buildRulerMark('75'),
+                          _buildRulerMark('100 km'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+
+            // Bottom Address Container
             Positioned(
                 bottom: 0,
                 child: Container(
@@ -477,6 +686,14 @@ class _CurrentAddressState extends State<CurrentAddress> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            spreadRadius: 0,
+                            blurRadius: 20,
+                            offset: const Offset(0, -5),
+                          ),
+                        ],
                       ),
                       child: (_address!.isEmpty)
                           ? const Center(child: CircularProgressIndicator())
@@ -489,10 +706,18 @@ class _CurrentAddressState extends State<CurrentAddress> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Icon(
-                                      Icons.location_on,
-                                      color: AppTheme.primaryColor,
-                                      size: AddSize.size25,
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.primaryColor
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Icon(
+                                        Icons.location_on,
+                                        color: AppTheme.primaryColor,
+                                        size: 24,
+                                      ),
                                     ),
                                     SizedBox(
                                       width: AddSize.size12,
@@ -513,24 +738,6 @@ class _CurrentAddressState extends State<CurrentAddress> {
                                     const SizedBox(
                                       width: 10,
                                     ),
-                                    // Expanded(
-                                    //   child: GestureDetector(
-                                    //     onTap: () {
-                                    //       showSnackBar(context,
-                                    //           'Your Location save Successfully');
-                                    //     },
-                                    //     child: Text(
-                                    //       'Save Location',
-                                    //       style: Theme.of(context)
-                                    //           .textTheme
-                                    //           .headlineSmall!
-                                    //           .copyWith(
-                                    //               fontWeight: FontWeight.w600,
-                                    //               fontSize: AddSize.font16,
-                                    //               color: const Color(0xff014E70)),
-                                    //     ),
-                                    //   ),
-                                    // )
                                   ],
                                 ),
                                 const SizedBox(
@@ -553,18 +760,32 @@ class _CurrentAddressState extends State<CurrentAddress> {
                                         left: 25, right: 25),
                                     width: size.width,
                                     padding: const EdgeInsets.symmetric(
-                                        vertical: 12),
+                                        vertical: 15),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xffFF730A),
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xffFF730A),
+                                          Color(0xffFF8A2B),
+                                        ],
+                                      ),
                                       borderRadius: BorderRadius.circular(15),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xffFF730A)
+                                              .withValues(alpha: 0.3),
+                                          spreadRadius: 0,
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
                                     ),
                                     child: const Center(
                                       child: Text(
                                         "Confirm Your Address",
                                         style: TextStyle(
-                                          fontWeight: FontWeight.w500,
+                                          fontWeight: FontWeight.w600,
                                           color: Colors.white,
-                                          fontSize: 20,
+                                          fontSize: 18,
                                         ),
                                       ),
                                     ),
@@ -581,377 +802,23 @@ class _CurrentAddressState extends State<CurrentAddress> {
     );
   }
 
-  void _showFilterDialog() {
-    int? selectedRadius = radiusFilter;
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          title: const Text(
-            '📍 Radius Filter',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Choose how far (in km) you want to search from your location.',
-                style: TextStyle(fontSize: 15, color: Colors.black54),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 200,
-                child: Scrollbar(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [1, 5, 10, 25, 50, 100].map((km) {
-                        return RadioListTile<int>(
-                          dense: true,
-                          contentPadding: EdgeInsets.zero,
-                          title: Text('$km km'),
-                          value: km,
-                          groupValue: selectedRadius,
-                          activeColor: AppTheme.primaryColor,
-                          onChanged: (int? value) {
-                            if (value != null) {
-                              Navigator.of(context).pop();
-                              setState(() {
-                                radiusFilter = value;
-                              });
-                              showSnackBar(
-                                context,
-                                'Radius set to ${value.toString()}km',
-                              );
-                            }
-                          },
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class RadiusSlider extends StatefulWidget {
-  final int initialRadius;
-  final ValueChanged<int> onRadiusChanged;
-  const RadiusSlider({
-    super.key,
-    required this.initialRadius,
-    required this.onRadiusChanged,
-  });
-
-  @override
-  State<RadiusSlider> createState() => _RadiusSliderState();
-}
-
-class _RadiusSliderState extends State<RadiusSlider> {
-  late double selectedRadius;
-
-  // Colors tuned to match screenshot
-  final Color tealBg = const Color(0xFF31B7B2);
-  final Color darkTrack = const Color(0xFF0E5F5C);
-  final Color lightFill = const Color(0xFFDBF6F3);
-  final Color thumbColor = Colors.white;
-
-  @override
-  void initState() {
-    super.initState();
-    selectedRadius = widget.initialRadius.clamp(0, 60).toDouble();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(top: 10, bottom: 16),
-      decoration: BoxDecoration(
-        color: tealBg,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Slider with custom theme
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                trackHeight: 8,
-                overlayShape: SliderComponentShape.noOverlay,
-                // We’ll draw our own dual-layer track
-                trackShape: _DualLayerTrackShape(
-                  baseColor: darkTrack,
-                  fillColor: lightFill,
-                ),
-                thumbShape: _PillThumbShape(
-                  thumbColor: thumbColor,
-                  borderColor: thumbColor,
-                  iconColor: tealBg,
-                ),
-                inactiveTrackColor: darkTrack,
-                activeTrackColor:
-                    lightFill, // not directly used by custom shape but kept consistent
-                disabledActiveTrackColor: darkTrack,
-                disabledInactiveTrackColor: darkTrack,
-              ),
-              child: Slider(
-                value: selectedRadius,
-                min: 0.0,
-                max: 60.0,
-                divisions: 60,
-                onChanged: (v) {
-                  setState(() => selectedRadius = v);
-                  widget.onRadiusChanged(v.round());
-                },
-              ),
-            ),
-          ),
-
-          // Tick marks + labels (00, 10, 20, ... 60 KM)
-          const SizedBox(height: 6),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: _TicksRow(
-              min: 0,
-              max: 60,
-              step: 10,
-              textStyle: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                height: 1.0,
-                fontWeight: FontWeight.w500,
-              ),
-              lastSuffix: ' KM',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Draws a dark full-length base track and a thin, light fill strip on top up to the thumb.
-class _DualLayerTrackShape extends SliderTrackShape {
-  final Color baseColor;
-  final Color fillColor;
-
-  const _DualLayerTrackShape({
-    required this.baseColor,
-    required this.fillColor,
-  });
-
-  @override
-  Rect getPreferredRect({
-    required RenderBox parentBox,
-    Offset offset = Offset.zero,
-    required SliderThemeData sliderTheme,
-    bool isEnabled = true,
-    bool isDiscrete = false,
-  }) {
-    final double trackHeight = sliderTheme.trackHeight ?? 8;
-    final double trackLeft = offset.dx + 0;
-    final double trackTop =
-        offset.dy + (parentBox.size.height - trackHeight) / 2;
-    final double trackWidth = parentBox.size.width;
-    return Rect.fromLTWH(trackLeft, trackTop, trackWidth, trackHeight);
-  }
-
-  @override
-  void paint(
-    PaintingContext context,
-    Offset offset, {
-    required RenderBox parentBox,
-    required SliderThemeData sliderTheme,
-    required Animation<double> enableAnimation,
-    required Offset thumbCenter,
-    bool isDiscrete = false,
-    bool isEnabled = true,
-    required TextDirection textDirection,
-    Offset? secondaryOffset, // not used
-  }) {
-    final Rect trackRect = getPreferredRect(
-      parentBox: parentBox,
-      offset: offset,
-      sliderTheme: sliderTheme,
-      isEnabled: isEnabled,
-      isDiscrete: isDiscrete,
-    );
-
-    final Canvas canvas = context.canvas;
-    final RRect baseRRect = RRect.fromRectAndRadius(
-      trackRect,
-      const Radius.circular(6),
-    );
-
-    // Base dark track (full length)
-    final Paint basePaint = Paint()..color = baseColor;
-    canvas.drawRRect(baseRRect, basePaint);
-
-    // Light fill (thin) up to thumb
-    // In the screenshot, the light strip is thinner and sits slightly “inside”.
-    const double inset = 2.0;
-    final Rect innerRect = Rect.fromLTWH(
-      trackRect.left + 8, // a bit of left padding to match screenshot
-      trackRect.top + inset,
-      (thumbCenter.dx - (trackRect.left + 8)).clamp(0.0, trackRect.width - 16),
-      trackRect.height - inset * 2,
-    );
-
-    if (innerRect.width > 0) {
-      final RRect fillRRect = RRect.fromRectAndRadius(
-        innerRect,
-        const Radius.circular(6),
-      );
-      final Paint fillPaint = Paint()..color = fillColor;
-      canvas.drawRRect(fillRRect, fillPaint);
-    }
-  }
-}
-
-/// A pill-shaped thumb with a subtle border and a pause-style glyph inside.
-class _PillThumbShape extends SliderComponentShape {
-  final double width;
-  final double height;
-  final Color thumbColor;
-  final Color borderColor;
-  final Color iconColor;
-
-  const _PillThumbShape({
-    this.width = 36,
-    this.height = 28,
-    required this.thumbColor,
-    required this.borderColor,
-    required this.iconColor,
-  });
-
-  @override
-  Size getPreferredSize(bool isEnabled, bool isDiscrete) => Size(width, height);
-
-  @override
-  void paint(
-    PaintingContext context,
-    Offset center, {
-    required Animation<double> activationAnimation,
-    required Animation<double> enableAnimation,
-    required bool isDiscrete,
-    required TextPainter labelPainter,
-    required RenderBox parentBox,
-    required SliderThemeData sliderTheme,
-    required TextDirection textDirection,
-    required double value,
-    required double textScaleFactor,
-    required Size sizeWithOverflow,
-  }) {
-    final Canvas canvas = context.canvas;
-    final RRect rrect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: center, width: width, height: height),
-      const Radius.circular(14),
-    );
-
-    // Thumb fill
-    final Paint fill = Paint()..color = thumbColor;
-    canvas.drawRRect(rrect, fill);
-
-    // Optional subtle border for definition
-    final Paint border = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
-      ..color = borderColor.withOpacity(0.9);
-    canvas.drawRRect(rrect, border);
-
-    // Pause icon (two vertical rounded rectangles)
-    const double barWidth = 3.0;
-    final double barHeight = height * 0.5;
-    const double gap = 3.0;
-
-    final RRect leftBar = RRect.fromRectAndRadius(
-      Rect.fromCenter(
-        center: Offset(center.dx - (barWidth / 2 + gap), center.dy),
-        width: barWidth,
-        height: barHeight,
-      ),
-      const Radius.circular(2),
-    );
-
-    final RRect rightBar = RRect.fromRectAndRadius(
-      Rect.fromCenter(
-        center: Offset(center.dx + (barWidth / 2 + gap), center.dy),
-        width: barWidth,
-        height: barHeight,
-      ),
-      const Radius.circular(2),
-    );
-
-    final Paint iconPaint = Paint()..color = iconColor;
-    canvas.drawRRect(leftBar, iconPaint);
-    canvas.drawRRect(rightBar, iconPaint);
-  }
-}
-
-/// Evenly spaced tick labels with small dots, last label shows " KM".
-class _TicksRow extends StatelessWidget {
-  final int min;
-  final int max;
-  final int step;
-  final TextStyle textStyle;
-  final String lastSuffix;
-
-  const _TicksRow({
-    super.key,
-    required this.min,
-    required this.max,
-    required this.step,
-    required this.textStyle,
-    this.lastSuffix = '',
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final count = ((max - min) ~/ step) + 1;
-    final items = List<int>.generate(count, (i) => min + i * step);
-
+  Widget _buildRulerMark(String value) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // tiny white dots aligned with labels
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: items
-              .map((_) => Container(
-                    width: 4,
-                    height: 4,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                  ))
-              .toList(),
+        Container(
+          width: 1,
+          height: 4,
+          color: Colors.orange.withValues(alpha: 0.6),
         ),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: items.map((v) {
-            final bool isLast = v == items.last;
-            final String label =
-                isLast ? '$v$lastSuffix' : v.toString().padLeft(2, '0');
-            return Text(label, style: textStyle);
-          }).toList(),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ],
     );

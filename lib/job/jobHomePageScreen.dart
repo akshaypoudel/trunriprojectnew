@@ -289,13 +289,15 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: isOutlined
               ? Colors.transparent
-              : (customColor ?? (isPrimary ? Colors.orange : Colors.white)),
+              : (customColor ??
+                  (isPrimary ? Colors.deepOrangeAccent : Colors.white)),
           foregroundColor: isOutlined
-              ? (customColor ?? Colors.orange)
-              : (isPrimary ? Colors.white : Colors.orange),
+              ? (customColor ?? Colors.deepOrangeAccent)
+              : (isPrimary ? Colors.white : Colors.deepOrangeAccent),
           elevation: 0,
           side: isOutlined
-              ? BorderSide(color: customColor ?? Colors.orange, width: 1.5)
+              ? BorderSide(
+                  color: customColor ?? Colors.deepOrangeAccent, width: 1.5)
               : BorderSide(color: Colors.grey.shade200, width: 1),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -327,14 +329,15 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
         title: const Text(
           'Jobs',
           style: TextStyle(
-            color: Colors.orange,
+            color: Colors.black,
             fontSize: 21,
-            fontWeight: FontWeight.bold,
+            // fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.location_on, size: 27, color: Colors.orange),
+            icon: const Icon(Icons.location_on,
+                size: 27, color: Colors.deepOrangeAccent),
             onPressed: _showLocationFilterDialog,
           ),
           if (_hasActiveFilter)
@@ -370,13 +373,13 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.orange.withValues(alpha: 0.1),
+                          color: Colors.deepOrangeAccent.withValues(alpha: 0.1),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
                       ],
                       border: Border.all(
-                        color: Colors.orange.withValues(alpha: 0.3),
+                        color: Colors.deepOrange.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),

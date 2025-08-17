@@ -104,7 +104,7 @@ class NewHelper {
           style: GoogleFonts.poppins(
               fontWeight: FontWeight.bold,
               fontSize: 18,
-              color: Colors.deepPurpleAccent),
+              color: Colors.deepOrangeAccent),
         ),
         // message: Text('Message'),
         cancelButton: CupertinoActionSheetAction(

@@ -3,11 +3,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
 import '../widgets/helper.dart';
@@ -96,30 +93,34 @@ class FirebaseFireStoreService {
   Future<bool> updateProfile({
     required String name,
     required String address,
-    required File profileImage,
-    required bool allowChange,
+    // required File? profileImage,
+    // required bool allowChange,
     required BuildContext context,
     required Function(bool gg) updated,
   }) async {
-    String? imageUrl;
+    // String? imageUrl;
     OverlayEntry loader = NewHelper.overlayLoader(context);
-    final provider = Provider.of<ChatProvider>(context, listen: false);
+    // final provider = Provider.of<ChatProvider>(context, listen: false);
 
     try {
-      if (allowChange) {
-        Overlay.of(context).insert(loader);
-        imageUrl = await getProfileImageUrl(profileImage);
-        if (provider.getProfileImage != imageUrl) {
-          provider.setProfileImage(imageUrl);
-        }
-      }
-      await fireStore.collection(profileCollection).doc(userId).update({
-        "name": name,
-        "address": address,
-        "profile": (provider.getProfileImage != imageUrl)
-            ? imageUrl
-            : provider.getProfileImage,
-      });
+      // if (allowChange) {
+      //   Overlay.of(context).insert(loader);
+      //   imageUrl = await getProfileImageUrl(profileImage!);
+      //   if (provider.getProfileImage != imageUrl) {
+      //     provider.setProfileImage(imageUrl);
+      //   }
+      // }
+
+      Map<String, dynamic> updateData = {"name": name};
+
+      // if (imageUrl != null && provider.getProfileImage.isNotEmpty) {
+      //   updateData["profile"] = imageUrl;
+      // }
+
+      await fireStore
+          .collection(profileCollection)
+          .doc(userId)
+          .update(updateData);
 
       showSnackBar(context, "Profile updated");
       updated(true);
@@ -134,12 +135,19 @@ class FirebaseFireStoreService {
     }
   }
 
-  Future<String> getProfileImageUrl1(File profileImage) async {
-    final fileName = path.basename(profileImage.path);
-    final storageRef =
-        FirebaseStorage.instance.ref().child('user_images/$fileName');
+  Future<void> updateProfilePicture(
+    BuildContext context,
+    File profileImage,
+  ) async {
+    final provider = Provider.of<ChatProvider>(context, listen: false);
 
-    return await storageRef.getDownloadURL();
+    String url = await getProfileImageUrl(profileImage);
+    provider.setProfileImage(url);
+    await fireStore
+        .collection(profileCollection)
+        .doc(userId)
+        .update({'profile': url});
+    showSnackBar(context, 'Profile Picture Updated Successfully');
   }
 
   Future<String> getProfileImageUrl(File profileImage) async {
@@ -149,8 +157,6 @@ class FirebaseFireStoreService {
           'profile_${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final Reference imageRef =
           FirebaseStorage.instance.ref().child('user_images').child(fileName);
-
-      // Upload the file
       final UploadTask uploadTask = imageRef.putFile(profileImage);
 
       // Wait for upload completion and get download URL

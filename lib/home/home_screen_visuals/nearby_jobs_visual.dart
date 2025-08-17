@@ -143,7 +143,9 @@ class NearbyJobsVisual extends StatelessWidget {
                         child: const Text(
                           "View Details",
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15),
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 15),
                         ),
                       ),
                     ),

@@ -7,6 +7,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/home/constants.dart';
 import 'package:trunriproject/subscription/phone_number_verification.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
@@ -306,6 +307,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       showSnackBar(context, 'User not logged in');
       return;
     }
+
     final expiryDuration = (selectedPlan == annualPlan)
         ? daysInAYear
         : ((selectedPlan == monthlyPlan) ? daysInAMonth : 0);
@@ -322,6 +324,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           'subscriptionExpiry': expiryDate,
         },
       );
+      await firestore.collection('purchases').doc(uid).set({
+        'userID': AuthServices().getCurrentUser()!.uid,
+        'plan': (selectedPlan == annualPlan)
+            ? 'TruNri Pro Annual'
+            : 'TruNri Pro Monthly',
+        'purchaseDate': FieldValue.serverTimestamp(),
+        // 'subscriptionExpiry': expiryDate,
+        'status': 'Completed',
+        'amount': (selectedPlan == annualPlan)
+            ? annualPriceAmount
+            : monthlyPriceAmount,
+      }, SetOptions(merge: true));
 
       Provider.of<SubscriptionData>(context, listen: false)
           .changeSubscriptionStatus(true);
@@ -332,7 +346,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           builder: (c) => const SubscriptionSuccessScreen(),
         ),
       );
-
       showSnackBar(context, "Subscription Activated");
     } catch (e) {
       showSnackBar(context, 'Failed to activate subscription: $e');

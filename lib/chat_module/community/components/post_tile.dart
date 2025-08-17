@@ -73,7 +73,7 @@ class _PostTileState extends State<PostTile> with TickerProviderStateMixin {
     return GestureDetector(
       onTap: widget.onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -93,7 +93,7 @@ class _PostTileState extends State<PostTile> with TickerProviderStateMixin {
               ),
             ],
             border: Border.all(
-              color: Colors.orange.withValues(alpha: 0.12),
+              color: Colors.black.withValues(alpha: 0.12),
               width: 1,
             ),
           ),

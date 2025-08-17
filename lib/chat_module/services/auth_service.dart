@@ -10,4 +10,11 @@ class AuthServices {
   String? getCurrentUserDisplayName() {
     return _auth.currentUser!.displayName;
   }
+
+  void setUserProfilePicture(String url) {
+    // _auth.currentUser.photoURL;
+    _auth.currentUser!.updatePhotoURL(url);
+  }
+
+  String? getUserProfilePicture() => _auth.currentUser!.photoURL;
 }

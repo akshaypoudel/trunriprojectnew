@@ -1,4 +1,6 @@
+import 'dart:developer';
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,11 +12,12 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
+import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
-import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/signinscreen.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
+import 'package:trunriproject/subscription/subscription_details_screen.dart';
 import 'package:trunriproject/subscription/subscription_screen.dart';
 import 'package:trunriproject/subscription/subscription_success_screen.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -36,7 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool isobscurepassword = true;
   File userImageFile = File("");
   bool isEditing = false;
-  bool imagePicked = false;
+  bool isNameTextChanged = false;
   bool dataLoaded = true;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -52,19 +55,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
+    // File? imageToUpload;
+    // if (hasNewImageSelected &&
+    //     userImageFile.path.isNotEmpty &&
+    //     userImageFile.existsSync()) {
+    //   imageToUpload = userImageFile;
+    // }
+
     try {
       await fireStoreService.updateProfile(
         address: '',
-        allowChange: userImageFile.path.isEmpty ? false : true,
+        // allowChange: imageToUpload != null,
         context: context,
         name: nameController.text.trim(),
-        profileImage: userImageFile,
+        // profileImage: imageToUpload,
         updated: (bool value) {
           if (value) {
             if (widget.fromLogin == false) {
               Get.back();
             } else {
-              Get.offAll(const MyBottomNavBar());
+              // Get.offAll(const MyBottomNavBar());
               fetchUserData();
             }
           } else {
@@ -72,11 +82,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
         },
       );
-      if (userImageFile != File("")) {
-        await fireStoreService.updateProfilePictureForCommunity(userImageFile);
-      }
     } catch (e) {
-      showSnackBar(context, "Error updating profile");
+      showSnackBar(context, "Error updating profile $e");
       // log('updaitn profile error==========  $e');
     }
   }
@@ -96,8 +103,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       newEmail = snapshot.get('email') ?? '';
       phone = snapshot.get('phoneNumber') ?? '';
       imageUrl = snapshot.get('profile') ?? '';
+
       // userImageUrl = imageUrl;
     }
+    // imageUrl = AuthServices().getUserProfilePicture()!;
 
     dynamic querySnapshot;
     if (phone.isNotEmpty) {
@@ -150,150 +159,189 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LocationData>(
-      builder: (BuildContext context, LocationData value, Widget? child) {
-        return Scaffold(
-          backgroundColor: Colors.white,
-          extendBody: true,
-          appBar: _buildAppBar(),
-          body: dataLoaded
-              ? Container(
-                  height: Get.height,
-                  color: Colors.white,
-                  padding: const EdgeInsets.only(left: 15, top: 20, right: 15),
-                  child: GestureDetector(
-                    onTap: () {
-                      FocusScope.of(context).unfocus();
-                    },
-                    child: Form(
-                      key: formKey,
-                      child: SingleChildScrollView(
-                        child: Column(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      extendBody: true,
+      appBar: _buildAppBar(),
+      body: dataLoaded
+          ? Container(
+              height: Get.height,
+              color: Colors.white,
+              padding: const EdgeInsets.only(left: 15, top: 20, right: 15),
+              child: GestureDetector(
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                },
+                child: Form(
+                  key: formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Row(
                           children: [
-                            Row(
-                              children: [
-                                GestureDetector(
-                                  behavior: HitTestBehavior.translucent,
-                                  onTap: () {
-                                    NewHelper.showImagePickerSheet(
-                                        gotImage: (File gg) {
-                                          userImageFile = gg;
-                                          imagePicked = true;
-                                          updateProfile();
-                                          setState(() {});
-                                        },
-                                        context: context);
-                                  },
-                                  child: Stack(
-                                    children: [
-                                      Container(
-                                        width: 130,
-                                        height: 130,
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                              width: 4, color: Colors.white),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              spreadRadius: 2,
-                                              blurRadius: 10,
-                                              color: Colors.black
-                                                  .withValues(alpha: 0.1),
-                                            )
-                                          ],
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(10000),
-                                          child: (imageUrl.isNotEmpty)
-                                              ? Image.network(
-                                                  imageUrl,
+                            GestureDetector(
+                              behavior: HitTestBehavior.translucent,
+                              onTap: () {
+                                NewHelper.showImagePickerSheet(
+                                    gotImage: (File gg) {
+                                      final provider =
+                                          Provider.of<ChatProvider>(context,
+                                              listen: false);
+                                      userImageFile = gg;
+                                      if (userImageFile != File("")) {
+                                        fireStoreService.updateProfilePicture(
+                                            context, userImageFile);
+                                        fireStoreService
+                                            .updateProfilePictureForCommunity(
+                                                userImageFile);
+                                      }
+
+                                      setState(() {
+                                        imageUrl = provider.getProfileImage;
+                                      });
+                                    },
+                                    context: context);
+                              },
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    width: 130,
+                                    height: 130,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          width: 4, color: Colors.white),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          spreadRadius: 2,
+                                          blurRadius: 10,
+                                          color: Colors.black
+                                              .withValues(alpha: 0.1),
+                                        )
+                                      ],
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius:
+                                          BorderRadius.circular(10000),
+                                      child: Consumer<ChatProvider>(
+                                        builder:
+                                            (context, chatProvider, child) {
+                                          // Use provider image first, fallback to local imageUrl, then show icon
+                                          final displayImageUrl = chatProvider
+                                                  .getProfileImage.isNotEmpty
+                                              ? chatProvider.getProfileImage
+                                              : imageUrl;
+
+                                          return displayImageUrl.isNotEmpty
+                                              ? CachedNetworkImage(
+                                                  imageUrl: displayImageUrl,
                                                   fit: BoxFit.cover,
+                                                  placeholder: (context, url) =>
+                                                      Container(
+                                                    color: Colors.grey[200],
+                                                    child: const Center(
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    ),
+                                                  ),
+                                                  errorWidget:
+                                                      (context, url, error) =>
+                                                          Icon(
+                                                    CupertinoIcons
+                                                        .person_alt_circle,
+                                                    size: 45,
+                                                    color: Colors.grey.shade700,
+                                                  ),
                                                 )
                                               : Icon(
                                                   CupertinoIcons
                                                       .person_alt_circle,
                                                   size: 45,
                                                   color: Colors.grey.shade700,
-                                                ),
-                                        ),
+                                                );
+                                        },
                                       ),
-                                      Positioned(
-                                        bottom: 0,
-                                        right: 0,
-                                        child: Container(
-                                          height: 40,
-                                          width: 40,
-                                          decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                width: 4,
-                                                color: Colors.white,
-                                              ),
-                                              color: Colors.blue),
-                                          child: const Icon(
-                                            Icons.edit,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      height: 40,
+                                      width: 40,
+                                      decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            width: 4,
                                             color: Colors.white,
                                           ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 20,
-                                ),
-                                Expanded(
-                                  child: Column(
-                                    children: [
-                                      TextFormField(
-                                        decoration: InputDecoration(
-                                          // border: InputBorder.none,
-                                          hintText: name,
-                                        ),
-                                        readOnly: !isEditing,
-                                        controller: nameController,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 20,
-                                            color: Colors.black),
+                                          color: Colors.blue),
+                                      child: const Icon(
+                                        Icons.edit,
+                                        color: Colors.white,
                                       ),
-                                      TextFormField(
-                                        decoration: InputDecoration(
-                                          hintText: email,
-                                        ),
-                                        readOnly: true,
-                                        controller: emailController,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w400,
-                                            fontSize: 14,
-                                            color: Colors.black),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
                             const SizedBox(
-                              height: 40,
+                              width: 20,
                             ),
-                            _buildSubscriptionSection(),
-                            const SizedBox(height: 45),
-                            _buildMenuSection(),
-                            const SizedBox(height: 95),
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  TextFormField(
+                                    decoration: InputDecoration(
+                                      // border: InputBorder.none,
+                                      hintText: name,
+                                    ),
+                                    readOnly: !isEditing,
+                                    onChanged: (v) {
+                                      setState(() {
+                                        isNameTextChanged = true;
+                                      });
+                                    },
+                                    controller: nameController,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 20,
+                                        color: Colors.black),
+                                  ),
+                                  TextFormField(
+                                    decoration: InputDecoration(
+                                      hintText: email,
+                                    ),
+                                    readOnly: true,
+                                    controller: emailController,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 14,
+                                        color: Colors.black),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
-                      ),
+                        const SizedBox(
+                          height: 40,
+                        ),
+                        _buildSubscriptionSection(),
+                        const SizedBox(height: 45),
+                        _buildMenuSection(),
+                        const SizedBox(height: 95),
+                      ],
                     ),
                   ),
-                )
-              : const Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.orange,
-                  ),
                 ),
-        );
-      },
+              ),
+            )
+          : const Center(
+              child: CircularProgressIndicator(
+                color: Colors.orange,
+              ),
+            ),
     );
   }
 
@@ -496,6 +544,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildMenuSection() {
     final menuItems = [
       MenuItemData(
+        title: 'My Subscriptions',
+        icon: Icons.subscriptions_rounded,
+        onTap: () => Get.to(const SubscriptionDetailsScreen()),
+      ),
+      MenuItemData(
         title: 'Address',
         icon: Icons.location_on_outlined,
         onTap: () => Get.to(const AddressListScreen()),
@@ -583,7 +636,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: InkWell(
               borderRadius: BorderRadius.circular(25),
               onTap: () {
-                if (isEditing) {
+                if (isEditing && isNameTextChanged) {
+                  setState(() {
+                    isNameTextChanged = false;
+                  });
                   updateProfile();
                 }
                 setState(() {

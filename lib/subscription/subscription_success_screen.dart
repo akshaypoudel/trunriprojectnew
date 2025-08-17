@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:trunriproject/home/home_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:trunriproject/subscription/subscription_data.dart';
+import 'package:trunriproject/widgets/helper.dart';
 
 class SubscriptionSuccessScreen extends StatefulWidget {
   const SubscriptionSuccessScreen({super.key});
@@ -536,7 +541,35 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          try {
+                            // Get current user ID
+                            String uid = FirebaseAuth.instance.currentUser!.uid;
+                            final provider = Provider.of<SubscriptionData>(
+                                context,
+                                listen: false);
+
+                            provider.changeSubscriptionStatus(false);
+                            // Update Firestore
+                            await FirebaseFirestore.instance
+                                .collection('User')
+                                .doc(uid)
+                                .update({
+                              "isSubscribed": false,
+                              "subscriptionExpiry": Timestamp.now(),
+                            });
+
+                            // Optionally show a confirmation snackbar/toast
+
+                            showSnackBar(
+                                context, "Subscription cancelled successfully");
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Error: $e")),
+                            );
+                          }
+
+                          Navigator.pop(context);
                           Navigator.pop(context);
                         },
                         style: ElevatedButton.styleFrom(

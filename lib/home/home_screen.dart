@@ -202,12 +202,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _handleLocationSource() async {
-    // final position = await Geolocator.getCurrentPosition();
-    // final placemarks =
-    //     await placemarkFromCoordinates(position.latitude, position.longitude);
-
-    // final country = placemarks.first.country;
-
     final provider = Provider.of<LocationData>(context, listen: false);
 
     if (provider.getUserCountry == "Australia") {
@@ -222,9 +216,19 @@ class _HomeScreenState extends State<HomeScreen> {
       getCurrentLocationByAddress();
     }
 
-    if (!isShownLocationInfoDialog) {
-      isShownLocationInfoDialog = true;
+    // if (!isShownLocationInfoDialog) {
+    //   isShownLocationInfoDialog = true;
+    //   _showLocationInfoDialog(isInAustralia: isInAustralia);
+    // }
+    final prefs = await SharedPreferences.getInstance();
+    final hasShown = prefs.getBool("hasShownLocationInfoDialog") ?? false;
+
+    if (!hasShown) {
+      // Show dialog
       _showLocationInfoDialog(isInAustralia: isInAustralia);
+
+      // Save preference so it won't show again
+      await prefs.setBool("hasShownLocationInfoDialog", true);
     }
   }
 
@@ -284,7 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
       longitude = double.parse(lng);
     }
 
-    log('final lat and log in native addr === $latitude, $longitude, $radiusFilter');
+    // log('final lat and log in native addr === $latitude, $longitude, $radiusFilter');
 
     if (radiusFilter is int) {
       await _fetchAllNearbyPlaces(latitude, longitude, radiusFilter);

@@ -311,9 +311,9 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
             title: const Text(
               'Events Near You',
               style: TextStyle(
-                color: Colors.orange,
+                color: Colors.black,
                 fontSize: 21,
-                fontWeight: FontWeight.bold,
+                // fontWeight: FontWeight.bold,
               ),
             ),
             // centerTitle: true,
@@ -323,7 +323,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                 child: IconButton(
                   icon: const Icon(
                     Icons.location_on,
-                    color: Colors.orange,
+                    color: Colors.deepOrangeAccent,
                     size: 27,
                   ),
                   onPressed: () => _showLocationFilterDialog(),
@@ -394,7 +394,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                                 category,
                                 style: TextStyle(
                                   color: isSelected
-                                      ? Colors.orange
+                                      ? Colors.deepOrangeAccent
                                       : Colors.grey[600],
                                   fontWeight: isSelected
                                       ? FontWeight.w600
@@ -418,13 +418,14 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.orange.withValues(alpha: 0.1),
+                            color:
+                                Colors.deepOrangeAccent.withValues(alpha: 0.1),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
                         ],
                         border: Border.all(
-                          color: Colors.orange.withValues(alpha: 0.3),
+                          color: Colors.deepOrangeAccent.withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -434,7 +435,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                             padding: EdgeInsets.symmetric(horizontal: 14),
                             child: Icon(
                               Icons.search,
-                              color: Colors.orange,
+                              color: Colors.deepOrangeAccent,
                               size: 24,
                             ),
                           ),
@@ -583,7 +584,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                                         color: Colors.grey[200],
                                         child: const Center(
                                           child: CircularProgressIndicator(
-                                            color: Colors.orange,
+                                            color: Colors.deepOrangeAccent,
                                           ),
                                         ),
                                       ),
@@ -618,7 +619,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                                               const Icon(
                                                 Icons.calendar_month_sharp,
                                                 size: 15,
-                                                color: Colors.orange,
+                                                color: Colors.deepOrangeAccent,
                                               ),
                                               const SizedBox(width: 4),
                                               Expanded(
@@ -626,7 +627,8 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                                                   "${formatEventDate(date)} - $time",
                                                   style: const TextStyle(
                                                     fontSize: 13,
-                                                    color: Colors.orange,
+                                                    color:
+                                                        Colors.deepOrangeAccent,
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                                 ),
@@ -686,9 +688,17 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                                                 horizontal: 12,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: Colors.orange,
+                                                // color: Colors.deepOrange,
                                                 borderRadius:
                                                     BorderRadius.circular(8),
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    Colors.deepOrange,
+                                                    Colors.orange.shade600,
+                                                  ],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                ),
                                               ),
                                               child: const Text(
                                                 'View Details',

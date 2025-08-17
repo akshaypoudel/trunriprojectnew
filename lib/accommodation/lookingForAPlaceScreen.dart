@@ -169,13 +169,15 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
         style: ElevatedButton.styleFrom(
           backgroundColor: isOutlined
               ? Colors.transparent
-              : (customColor ?? (isPrimary ? Colors.orange : cardColor)),
+              : (customColor ??
+                  (isPrimary ? Colors.deepOrangeAccent : cardColor)),
           foregroundColor: isOutlined
-              ? (customColor ?? Colors.orange)
-              : (isPrimary ? cardColor : Colors.orange),
+              ? (customColor ?? Colors.deepOrangeAccent)
+              : (isPrimary ? cardColor : Colors.deepOrangeAccent),
           elevation: 0,
           side: isOutlined
-              ? BorderSide(color: customColor ?? Colors.orange, width: 1.5)
+              ? BorderSide(
+                  color: customColor ?? Colors.deepOrangeAccent, width: 1.5)
               : BorderSide(color: Colors.grey.shade200, width: 1),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -205,13 +207,13 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Colors.orange.withValues(alpha: 0.1),
+              color: Colors.deepOrangeAccent.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
-            color: Colors.orange.withValues(alpha: 0.3),
+            color: Colors.deepOrangeAccent.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -221,7 +223,7 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
               padding: EdgeInsets.symmetric(horizontal: 14),
               child: Icon(
                 Icons.search,
-                color: Colors.orange,
+                color: Colors.deepOrangeAccent,
                 size: 24,
               ),
             ),
@@ -672,8 +674,8 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
           'Accomodations',
           style: TextStyle(
             fontSize: 21,
-            fontWeight: FontWeight.bold,
-            color: Colors.orange,
+            // fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
         actions: [
@@ -683,7 +685,7 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
               icon: const Icon(
                 Icons.location_on,
                 size: 26,
-                color: Colors.orange,
+                color: Colors.deepOrangeAccent,
               ),
               onPressed: () => _showLocationFilterDialog(),
             ),
