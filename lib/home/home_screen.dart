@@ -567,25 +567,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(
                                 height: 2,
                               ),
-                              GetBannersVisual(
-                                onPageChanged: (value, _) {
-                                  sliderIndex.value = value.toDouble();
-                                },
-                              ),
-                              Obx(
-                                () => DotsIndicator(
-                                  dotsCount: 3,
-                                  position: sliderIndex.value.toInt(),
-                                  decorator: DotsDecorator(
-                                    activeColor: Colors.orange,
-                                    size: const Size.square(8.0),
-                                    activeSize: const Size(18.0, 8.0),
-                                    activeShape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              // GetBannersVisual(
+                              //   onPageChanged: (value, _) {
+                              //     sliderIndex.value = value.toDouble();
+                              //   },
+                              // ),
+                              const BannerWithDotsWidget(),
                               const SizedBox(height: 10),
                               GetCategoriesVisuals(
                                 restaurants: _restaurants,

@@ -102,8 +102,12 @@ class NearbyGroceryStoresVisual extends StatelessWidget {
                         : 'Not Available';
                     final closingTime =
                         groceryStore['closing_time'] ?? 'Not Available';
-                    final photoReference = groceryStore['photos'] != null
-                        ? groceryStore['photos'][0]['photo_reference']
+                    // final photoReference = groceryStore['photos'] != null
+                    //     ? groceryStore['photos'][0]['photo_reference']
+                    //     : null;
+                    final photos = groceryStore['photos'] as List?;
+                    final photoReference = (photos != null && photos.isNotEmpty)
+                        ? photos.first['photo_reference']
                         : null;
                     final photoUrl = photoReference != null
                         ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoReference&key=${Constants.API_KEY}'

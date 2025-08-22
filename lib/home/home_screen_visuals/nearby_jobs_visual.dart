@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:trunriproject/job/jobDetailsScreen.dart';
 
 class NearbyJobsVisual extends StatelessWidget {
@@ -21,64 +20,31 @@ class NearbyJobsVisual extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-                child: CircularProgressIndicator(color: Colors.orange));
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                Container(
-                  width: 200,
-                  margin: const EdgeInsets.symmetric(horizontal: 100),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.deepOrange.shade200),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.business_center,
-                        size: 48,
-                        color: Colors.orangeAccent,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        (isInAustralia) ? 'No Jobs Nearby' : 'No Jobs Found',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        isInAustralia
-                            ? 'Try expanding your radius or check another suburb'
-                            : 'Select a different suburb in Australia to find Jobs',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade700,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              child: CircularProgressIndicator(color: Colors.orange),
             );
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return _buildNoJobsWidget();
+          }
+
+          // ✅ Filter jobs where isApproved == true
+          final jobList = snapshot.data!.docs
+              .map((doc) => doc.data() as Map<String, dynamic>)
+              .where((job) => job['isApproved'] == true)
+              .toList();
+
+          if (jobList.isEmpty) {
+            return _buildNoJobsWidget();
           }
 
           return ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 10),
-            itemCount: snapshot.data!.docs.length,
+            itemCount: jobList.length,
             separatorBuilder: (_, __) => const SizedBox(width: 10),
             itemBuilder: (context, index) {
-              Map<String, dynamic> data =
-                  snapshot.data!.docs[index].data() as Map<String, dynamic>;
+              Map<String, dynamic> data = jobList[index];
 
               return Container(
                 width: 260,
@@ -156,6 +122,54 @@ class NearbyJobsVisual extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildNoJobsWidget() {
+    return ListView(
+      scrollDirection: Axis.horizontal,
+      children: [
+        Container(
+          width: 200,
+          margin: const EdgeInsets.symmetric(horizontal: 100),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.orange.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.deepOrange.shade200),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.business_center,
+                size: 48,
+                color: Colors.orangeAccent,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                (isInAustralia) ? 'No Jobs Nearby' : 'No Jobs Found',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                isInAustralia
+                    ? 'Try expanding your radius or check another suburb'
+                    : 'Select a different suburb in Australia to find Jobs',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade700,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

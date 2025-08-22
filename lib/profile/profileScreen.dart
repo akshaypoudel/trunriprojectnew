@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,9 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
-import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
-import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/signinscreen.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 import 'package:trunriproject/subscription/subscription_details_screen.dart';

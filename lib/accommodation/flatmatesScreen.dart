@@ -92,7 +92,9 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
       }, SetOptions(merge: true));
       Get.offAll(const MyBottomNavBar());
       NewHelper.hideLoader(loader);
-      showSnackBar(context, 'Your property lisitng saved');
+      // showSnackBar(context, 'Your property lisitng saved');
+      showSnackBar(context,
+          'Listing submitted for review. It will go live after approval.');
     } else {
       NewHelper.hideLoader(loader);
       log('No matching document found');

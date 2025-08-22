@@ -24,6 +24,7 @@ class NearbyAccomodationVisual extends StatelessWidget {
         if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
           accommodationList = snapshot.data!.docs
               .map((doc) => doc.data() as Map<String, dynamic>)
+              .where((item) => item['isApproved'] == true)
               .toList();
 
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,7 +55,8 @@ class NearbyAccomodationVisual extends StatelessWidget {
             // Show either carousel or not-found visual
             if (snapshot.connectionState == ConnectionState.waiting)
               const Center(
-                  child: CircularProgressIndicator(color: Colors.orange))
+                child: CircularProgressIndicator(color: Colors.orange),
+              )
             else if (accommodationList.isEmpty)
               SizedBox(
                 height: 200,
@@ -198,7 +200,7 @@ class NearbyAccomodationVisual extends StatelessWidget {
                     autoPlayCurve: Curves.easeInOut,
                   ),
                 ),
-              ),
+              )
           ],
         );
       },

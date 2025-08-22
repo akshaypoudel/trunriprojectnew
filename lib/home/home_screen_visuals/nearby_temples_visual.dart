@@ -85,10 +85,18 @@ class NearbyTemplesVisual extends StatelessWidget {
                     ? temples['opening_hours']['weekday_text']
                     : 'Not Available';
                 final closingTime = temples['closing_time'] ?? 'Not Available';
-                final photoReference = temples['photos'] != null
-                    ? temples['photos'][0]['photo_reference']
-                    : temples['photos'][1]['photo_reference'];
-                final photoUrl = photoReference != null
+                // final photoReference = temples['photos'] != null
+                //     ? temples['photos'][0]['photo_reference']
+                //     : temples['photos'][1]['photo_reference'];
+                // final photoUrl = photoReference != null
+                //     ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=35000&photoreference=$photoReference&key=${Constants.API_KEY}'
+                //     : null;
+
+                final photos = temples['photos'] as List?;
+                final photoReference = (photos != null && photos.isNotEmpty)
+                    ? photos.first['photo_reference']
+                    : null;
+                final photoUrl = (photoReference != null)
                     ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=35000&photoreference=$photoReference&key=${Constants.API_KEY}'
                     : null;
 

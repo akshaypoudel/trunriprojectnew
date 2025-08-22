@@ -43,6 +43,7 @@ class NearbyEventsVisual extends StatelessWidget {
             if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
               eventList = snapshot.data!.docs
                   .map((doc) => doc.data() as Map<String, dynamic>)
+                  .where((item) => item['status'] == 'approved')
                   .toList();
 
               WidgetsBinding.instance.addPostFrameCallback((_) {
