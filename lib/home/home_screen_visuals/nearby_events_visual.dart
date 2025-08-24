@@ -122,16 +122,17 @@ class NearbyEventsVisual extends StatelessWidget {
                   return GestureDetector(
                     onTap: () {
                       Get.to(EventDetailsScreen(
-                        eventDate: event['eventDate'],
-                        eventName: event['eventName'],
-                        eventTime: event['eventTime'],
-                        location: event['location'],
-                        photoUrl: event['photo'],
-                        price: event['ticketPrice'],
-                        description: event['description'],
-                        category: event['category'][0],
-                        eventType: event['eventType'][0],
-                        contactInfo: event['contactInformation'],
+                        // eventDate: event['eventDate'],
+                        // eventName: event['eventName'],
+                        // eventTime: event['eventTime'],
+                        // location: event['location'],
+                        // photoUrl: event['photo'],
+                        // price: event['ticketPrice'],
+                        // description: event['description'],
+                        // category: event['category'][0],
+                        // eventType: event['eventType'][0],
+                        // contactInfo: event['contactInformation'],
+                        eventData: event,
                       ));
                     },
                     child: Container(

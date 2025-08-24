@@ -12,6 +12,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
+import 'package:trunriproject/profile/my_listings_screen.dart';
+import 'package:trunriproject/settings/settings_screen.dart';
 import 'package:trunriproject/signinscreen.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 import 'package:trunriproject/subscription/subscription_details_screen.dart';
@@ -52,26 +54,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
-    // File? imageToUpload;
-    // if (hasNewImageSelected &&
-    //     userImageFile.path.isNotEmpty &&
-    //     userImageFile.existsSync()) {
-    //   imageToUpload = userImageFile;
-    // }
-
     try {
       await fireStoreService.updateProfile(
         address: '',
-        // allowChange: imageToUpload != null,
         context: context,
         name: nameController.text.trim(),
-        // profileImage: imageToUpload,
         updated: (bool value) {
           if (value) {
             if (widget.fromLogin == false) {
               Get.back();
             } else {
-              // Get.offAll(const MyBottomNavBar());
               fetchUserData();
             }
           } else {
@@ -81,7 +73,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     } catch (e) {
       showSnackBar(context, "Error updating profile $e");
-      // log('updaitn profile error==========  $e');
     }
   }
 
@@ -100,10 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       newEmail = snapshot.get('email') ?? '';
       phone = snapshot.get('phoneNumber') ?? '';
       imageUrl = snapshot.get('profile') ?? '';
-
-      // userImageUrl = imageUrl;
     }
-    // imageUrl = AuthServices().getUserProfilePicture()!;
 
     dynamic querySnapshot;
     if (phone.isNotEmpty) {
@@ -543,28 +531,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
       MenuItemData(
         title: 'My Subscriptions',
         icon: Icons.subscriptions_rounded,
-        onTap: () => Get.to(const SubscriptionDetailsScreen()),
+        onTap: () => Get.to(() => const SubscriptionDetailsScreen()),
+      ),
+      MenuItemData(
+        title: 'My Listings',
+        icon: Icons.my_library_books,
+        onTap: () => Get.to(() => const MyListingsScreen()),
+      ),
+      MenuItemData(
+        title: 'Event Tickets',
+        icon: Icons.airplane_ticket_sharp,
+        onTap: () {},
       ),
       MenuItemData(
         title: 'Address',
         icon: Icons.location_on_outlined,
-        onTap: () => Get.to(const AddressListScreen()),
+        onTap: () => Get.to(() => const AddressListScreen()),
       ),
       MenuItemData(
-        title: 'Feedback',
-        icon: Icons.feedback_outlined,
-        onTap: () {},
+        title: 'Settings',
+        icon: Icons.settings,
+        onTap: () => Get.to(() => const SettingsScreen()),
       ),
-      MenuItemData(
-        title: 'Share App',
-        icon: Icons.share_outlined,
-        onTap: () => Share.share('https://www.google.co.in/'),
-      ),
-      MenuItemData(
-        title: 'Contact Us',
-        icon: Icons.phone_outlined,
-        onTap: () => launchUrlString("tel://+917665096245"),
-      ),
+
+      // MenuItemData(
+      //   title: 'Feedback',
+      //   icon: Icons.feedback_outlined,
+      //   onTap: () {},
+      // ),
+      // MenuItemData(
+      //   title: 'Share App',
+      //   icon: Icons.share_outlined,
+      //   onTap: () => Share.share('https://www.google.co.in/'),
+      // ),
+      // MenuItemData(
+      //   title: 'Contact Us',
+      //   icon: Icons.phone_outlined,
+      //   onTap: () => launchUrlString("tel://+917665096245"),
+      // ),
       MenuItemData(
         title: 'Log Out',
         icon: Icons.logout_outlined,
@@ -574,7 +578,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ];
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 5),
+      margin: const EdgeInsets.symmetric(horizontal: 1),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -613,17 +617,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: Colors.white,
       elevation: 0,
       automaticallyImplyLeading: false,
-      flexibleSpace: FlexibleSpaceBar(
+      flexibleSpace: const FlexibleSpaceBar(
         title: Text(
           'Profile',
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 24,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF1A1A1A),
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1A1A1A),
           ),
         ),
         centerTitle: false,
-        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+        titlePadding: EdgeInsets.only(left: 20, bottom: 16),
       ),
       actions: [
         Container(

@@ -11,6 +11,12 @@ class TicketDetailsScreen extends StatelessWidget {
   const TicketDetailsScreen({super.key, required this.eventDetails});
   final Map<String, dynamic> eventDetails;
 
+  static const LinearGradient _buttonGradient = LinearGradient(
+    colors: [Colors.deepOrangeAccent, Colors.orange],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
   @override
   Widget build(BuildContext context) {
     log('eventdetail = $eventDetails');
@@ -30,6 +36,7 @@ class TicketDetailsScreen extends StatelessWidget {
             ticketUI(),
             const SizedBox(height: 25),
             // Download Ticket Button (optional)
+
             SizedBox(
               width: 250,
               height: 60,
@@ -45,19 +52,43 @@ class TicketDetailsScreen extends StatelessWidget {
                   );
 
                   await Printing.layoutPdf(
-                      onLayout: (format) async => pdf.save());
+                    onLayout: (format) async => pdf.save(),
+                  );
                 },
-                style: TextButton.styleFrom(backgroundColor: Colors.orange),
-                child: const Text(
-                  "Download Ticket",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero, // Important for full coverage
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Ink(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFFFF9800),
+                        Color(0xFFFF5722)
+                      ], // Orange gradient
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Container(
+                    alignment: Alignment.center,
+                    width: double.infinity,
+                    height: double.infinity,
+                    child: const Text(
+                      "Download Ticket",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+            )
           ],
         ),
       ),
@@ -189,7 +220,8 @@ class TicketDetailsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(15),
               decoration: const BoxDecoration(
-                color: accent,
+                // color: accent,
+                gradient: _buttonGradient,
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.event, color: Colors.white, size: 36),

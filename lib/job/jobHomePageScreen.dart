@@ -98,7 +98,6 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
   void _showLocationFilterDialog() {
     String selectedCity = selectedCityGlobal;
     double selectedRadius = selectedRadiusGlobal;
-
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -500,8 +499,10 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
                             return const Padding(
                               padding: EdgeInsets.all(40),
                               child: Center(
-                                  child: CircularProgressIndicator(
-                                      color: Colors.orange)),
+                                child: CircularProgressIndicator(
+                                  color: Colors.orange,
+                                ),
+                              ),
                             );
                           }
                           final filteredRadius = filtered.where((job) {

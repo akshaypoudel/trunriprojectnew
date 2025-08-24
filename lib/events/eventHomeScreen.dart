@@ -663,20 +663,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen> {
                                             onTap: () {
                                               Get.to(
                                                 EventDetailsScreen(
-                                                  eventDate: date,
-                                                  eventName: name,
-                                                  eventTime: time,
-                                                  location: address,
-                                                  photoUrl: photoUrl,
-                                                  price: event['ticketPrice'],
-                                                  description:
-                                                      event['description'],
-                                                  category: event['category']
-                                                      [0],
-                                                  eventType: event['eventType']
-                                                      [0],
-                                                  contactInfo: event[
-                                                      'contactInformation'],
+                                                  eventData: event,
                                                 ),
                                               );
                                             },

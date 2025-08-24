@@ -567,11 +567,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(
                                 height: 2,
                               ),
-                              // GetBannersVisual(
-                              //   onPageChanged: (value, _) {
-                              //     sliderIndex.value = value.toDouble();
-                              //   },
-                              // ),
                               const BannerWithDotsWidget(),
                               const SizedBox(height: 10),
                               GetCategoriesVisuals(

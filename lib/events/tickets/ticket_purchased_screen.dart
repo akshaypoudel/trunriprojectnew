@@ -5,6 +5,12 @@ class TicketPurchasedScreen extends StatelessWidget {
   TicketPurchasedScreen({super.key, required this.eventDetails});
   Map<String, dynamic> eventDetails;
 
+  static const LinearGradient _buttonGradient = LinearGradient(
+    colors: [Colors.deepOrangeAccent, Colors.orange],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +40,8 @@ class TicketPurchasedScreen extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: const BoxDecoration(
-                    color: Color(0xffff9800), // Orange
+                    // color: , // Orange
+                    gradient: _buttonGradient,
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
@@ -68,7 +75,7 @@ class TicketPurchasedScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 48),
-                // OK Button
+
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -76,24 +83,40 @@ class TicketPurchasedScreen extends StatelessWidget {
                     onPressed: () =>
                         Navigator.popUntil(context, (route) => route.isFirst),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xffff9800),
+                      padding: EdgeInsets
+                          .zero, // Important for full gradient coverage
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       elevation: 0,
-                      textStyle: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
-                    child: const Text(
-                      'OK',
-                      style: TextStyle(
-                        color: Colors.white,
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFFFF9800),
+                            Color(0xFFFF5722)
+                          ], // Orange to deep orange
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Container(
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'OK',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,

@@ -213,6 +213,8 @@ class _PostEventScreenState extends State<PostEventScreen> {
         'uid': AuthServices().getCurrentUser()!.uid,
         'status': 'pending',
         'isReported': false,
+        'isApproved': false,
+        'timestamp': Timestamp.now(),
       }, SetOptions(merge: true)).then((value) async {
         QuerySnapshot snapshot =
             await FirebaseFirestore.instance.collection('MakeEvent').get();

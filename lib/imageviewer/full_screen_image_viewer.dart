@@ -38,20 +38,6 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer>
     super.dispose();
   }
 
-  void _resetZoom() {
-    _animation = Matrix4Tween(
-      begin: _transformationController.value,
-      end: Matrix4.identity(),
-    ).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-    _animationController.reset();
-    _animationController.forward();
-    _animation!.addListener(() {
-      _transformationController.value = _animation!.value;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

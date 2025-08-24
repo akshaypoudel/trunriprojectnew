@@ -89,6 +89,7 @@ class _FlatmateScreenState extends State<FlatmateScreen> {
         'posterName': AuthServices().getCurrentUserDisplayName(),
         'status': 'pending',
         'isReported': false,
+        'timestamp': Timestamp.now(),
       }, SetOptions(merge: true));
       Get.offAll(const MyBottomNavBar());
       NewHelper.hideLoader(loader);
