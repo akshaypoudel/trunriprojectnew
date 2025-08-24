@@ -19,6 +19,9 @@ class SubscriptionSuccessScreen extends StatefulWidget {
 class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
   @override
   Widget build(BuildContext context) {
+    final featureTitles =
+        Provider.of<SubscriptionData>(context, listen: false).features;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -68,7 +71,7 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
                       // const SizedBox(height: 20),
                       _buildSuccessHeader(),
                       const SizedBox(height: 40),
-                      _buildFeaturesCard(),
+                      _buildFeaturesCard(featureTitles),
                       const SizedBox(height: 30),
                       _buildContinueButton(),
                       const SizedBox(height: 20),
@@ -197,33 +200,39 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
     );
   }
 
-  Widget _buildFeaturesCard() {
-    final features = [
-      FeatureData(
-        icon: Icons.event_available_rounded,
-        title: 'Unlimited Events & Posts',
-        subtitle: 'Create and share without limits',
-        color: Colors.blue,
-      ),
-      FeatureData(
-        icon: Icons.campaign_rounded,
-        title: 'Business Ads & Offers',
-        subtitle: 'Promote your business effectively',
-        color: Colors.green,
-      ),
-      FeatureData(
-        icon: Icons.group_add_rounded,
-        title: 'Social Features',
-        subtitle: 'Send requests & create groups',
-        color: Colors.purple,
-      ),
-      FeatureData(
-        icon: Icons.visibility_rounded,
-        title: 'Privacy Controls',
-        subtitle: 'Control your content visibility',
-        color: Colors.indigo,
-      ),
+  Widget _buildFeaturesCard(List<Map<String, String>> featureTitle) {
+    // Pool of generic icons
+    final List<IconData> iconPool = [
+      Icons.star_rounded,
+      Icons.check_circle,
+      Icons.circle,
+      Icons.circle_outlined,
+      Icons.diamond,
+      Icons.square_rounded,
+      Icons.label,
     ];
+
+    // Pool of generic colors
+    final List<Color> colorPool = [
+      Colors.deepOrange,
+      Colors.blue,
+      Colors.green,
+      Colors.purple,
+      Colors.indigo,
+      Colors.teal,
+      Colors.orange,
+    ];
+
+    // Build FeatureData list using rotation
+    final features = List<FeatureData>.generate(featureTitle.length, (index) {
+      final f = featureTitle[index];
+      return FeatureData(
+        title: f['title'] ?? '',
+        subtitle: f['description'] ?? '',
+        icon: iconPool[index % iconPool.length], // rotate icons
+        color: colorPool[index % colorPool.length], // rotate colors
+      );
+    });
 
     return Container(
       decoration: BoxDecoration(
@@ -231,7 +240,7 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Colors.black.withOpacity(0.08),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),

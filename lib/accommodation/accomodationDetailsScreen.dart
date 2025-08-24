@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -608,10 +609,19 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
           if (data['selectedAvailabilityDate'] != null)
             _buildDetailRow(
               'Available From',
-              data['selectedAvailabilityDate']
-                  .toDate()
-                  .toString()
-                  .split(' ')[0],
+              (() {
+                final value = data['selectedAvailabilityDate'];
+                if (value is Timestamp) {
+                  // Firestore Timestamp
+                  return value.toDate().toString().split(' ')[0];
+                } else if (value is String) {
+                  // Already a string
+                  return value.split(' ')[0];
+                } else {
+                  // Fallback in case it's null or unexpected type
+                  return 'N/A';
+                }
+              })(),
               Icons.date_range,
             ),
           _buildDetailRow('Minimum Stay',

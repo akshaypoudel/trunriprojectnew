@@ -5,8 +5,15 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  int radius = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -278,7 +285,7 @@ class SettingsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'TrunriProject',
+                  'TruNri',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -873,7 +880,9 @@ class SettingsScreen extends StatelessWidget {
                         }
                         final data =
                             snapshot.data!.data() as Map<String, dynamic>?;
+
                         final content = data?[field] as String?;
+
                         if (content == null || content.isEmpty) {
                           return Center(
                             child: Column(

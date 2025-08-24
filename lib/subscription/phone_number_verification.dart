@@ -70,7 +70,13 @@ class _PhoneNumberVerificationState extends State<PhoneNumberVerification> {
         .limit(1)
         .get();
 
-    return query.docs.isNotEmpty;
+    if (query.docs.isEmpty) {
+      return false;
+    } else {
+      return true;
+    }
+
+    // return query.docs.isNotEmpty;
   }
 
   @override

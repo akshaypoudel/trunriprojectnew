@@ -533,7 +533,7 @@ class AdvertisementDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '${adData['currency'] ?? 'INR'} ${adData['price'] ?? 0}',
+            '${adData['currency'] ?? 'AUD'} ${adData['price'] ?? 0}',
             style: const TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.bold,

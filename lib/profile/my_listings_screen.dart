@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trunriproject/accommodation/accomodationDetailsScreen.dart';
+import 'package:trunriproject/ads/ads_details_screen.dart';
+import 'package:trunriproject/ads/create_ad_screen.dart';
 import 'package:trunriproject/events/eventDetailsScreen.dart';
 import 'package:trunriproject/events/postEventScreen.dart';
 import 'package:trunriproject/job/addJobScreen.dart';
@@ -24,7 +26,7 @@ class MyListingsScreen extends StatefulWidget {
 class _MyListingsScreenState extends State<MyListingsScreen> {
   int selectedIndex = 0;
 
-  final List<String> tabs = ["Events", "Jobs", "Accommodation"];
+  final List<String> tabs = ["Events", "Jobs", "Housing", "Ads"];
 
   final LinearGradient gradient = const LinearGradient(
     colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
@@ -110,12 +112,23 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
               index: selectedIndex,
               children: [
                 _MyEventsTab(
-                    provider: provider,
-                    gradient: gradient,
-                    currentUserId: currentUserId),
-                _MyJobsTab(gradient: gradient, currentUserId: currentUserId),
+                  provider: provider,
+                  gradient: gradient,
+                  currentUserId: currentUserId,
+                ),
+                _MyJobsTab(
+                  gradient: gradient,
+                  currentUserId: currentUserId,
+                ),
                 _MyAccommodationsTab(
-                    gradient: gradient, currentUserId: currentUserId),
+                  gradient: gradient,
+                  currentUserId: currentUserId,
+                ),
+                _MyAdsTab(
+                  provider: provider,
+                  gradient: gradient,
+                  currentUserId: currentUserId,
+                ),
               ],
             ),
           ),
@@ -323,6 +336,84 @@ class _MyAccommodationsTab extends StatelessWidget {
                 Get.to(
                   () => AccommodationDetailsScreen(
                     accommodation: data,
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _MyAdsTab extends StatelessWidget {
+  final SubscriptionData provider;
+  final LinearGradient gradient;
+  final String currentUserId;
+
+  const _MyAdsTab(
+      {required this.provider,
+      required this.gradient,
+      required this.currentUserId});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('Advertisements')
+          .where('ownerId', isEqualTo: currentUserId)
+          .where('isApproved', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.deepOrangeAccent),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return _EmptyStateWidget(
+            icon: Icons.event_note_rounded,
+            label: "You haven't posted any Ads.",
+            actionLabel: "Create Ads",
+            gradient: gradient,
+            onAction: () {
+              if (provider.isUserSubscribed) {
+                Get.to(() => const CreateAdvertisementScreen());
+              } else {
+                SubscriptionAlertDialogBox.showSubscriptionAlertDialogForAds(
+                  context,
+                );
+              }
+            },
+          );
+        }
+
+        final events = snapshot.data!.docs;
+
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: events.length,
+          itemBuilder: (context, index) {
+            final doc = events[index];
+            final data = doc.data() as Map<String, dynamic>;
+
+            return _EnhancedListingCard(
+              title: data['title'] ?? 'Untitled Advertisement',
+              subtitle: data['location']['address'] ?? 'No location',
+              description: data['description'] ?? '',
+              imageUrls:
+                  (data['images'] as List<dynamic>?)?.cast<String>() ?? [],
+              publishedDate: data['createdAt'] as Timestamp?,
+              gradient: gradient,
+              type: 'Ads',
+              onTap: () {
+                // Navigate to Event Details Screen
+                Get.to(
+                  () => AdvertisementDetailScreen(
+                    adData: data,
                   ),
                 );
               },

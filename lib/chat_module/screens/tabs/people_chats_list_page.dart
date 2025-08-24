@@ -368,7 +368,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
   Widget build(BuildContext context) {
     super.build(context);
     setState(() {
-      log('friend request = $receivedRequestsList');
+      // log('friend request = $receivedRequestsList');
     });
     return Scaffold(
       backgroundColor: Colors.white,

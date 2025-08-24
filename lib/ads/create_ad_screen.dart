@@ -5,6 +5,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 
+import 'package:trunriproject/chat_module/services/auth_service.dart';
+
 class CreateAdvertisementScreen extends StatefulWidget {
   const CreateAdvertisementScreen({super.key});
 
@@ -23,14 +25,14 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
-  final _currencyController = TextEditingController(text: 'INR');
+  final _currencyController = TextEditingController(text: 'AUD');
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _websiteController = TextEditingController();
   final _addressController = TextEditingController();
   final _cityController = TextEditingController();
   final _stateController = TextEditingController();
-  final _countryController = TextEditingController(text: 'India');
+  final _countryController = TextEditingController(text: 'Australia');
   final _latitudeController = TextEditingController();
   final _longitudeController = TextEditingController();
   final _tagController = TextEditingController();
@@ -48,7 +50,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
     'event',
     'other'
   ];
-  final List<String> _currencies = ['INR', 'USD', 'EUR', 'GBP'];
+  final List<String> _currencies = ['AUD'];
 
   @override
   void dispose() {
@@ -76,25 +78,26 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.deepOrangeAccent,
+        backgroundColor: Colors.white,
         title: const Text(
           'Create Advertisement',
           style: TextStyle(
-            color: Colors.white,
+            color: Colors.black,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4.0),
           child: LinearProgressIndicator(
             value: (_currentPage + 1) / 4,
-            backgroundColor: Colors.white.withOpacity(0.3),
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            backgroundColor: Colors.deepOrange.withOpacity(0.3),
+            valueColor:
+                const AlwaysStoppedAnimation<Color>(Colors.deepOrangeAccent),
           ),
         ),
       ),
@@ -227,7 +230,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
                   controller: _priceController,
                   label: 'Price',
                   hint: '0',
-                  icon: Icons.currency_rupee_rounded,
+                  icon: Icons.attach_money,
                   keyboardType: TextInputType.number,
                   validator: (value) =>
                       value?.isEmpty == true ? 'Price is required' : null,
@@ -371,7 +374,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
           _buildTextFormField(
             controller: _phoneController,
             label: 'Phone Number',
-            hint: '+91 9876543210',
+            hint: '+61 987654321',
             icon: Icons.phone_rounded,
             keyboardType: TextInputType.phone,
             validator: (value) =>
@@ -1076,7 +1079,8 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
         'isApproved': false, // Requires approval
         'likes': 0,
         'views': 0,
-        'ownerId': 'current_user_id', // Replace with actual user ID
+        'ownerId':
+            AuthServices().getCurrentUser()!.uid, // Replace with actual user ID
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       };

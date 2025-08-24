@@ -1,5 +1,9 @@
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:trunriproject/profile/addressListScreen.dart';
 
 // Models for dynamic settings structure
 class SettingsItem {
@@ -53,30 +57,59 @@ class GeneralSettingsScreen extends StatefulWidget {
 }
 
 class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
+  String? fetchedRadius;
+
   // Settings state variables - easily manageable
   bool _pushNotifications = true;
   bool _newEventsNearby = true;
-  bool _jobAlerts = false;
+  bool _jobAlerts = true;
   bool _restaurantDeals = true;
   bool _accommodationAvailability = true;
   bool _eventReminders = true;
   // final bool _searchHistory = true;
   // final bool _personalizedRecommendations = true;
   // final bool _locationSharing = false;
-  final bool _profileVisibility = true;
+  // final bool _profileVisibility = true;
   // final bool _dataCollection = false;
   // final bool _autoDownload = true;
   // final bool _backgroundRefresh = true;
-  final bool _darkMode = false;
+  // final bool _darkMode = false;
 
-  String _searchRadius = '10km';
+  String _searchRadius = '50km';
   String _language = 'English';
-  final String _currency = 'INR';
+  // final String _currency = 'INR';
   // final String _defaultHomeTab = 'Restaurants';
   // final String _mapStyle = 'Default';
   String _textSize = 'Medium';
-  final String _distanceUnit = 'Kilometers';
+  // final String _distanceUnit = 'Kilometers';
   // final String _timeFormat = '12 Hour';
+
+  @override
+  void initState() {
+    super.initState();
+    // _fetchSearchRadius();
+  }
+
+  Future<void> _fetchSearchRadius() async {
+    try {
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('settings')
+          .doc('settings_document')
+          .get();
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data();
+        final radius = data?['radiusFilter'] as String?;
+        if (radius != null) {
+          setState(() {
+            fetchedRadius = radius;
+          });
+        }
+      }
+    } catch (e) {
+      // Handle error or leave default radius
+      log('Error fetching search radius: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,6 +156,8 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
 
   // Dynamic settings configuration - Easy to modify!
   List<SettingsSection> _getSettingsSections() {
+    // final radiusToShow = fetchedRadius ?? _searchRadius;
+
     return [
       // Location & Search Settings
       SettingsSection(
@@ -134,15 +169,20 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
             icon: Icons.radar,
             type: SettingsItemType.selection,
             currentValue: _searchRadius,
-            options: ['1km', '5km', '10km', '25km', '50km'],
-            onChanged: (value) => setState(() => _searchRadius = value),
+            options: ['1km', '5km', '10km', '25km', '50km', '100km'],
+            onChanged: (value) {
+              setState(() {
+                // fetchedRadius = value;
+                _searchRadius = value;
+              });
+            },
           ),
           SettingsItem(
             title: 'Default Location',
-            subtitle: 'Set home/work locations',
+            subtitle: 'View home/work locations',
             icon: Icons.home,
             type: SettingsItemType.navigation,
-            onTap: () => _showComingSoonSnackbar('Default Location'),
+            onTap: () => Get.to(() => const AddressListScreen()),
           ),
         ],
       ),
@@ -230,7 +270,7 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
             icon: Icons.text_fields,
             type: SettingsItemType.selection,
             currentValue: _textSize,
-            options: ['Small', 'Medium', 'Large', 'Extra Large'],
+            options: [/*'Small', */ 'Medium'], //, 'Large', 'Extra Large'],
             onChanged: (value) => setState(() => _textSize = value),
           ),
         ],
@@ -525,7 +565,7 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
         return Switch(
           value: item.value ?? false,
           onChanged: item.onToggle,
-          activeColor: Colors.deepOrangeAccent, // Orange for active switch
+          activeColor: Colors.deepOrangeAccent,
           inactiveThumbColor: Colors.white,
           inactiveTrackColor: Colors.grey[400],
         );
@@ -606,73 +646,6 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
           ),
         );
       },
-    );
-  }
-
-  void _showClearCacheDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text(
-            'Clear Cache',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          content: const Text(
-            'This will clear all cached data including images and temporary files. This action cannot be undone.',
-            style: TextStyle(color: Colors.black87),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Get.snackbar(
-                  'Cache Cleared',
-                  'App cache has been cleared successfully',
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: Colors.green,
-                  colorText: Colors.white,
-                  borderRadius: 8,
-                  margin: const EdgeInsets.all(16),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepOrange,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text('Clear', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showComingSoonSnackbar(String feature) {
-    Get.snackbar(
-      'Coming Soon',
-      '$feature feature will be available in the next update',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.deepOrange,
-      colorText: Colors.white,
-      borderRadius: 8,
-      margin: const EdgeInsets.all(16),
     );
   }
 }

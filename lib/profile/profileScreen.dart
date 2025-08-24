@@ -541,7 +541,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       MenuItemData(
         title: 'Event Tickets',
         icon: Icons.airplane_ticket_sharp,
-        onTap: () {},
+        onTap: () {
+          _navigateToEventTickets();
+        },
       ),
       MenuItemData(
         title: 'Address',
@@ -609,6 +611,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
         }).toList(),
       ),
+    );
+  }
+
+  void _navigateToEventTickets() {
+    Get.snackbar(
+      'Event Tickets',
+      'Event tickets will be implemented soon',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.deepOrangeAccent,
+      colorText: Colors.white,
+      borderRadius: 8,
+      margin: const EdgeInsets.all(16),
     );
   }
 

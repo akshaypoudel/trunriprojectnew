@@ -17,14 +17,17 @@ import 'package:trunriproject/widgets/helper.dart';
 const daysInAYear = (30 * 12);
 const daysInAMonth = 30;
 
-const monthlyPlan = 'Monthly';
-const annualPlan = 'Annual';
+const monthlyPlanNameDefault = 'TruNri Pro Monthly';
+const annualPlanNameDefault = 'TruNri Pro Annual';
 
-const annualPrice = '₹4099.99/year';
-const monthlyPrice = '₹619.99/month';
+// const annualPrice = '\$4099.99/year';
+// const monthlyPrice = '\$619.99/month';
 
-const annualPriceAmount = 4099.99;
-const monthlyPriceAmount = 619.99;
+// const annualPriceAmount = 4099.99;
+// const monthlyPriceAmount = 619.99;
+
+const annualPlanKey = "Annual Plan";
+const monthlyPlanKey = "Monthly Plan";
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -35,7 +38,15 @@ class SubscriptionScreen extends StatefulWidget {
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   late Razorpay _razorpay;
-  String selectedPlan = 'Annual';
+
+  String annualPlanName = annualPlanNameDefault;
+  double annualPlanPrice = 4099.99;
+  String monthlyPlanName = monthlyPlanNameDefault;
+  double monthlyPlanPrice = 619.19;
+  String selectedPlan = '';
+  List<Map<String, String>> features = [];
+
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -45,6 +56,58 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+
+    selectedPlan = annualPlanName;
+    _fetchSubscriptionData();
+  }
+
+  Future<void> _fetchSubscriptionData() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('subscriptionData')
+          .doc('subscriptionData')
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data()!;
+
+        final annualPlan = data[annualPlanKey];
+        final monthlyPlan = data[monthlyPlanKey];
+        // final featureMap = data['features'] as Map<String, dynamic>?;
+        // final featureMap = data
+
+        setState(() {
+          if (annualPlan != null) {
+            annualPlanName = annualPlan['name'] ?? annualPlanNameDefault;
+            annualPlanPrice = (annualPlan['price'] ?? annualPlanPrice) * 1.0;
+          }
+          if (monthlyPlan != null) {
+            monthlyPlanName = monthlyPlan['name'] ?? monthlyPlanNameDefault;
+            monthlyPlanPrice = (monthlyPlan['price'] ?? monthlyPlanPrice) * 1.0;
+          }
+          // if (featureMap != null) {
+          //   features = featureMap.values.map<Map<String, String>>((f) {
+          //     return {
+          //       'title': f['title'] as String,
+          //       'description': f['description'] as String,
+          //     };
+          //   }).toList();
+          // }
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        // Optional: Show an error snackbar here.
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      log("Subscription data fetch error: $e");
+      // Optional: Show snack bar or dialog on error
+    }
   }
 
   @override
@@ -69,6 +132,23 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Colors.deepOrangeAccent,
+          ),
+        ),
+      );
+    }
+
+    final annualPriceText = "\$${annualPlanPrice.toStringAsFixed(2)}/year";
+    final monthlyPriceText = "\$${monthlyPlanPrice.toStringAsFixed(2)}/month";
+
+    final featureTitles =
+        Provider.of<SubscriptionData>(context, listen: false).features;
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -122,19 +202,28 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        buildFeatureRow("Post Events & Restauraunts", true),
-                        buildFeatureRow("Promote Business Ads", true),
-                        // buildFeatureRow("", true),
-                        buildFeatureRow("Control Posts Visibility", true),
-                        buildFeatureRow(
-                          "One-on-One and Group Chat Feature",
-                          true,
+                        // buildFeatureRow("Post Events & Restauraunts", true),
+                        // buildFeatureRow("Promote Business Ads", true),
+                        // // buildFeatureRow("", true),
+                        // buildFeatureRow("Control Posts Visibility", true),
+                        // buildFeatureRow(
+                        //   "One-on-One and Group Chat Feature",
+                        //   true,
+                        // ),
+                        // buildFeatureRow(
+                        //   "Send Friend Requests",
+                        //   true,
+                        // ),
+                        // buildFeatureRow("Basic App Access", false),
+
+                        ...featureTitles.map(
+                          (f) => buildFeatureRow(
+                            f['title'] ?? 'Title',
+                            f['description'] ?? 'Description',
+                            true,
+                          ),
                         ),
-                        buildFeatureRow(
-                          "Send Friend Requests",
-                          true,
-                        ),
-                        buildFeatureRow("Basic App Access", false),
+
                         const SizedBox(height: 30),
                         FadeIn(
                           child: const Text(
@@ -153,14 +242,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                 child: GestureDetector(
                                   onTap: () {
                                     setState(() {
-                                      selectedPlan = annualPlan;
+                                      selectedPlan = annualPlanName;
                                     });
                                   },
                                   child: buildPlanTile(
-                                      title: annualPlan,
-                                      price: "₹341.29/month",
-                                      subtitle: annualPrice,
-                                      isSelected: selectedPlan == annualPlan),
+                                      title: annualPlanName,
+                                      price: annualPriceText,
+                                      subtitle: "Billed Annually",
+                                      isSelected:
+                                          selectedPlan == annualPlanName),
                                 ),
                               ),
                             ),
@@ -170,14 +260,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                 child: GestureDetector(
                                   onTap: () {
                                     setState(() {
-                                      selectedPlan = monthlyPlan;
+                                      selectedPlan = monthlyPlanName;
                                     });
                                   },
                                   child: buildPlanTile(
-                                      title: monthlyPlan,
-                                      price: monthlyPrice,
+                                      title: monthlyPlanName,
+                                      price: monthlyPriceText,
                                       subtitle: "Billed monthly",
-                                      isSelected: selectedPlan == monthlyPlan),
+                                      isSelected:
+                                          selectedPlan == monthlyPlanName),
                                 ),
                               ),
                             ),
@@ -264,7 +355,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       return;
     }
     final email = list[1];
-    final result = number.replaceFirst('+91', '');
+    // final result = number.replaceFirst('+61', '');
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final firestore = FirebaseFirestore.instance;
@@ -275,7 +366,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     await firestore.collection('User').doc(uid).get();
 
     double amount =
-        (selectedPlan == annualPlan) ? annualPriceAmount : monthlyPriceAmount;
+        (selectedPlan == annualPlanName) ? annualPlanPrice : monthlyPlanPrice;
 
     amount *= 100; //amount in paise
 
@@ -285,7 +376,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       'name': 'TruNri',
       'description': 'Pro Subscription',
       'prefill': {
-        'contact': result,
+        'contact': number,
         'email': email,
       },
       'external': {
@@ -308,9 +399,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       return;
     }
 
-    final expiryDuration = (selectedPlan == annualPlan)
+    final expiryDuration = (selectedPlan == annualPlanName)
         ? daysInAYear
-        : ((selectedPlan == monthlyPlan) ? daysInAMonth : 0);
+        : ((selectedPlan == monthlyPlanName) ? daysInAMonth : 0);
     try {
       final DateTime expiryDate = DateTime.now().add(
         Duration(
@@ -326,15 +417,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       );
       await firestore.collection('purchases').doc(uid).set({
         'userID': AuthServices().getCurrentUser()!.uid,
-        'plan': (selectedPlan == annualPlan)
-            ? 'TruNri Pro Annual'
-            : 'TruNri Pro Monthly',
+        'plan':
+            (selectedPlan == annualPlanName) ? annualPlanName : monthlyPlanName,
         'purchaseDate': FieldValue.serverTimestamp(),
         // 'subscriptionExpiry': expiryDate,
         'status': 'Completed',
-        'amount': (selectedPlan == annualPlan)
-            ? annualPriceAmount
-            : monthlyPriceAmount,
+        'amount': (selectedPlan == annualPlanName)
+            ? annualPlanPrice
+            : monthlyPlanPrice,
       }, SetOptions(merge: true));
 
       Provider.of<SubscriptionData>(context, listen: false)
@@ -352,7 +442,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     }
   }
 
-  Widget buildFeatureRow(String label, bool isPro) {
+  Widget buildFeatureRow1(String label, bool isPro) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -370,6 +460,61 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ),
           ),
           const Spacer(),
+          if (isPro)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.orange[100],
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                "PRO",
+                style: TextStyle(
+                  color: Colors.orange[800],
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildFeatureRow(String label, String subtitle, bool isPro) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            isPro ? Icons.check_circle : Icons.check,
+            color: isPro ? Colors.orange : Colors.grey,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
           if (isPro)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -427,7 +572,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           ),
           const SizedBox(height: 5),
           Text(
-            (subtitle == annualPrice) ? '$subtitle\nBilled Annualy' : subtitle,
+            subtitle,
             style: TextStyle(
               fontSize: 13,
               color: Colors.grey[700],

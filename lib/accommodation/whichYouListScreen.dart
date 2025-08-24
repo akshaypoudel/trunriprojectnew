@@ -35,6 +35,7 @@ class _WhichYouListScreenState extends State<WhichYouListScreen> {
         'roomType': text,
         'formID': formID,
       };
+
       NewHelper.hideLoader(loader);
 
       Get.to(() => LocationScreen(formID: formID, data: data));
