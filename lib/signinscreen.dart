@@ -63,12 +63,12 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   void requestForOtp(String phone) async {
-    final isUserBlocked = await checkIfUserIsBlockedByPhone(phone);
-    if (isUserBlocked) {
-      log('user is blocked');
-      showSnackBar(context, "User is Blocked by Admin");
-      return;
-    }
+    // final isUserBlocked = await checkIfUserIsBlockedByPhone(phone);
+    // if (isUserBlocked) {
+    // log('user is blocked');
+    // showSnackBar(context, "User is Blocked by Admin");
+    // return;
+    // }
 
     String completePhoneNum = '$code${phoneController.text.trim()}';
 

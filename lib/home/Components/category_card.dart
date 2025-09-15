@@ -40,7 +40,7 @@ class CategoryCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.black,
-                fontSize: 13, // Adjust the font size as needed
+                fontSize: 12, // Adjust the font size as needed
               ),
               overflow: TextOverflow.ellipsis,
               maxLines: 2, // Allow text to wrap to 2 lines if needed

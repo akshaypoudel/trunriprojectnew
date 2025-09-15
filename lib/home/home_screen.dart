@@ -360,15 +360,10 @@ class _HomeScreenState extends State<HomeScreen> {
       final url =
           'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radiusInMeters&type=restaurant&keyword=indian&key=${Constants.API_KEY}';
 
-      // log('restauraunt url = $url');
-
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        // setState(() {
-        //   _restaurants = data['results'];
-        // });
         return data['results'];
       }
     } catch (e) {

@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
 import 'package:trunriproject/currentLocation.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
+import 'package:trunriproject/signUpScreen.dart';
 import 'package:trunriproject/widgets/helper.dart';
 
 import 'nativAddressScreen.dart';
@@ -187,6 +188,59 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
     });
   }
 
+  Future<void> _handlePostSignIn(User? user, String phone) async {
+    if (user == null) {
+      showSnackBar(context, "Sign-in failed. Try again.");
+      return;
+    }
+
+    final userDoc = await FirebaseFirestore.instance
+        .collection('User')
+        .doc(user.uid) // always use UID as doc ID
+        .get();
+
+    if (!userDoc.exists) {
+      // user not registered yet → go to signup
+      showSnackBar(context, 'User Not Registered!');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const SignUpScreen()),
+      );
+      return;
+    }
+
+    final userData = userDoc.data();
+    if (userData != null && userData['isBlocked'] == true) {
+      await FirebaseAuth.instance.signOut();
+      showSnackBar(context, "User is blocked by admin");
+      return;
+    }
+
+    Navigator.of(context).pushAndRemoveUntil(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const MyBottomNavBar(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.ease;
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var offsetAnimation = animation.drive(tween);
+          return SlideTransition(
+            position: offsetAnimation,
+            child: child,
+          );
+        },
+      ),
+      (Route<dynamic> route) => false,
+    );
+
+    // ✅ success
+    // showSnackBar(context, "Welcome back!");
+    // navigate to your home/dashboard screen
+  }
+
   void verifyOTPForSignInScreen() async {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
@@ -201,35 +255,16 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
 
         await FirebaseAuth.instance.signInWithCredential(credential);
 
+        final user = FirebaseAuth.instance.currentUser;
+
         SharedPreferences sharedPreferences =
             await SharedPreferences.getInstance();
         sharedPreferences.setString("myPhone", widget.phoneNumber);
 
-        final user = FirebaseAuth.instance.currentUser;
         if (user != null) {
           await PresenceService.setUserOnline(); // only for current user
         }
-
-        Navigator.of(context).pushAndRemoveUntil(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const MyBottomNavBar(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(1.0, 0.0);
-              const end = Offset.zero;
-              const curve = Curves.ease;
-              var tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              var offsetAnimation = animation.drive(tween);
-              return SlideTransition(
-                position: offsetAnimation,
-                child: child,
-              );
-            },
-          ),
-          (Route<dynamic> route) => false,
-        );
+        _handlePostSignIn(user, widget.phoneNumber);
 
         // checkIfUserInAustralia();
       } catch (e) {

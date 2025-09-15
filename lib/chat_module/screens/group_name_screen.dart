@@ -9,7 +9,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:path/path.dart' as path;
-import 'package:trunriproject/chat_module/components/chat_inputfield.dart';
 import 'package:trunriproject/chat_module/screens/group_chat_screen.dart';
 import 'package:trunriproject/widgets/helper.dart';
 
