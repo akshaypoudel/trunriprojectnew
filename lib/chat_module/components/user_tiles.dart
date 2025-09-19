@@ -1,85 +1,59 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class UserTiles extends StatelessWidget {
-  const UserTiles({
-    super.key,
-    required this.userName,
-    this.onSendFriendRequest,
-    this.onOpenChat,
-    this.onAcceptRequest,
-    this.onDeclineRequest,
-    required this.lastMessage,
-    required this.lastMessageTime,
-    required this.chatType,
-    this.imageUrl,
-    required this.status,
-  });
+  const UserTiles(
+      {super.key,
+      required this.userName,
+      required this.lastMessage,
+      required this.lastMessageTime,
+      required this.chatType,
+      required this.status,
+      required this.shortBio,
+      this.imageUrl,
+      this.onSendFriendRequest,
+      this.onOpenChat,
+      this.onAcceptRequest,
+      this.onDeclineRequest});
+
   final String userName;
   final String lastMessage;
   final String lastMessageTime;
+  final String chatType;
+  final String status;
+  final String shortBio;
+  final String? imageUrl;
   final void Function()? onSendFriendRequest;
   final void Function()? onOpenChat;
   final void Function()? onAcceptRequest;
   final void Function()? onDeclineRequest;
 
-  final String chatType;
-  final String? imageUrl;
-  final String status;
-
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
-      child: GestureDetector(
-        onTap: onOpenChat,
-        child: Container(
-          padding:
-              const EdgeInsets.only(left: 15, right: 15, top: 11, bottom: 11),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.orange.withValues(alpha: 0.04),
-                blurRadius: 5,
-                offset: const Offset(0, 3),
-              ),
-            ],
-            borderRadius: BorderRadius.circular(12),
-            border: const Border.symmetric(
-              vertical: BorderSide(color: Colors.black),
-              horizontal: BorderSide(color: Colors.black),
+    return GestureDetector(
+      onTap: (chatType == 'group') ? onOpenChat : () {},
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
-          ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              (imageUrl != null && imageUrl!.isNotEmpty)
-                  ? CachedNetworkImage(
-                      imageUrl: imageUrl!,
-                      imageBuilder: (context, imageProvider) => CircleAvatar(
-                        radius: 23,
-                        backgroundImage: imageProvider,
-                      ),
-                      placeholder: (context, url) =>
-                          const CircularProgressIndicator(),
-                      errorWidget: (context, url, error) =>
-                          const Icon(Icons.error),
-                    )
-                  : CircleAvatar(
-                      radius: 23,
-                      backgroundColor: const Color.fromARGB(222, 177, 177, 177),
-                      foregroundColor: Colors.white,
-                      child: (chatType == 'user')
-                          ? const Icon(
-                              Icons.person,
-                              size: 41,
-                            )
-                          : const Icon(
-                              Icons.group,
-                              size: 41,
-                            ),
-                    ),
-              const SizedBox(width: 20),
+              // Profile Picture
+              _buildAvatar(),
+              const SizedBox(width: 16),
+
+              // User Info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,118 +61,172 @@ class UserTiles extends StatelessWidget {
                     Text(
                       userName,
                       style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w400,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    (status == 'friend')
+                    const SizedBox(height: 4),
+                    (chatType == 'group')
                         ? Text(
                             lastMessage.isNotEmpty
                                 ? lastMessage
-                                : 'No messages yet',
-                            style: const TextStyle(
+                                : "No messages yet",
+                            style: TextStyle(
                               fontSize: 14,
-                              fontWeight: FontWeight.w400,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           )
-                        : (status == 'received')
-                            ? const Text(
-                                'Wants to be friends',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              )
-                            : const SizedBox.shrink(),
+                        : Text(
+                            shortBio,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                   ],
                 ),
               ),
-              (status == 'friend')
-                  ? Text(
-                      lastMessageTime.isNotEmpty ? lastMessageTime : '',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    )
-                  : status == 'sent'
-                      ? const Text(
-                          'Request Sent',
-                          style: TextStyle(color: Colors.grey),
-                        )
-                      : (status == 'received')
-                          ? Row(
-                              children: [
-                                IconButton(
-                                  onPressed: onAcceptRequest,
-                                  //fillColor: Colors.orangeAccent.shade100,
-                                  // padding: const EdgeInsets.symmetric(
-                                  //     horizontal: 8, vertical: 8),
-                                  // constraints: const BoxConstraints(
-                                  //   minWidth: 10,
-                                  //   minHeight: 10,
-                                  // ), // allows smaller size
-                                  //shape: RoundedRectangleBorder(
-                                  //borderRadius: BorderRadius.circular(10),
-                                  //),
-                                  //materialTapTargetSize: MaterialTapTargetSize
-                                  //.shrinkWrap, // removes extra padding
-                                  icon: const Icon(
-                                    Icons.check_rounded,
-                                    color: Colors.green,
-                                    size: 40,
-                                  ),
-                                ),
-                                // const SizedBox(width: 10),
-                                IconButton(
-                                  onPressed: onDeclineRequest,
-                                  // fillColor: Colors.orangeAccent.shade100,
-                                  // padding: const EdgeInsets.symmetric(
-                                  //     horizontal: 8, vertical: 8),
-                                  // constraints: const BoxConstraints(
-                                  //   minWidth: 10,
-                                  //   minHeight: 10,
-                                  // ), // allows smaller size
-                                  // shape: RoundedRectangleBorder(
-                                  //   borderRadius: BorderRadius.circular(10),
-                                  // ),
-                                  // materialTapTargetSize: MaterialTapTargetSize
-                                  //     .shrinkWrap, // removes extra padding
-                                  icon: const Icon(
-                                    Icons.close_rounded,
-                                    size: 40,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : RawMaterialButton(
-                              onPressed: onSendFriendRequest,
-                              fillColor: Colors.orangeAccent,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 8),
-                              constraints: const BoxConstraints(
-                                minWidth: 10,
-                                minHeight: 10,
-                              ), // allows smaller size
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              materialTapTargetSize: MaterialTapTargetSize
-                                  .shrinkWrap, // removes extra padding
-                              child: const Text(
-                                'Add',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
+
+              // Action Button
+              _buildActionWidgets(),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildAvatar() {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.orange.withOpacity(0.3), width: 2),
+      ),
+      child: ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: imageUrl ?? "",
+          width: 60,
+          height: 60,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => Container(
+            width: 60,
+            height: 60,
+            color: Colors.grey[100],
+            child: const Icon(Icons.person, size: 30, color: Colors.grey),
+          ),
+          errorWidget: (_, __, ___) => Container(
+            width: 60,
+            height: 60,
+            color: Colors.grey[100],
+            child: Icon(
+              chatType == "user" ? Icons.person : Icons.group,
+              size: 30,
+              color: Colors.grey,
+            ),
+          ),
+          fadeInDuration: const Duration(milliseconds: 150),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionWidgets() {
+    switch (status) {
+      case "group":
+        return Text(
+          lastMessageTime,
+          style: const TextStyle(fontSize: 12),
+        );
+      case "friend":
+        return SizedBox(
+          width: 80,
+          child: ElevatedButton(
+            onPressed: onOpenChat,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orangeAccent.shade400,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              elevation: 0,
+            ),
+            child: const Text(
+              'Say Hello',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+          ),
+        );
+
+      case "sent":
+        return Container(
+          width: 80,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Text(
+            'Sent',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+        );
+
+      case "received":
+        return Row(
+          children: [
+            IconButton(
+              icon: const Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 30,
+              ),
+              onPressed: onAcceptRequest,
+              splashRadius: 30,
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.cancel,
+                color: Colors.redAccent,
+                size: 30,
+              ),
+              onPressed: onDeclineRequest,
+              splashRadius: 30,
+            ),
+          ],
+        );
+
+      default:
+        return SizedBox(
+          width: 80,
+          child: ElevatedButton(
+            onPressed: onSendFriendRequest,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              elevation: 0,
+            ),
+            child: const Text(
+              'Add',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            ),
+          ),
+        );
+    }
   }
 }

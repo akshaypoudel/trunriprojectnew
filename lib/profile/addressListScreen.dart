@@ -60,6 +60,14 @@ class AddressListBody extends StatelessWidget {
             'fullAddress': provider.getUsersAddress,
           };
 
+    // Hometown data (you'll need to get this from your user data/provider)
+    final hometownMap = {
+      'city': provider.getHomeTownCity ??
+          'Not set', // Add these getters to your provider
+      'state': provider.getHomeTownState ?? 'Not set',
+      'address': provider.getHomeTownAddress ?? 'Not set',
+    };
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
@@ -71,7 +79,7 @@ class AddressListBody extends StatelessWidget {
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.w700,
-            fontSize: 22, // Increased font size
+            fontSize: 22,
           ),
         ),
         leading: IconButton(
@@ -84,17 +92,23 @@ class AddressListBody extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with location icon - Fixed visibility
+            // Header with location icon - Softer color
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors
-                    .orange.shade800, // Darker orange for better text contrast
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.orange.shade300, // Softer orange
+                    Colors.orange.shade400, // Slightly deeper but still soft
+                  ],
+                ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orange.withOpacity(0.3),
+                    color: Colors.orange.withOpacity(0.2), // Reduced opacity
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   ),
@@ -105,7 +119,7 @@ class AddressListBody extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .2),
+                      color: Colors.white.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Icon(
@@ -123,7 +137,7 @@ class AddressListBody extends StatelessWidget {
                           'Current Location',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 20, // Increased font size
+                            fontSize: 20,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -132,7 +146,7 @@ class AddressListBody extends StatelessWidget {
                           'Your saved address details',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 16, // Increased font size
+                            fontSize: 16,
                           ),
                         ),
                       ],
@@ -144,9 +158,9 @@ class AddressListBody extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // Street & City Card
+            // Current Location Details
             _ModernAddressCard(
-              title: 'Location Details',
+              title: 'Current Location Details',
               icon: Icons.home_outlined,
               children: [
                 _AddressItem(
@@ -194,9 +208,9 @@ class AddressListBody extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Full Address Card
+            // Full Current Address Card
             _ModernAddressCard(
-              title: 'Complete Address',
+              title: 'Complete Current Address',
               icon: Icons.pin_drop_outlined,
               children: [
                 Container(
@@ -222,7 +236,7 @@ class AddressListBody extends StatelessWidget {
                         child: const Icon(
                           Icons.location_on,
                           color: Colors.orange,
-                          size: 18, // Slightly increased icon size
+                          size: 18,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -235,13 +249,105 @@ class AddressListBody extends StatelessWidget {
                             color: addrMap['fullAddress']?.isNotEmpty == true
                                 ? Colors.black87
                                 : Colors.grey.shade500,
-                            fontSize: 17, // Increased font size
+                            fontSize: 17,
                             height: 1.4,
                           ),
                         ),
                       ),
                     ],
                   ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // NEW: HomeTown Section Header
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.blue.shade300, // Soft blue gradient
+                    Colors.blue.shade400,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.2),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.home_work_outlined,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'HomeTown',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Your hometown address details',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // NEW: HomeTown Details Card
+            _ModernAddressCard(
+              title: 'HomeTown Details',
+              icon: Icons.home_work_outlined,
+              color: Colors.blue, // Different color for hometown
+              children: [
+                _AddressItem(
+                  icon: Icons.location_city,
+                  label: 'HomeTown City',
+                  value: hometownMap['city'] ?? 'Not set',
+                ),
+                _AddressItem(
+                  icon: Icons.account_balance,
+                  label: 'HomeTown State',
+                  value: hometownMap['state'] ?? 'Not set',
+                ),
+                _AddressItem(
+                  icon: Icons.home,
+                  label: 'HomeTown Address',
+                  value: hometownMap['address'] ?? 'Not set',
                 ),
               ],
             ),
@@ -258,15 +364,20 @@ class _ModernAddressCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final List<Widget> children;
+  final Color? color; // NEW: Optional color parameter
 
   const _ModernAddressCard({
     required this.title,
     required this.icon,
     required this.children,
+    this.color, // NEW: Optional color
   });
 
   @override
   Widget build(BuildContext context) {
+    final cardColor =
+        color ?? Colors.orange; // Default to orange if no color specified
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -288,7 +399,7 @@ class _ModernAddressCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.05),
+              color: cardColor.withOpacity(0.05), // Use dynamic color
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
@@ -299,13 +410,13 @@ class _ModernAddressCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: cardColor.withOpacity(0.1), // Use dynamic color
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     icon,
-                    color: Colors.orange,
-                    size: 22, // Increased icon size
+                    color: cardColor, // Use dynamic color
+                    size: 22,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -313,7 +424,7 @@ class _ModernAddressCard extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
-                    fontSize: 18, // Increased font size
+                    fontSize: 18,
                     color: Colors.black87,
                   ),
                 ),
@@ -360,7 +471,7 @@ class _AddressItem extends StatelessWidget {
             child: Icon(
               icon,
               color: Colors.orange,
-              size: 18, // Increased icon size
+              size: 18,
             ),
           ),
           const SizedBox(width: 16),
@@ -371,7 +482,7 @@ class _AddressItem extends StatelessWidget {
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 14, // Increased font size
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Colors.grey.shade600,
                     letterSpacing: 0.5,
@@ -381,7 +492,7 @@ class _AddressItem extends StatelessWidget {
                 Text(
                   value.isNotEmpty ? value : 'Not set',
                   style: TextStyle(
-                    fontSize: 17, // Increased font size
+                    fontSize: 17,
                     fontWeight: FontWeight.w500,
                     color: value.isNotEmpty
                         ? Colors.black87

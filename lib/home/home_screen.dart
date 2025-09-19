@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
 import 'package:trunriproject/currentLocation.dart';
 import 'package:trunriproject/home/constants.dart';
+import 'package:trunriproject/home/home_screen_visuals/custom_app_drawer.dart';
 import 'package:trunriproject/home/home_screen_visuals/get_banners_visual.dart';
 import 'package:trunriproject/home/home_screen_visuals/get_categories_visuals.dart';
 import 'package:trunriproject/home/home_screen_visuals/nearby_accomodation_visual.dart';
@@ -51,8 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isInAustralia = false;
   bool isNavigating = false;
   bool _isLoading = false;
-
-  static bool isShownLocationInfoDialog = false;
 
   List<dynamic> _restaurants = [];
   List<dynamic> _groceryStores = [];
@@ -355,6 +354,171 @@ class _HomeScreenState extends State<HomeScreen> {
     double longitude,
     int radiusFilter,
   ) async {
+    List<dynamic> allResults = [];
+    String? nextPageToken;
+
+    try {
+      final radiusInMeters = radiusFilter * 1000;
+
+      do {
+        String url =
+            'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radiusInMeters&type=restaurant&keyword=indian&key=${Constants.API_KEY}';
+
+        if (nextPageToken != null) {
+          url += '&pagetoken=$nextPageToken';
+        }
+
+        final response = await http.get(Uri.parse(url));
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          allResults.addAll(data['results']);
+
+          // Add debugging
+          // log('Restaurants - Radius: ${radiusFilter}km - Current batch: ${data['results'].length} - Total: ${allResults.length}');
+          // log('Restaurants - Status: ${data['status']}');
+
+          nextPageToken = data['next_page_token'];
+
+          // Google requires a short delay before using next_page_token
+          if (nextPageToken != null) {
+            await Future.delayed(const Duration(seconds: 2));
+            // log('Restaurants - Next page token available, fetching more results...');
+          }
+        } else {
+          log('Restaurants - HTTP Error: ${response.statusCode}');
+          break;
+        }
+      } while (nextPageToken != null);
+
+      // log('Restaurants - Final total results: ${allResults.length}');
+    } catch (e) {
+      log('Restaurants fetch error: $e');
+    }
+
+    return allResults;
+  }
+
+  Future<List<dynamic>> _fetchGroceryStores(
+    double latitude,
+    double longitude,
+    int radiusFilter,
+  ) async {
+    List<dynamic> allResults = [];
+    String? nextPageToken;
+
+    try {
+      final radiusInMeters = radiusFilter * 1000;
+
+      do {
+        String url =
+            'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radiusInMeters&type=grocery_or_supermarket&keyword=indian&key=${Constants.API_KEY}';
+
+        if (nextPageToken != null) {
+          url += '&pagetoken=$nextPageToken';
+        }
+
+        final response = await http.get(Uri.parse(url));
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          allResults.addAll(data['results']);
+
+          // Add debugging
+          // log('Grocery - Radius: ${radiusFilter}km - Current batch: ${data['results'].length} - Total: ${allResults.length}');
+          // log('Grocery - Status: ${data['status']}');
+
+          nextPageToken = data['next_page_token'];
+
+          // Google requires a short delay before using next_page_token
+          if (nextPageToken != null) {
+            await Future.delayed(const Duration(seconds: 2));
+            // log('Grocery - Next page token available, fetching more results...');
+          }
+        } else {
+          log('Grocery - HTTP Error: ${response.statusCode}');
+          break;
+        }
+      } while (nextPageToken != null);
+
+      // log('Grocery - Final total results: ${allResults.length}');
+    } catch (e) {
+      log('Grocery fetch error: $e');
+      if (mounted) {
+        showSnackBar(context, 'Failed to Fetch Grocery Stores Data');
+      }
+    }
+
+    return allResults;
+  }
+
+  Future<List<dynamic>> _fetchTemples(
+    double latitude,
+    double longitude,
+    int radiusFilter,
+  ) async {
+    List<dynamic> allResults = [];
+    String? nextPageToken;
+
+    try {
+      final radiusInMeters = radiusFilter * 1000;
+
+      do {
+        String url =
+            'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radiusInMeters&type=hindu_temple&keyword=temple&key=${Constants.API_KEY}';
+
+        if (nextPageToken != null) {
+          url += '&pagetoken=$nextPageToken';
+        }
+
+        final response = await http.get(Uri.parse(url));
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          List<dynamic> currentBatch = data['results'];
+
+          // Filter temples with photos (as per your original logic)
+          List<dynamic> filteredBatch = currentBatch.where((temple) {
+            return temple['photos'] != null &&
+                temple['photos'].isNotEmpty &&
+                temple['photos'][0]['photo_reference'] != null;
+          }).toList();
+
+          allResults.addAll(filteredBatch);
+
+          // Add debugging
+          // log('Temples - Radius: ${radiusFilter}km - Current batch: ${currentBatch.length} - Filtered: ${filteredBatch.length} - Total: ${allResults.length}');
+          // log('Temples - Status: ${data['status']}');
+
+          nextPageToken = data['next_page_token'];
+
+          // Google requires a short delay before using next_page_token
+          if (nextPageToken != null) {
+            await Future.delayed(const Duration(seconds: 2));
+            // log('Temples - Next page token available, fetching more results...');
+          }
+        } else {
+          log('Temples - HTTP Error: ${response.statusCode}');
+          break;
+        }
+      } while (nextPageToken != null);
+
+      // log('Temples - Final total results: ${allResults.length}');
+    } catch (e) {
+      log('Temples fetch error: $e');
+      if (mounted) {
+        showSnackBar(context, 'Failed to Fetch Temples Data');
+      }
+    }
+
+    return allResults;
+  }
+
+  Future<List<dynamic>> _fetchIndianRestaurants11(
+    double latitude,
+    double longitude,
+    int radiusFilter,
+  ) async {
     try {
       final radiusInMeters = radiusFilter * 1000;
       final url =
@@ -372,7 +536,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return [];
   }
 
-  Future<List<dynamic>> _fetchGroceryStores(
+  Future<List<dynamic>> _fetchGroceryStores11(
     double latitude,
     double longitude,
     int radiusFilter,
@@ -399,7 +563,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<List<dynamic>> _fetchTemples(
+  Future<List<dynamic>> _fetchTemples11(
     double latitude,
     double longitude,
     int radiusFilter,
@@ -460,7 +624,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _fetchAllNearbyPlaces(
+  Future<void> _fetchAllNearbyPlaces111(
       double lat, double long, int radiusFilter) async {
     try {
       // Fetch all data simultaneously
@@ -489,6 +653,53 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _fetchAllNearbyPlaces(
+      double lat, double long, int radiusFilter) async {
+    try {
+      // log('Starting to fetch all nearby places for radius: ${radiusFilter}km');
+
+      // Show loading indicator for longer operations
+      if (mounted) {
+        setState(() {
+          _isLoading = true;
+        });
+      }
+
+      // Fetch all data simultaneously
+      final results = await Future.wait([
+        _fetchIndianRestaurants(lat, long, radiusFilter),
+        _fetchGroceryStores(lat, long, radiusFilter),
+        _fetchTemples(lat, long, radiusFilter),
+      ]);
+
+      // Update all data in a single setState to minimize rebuilds
+      if (mounted) {
+        setState(() {
+          _restaurants = results[0];
+          _groceryStores = results[1];
+          _temples = results[2];
+          _isLoading = false;
+        });
+
+        // Log final counts
+        log('Final counts - Restaurants: ${_restaurants.length}, Grocery: ${_groceryStores.length}, Temples: ${_temples.length}');
+
+        // Update providers after state is set
+        final provider = Provider.of<LocationData>(context, listen: false);
+        provider.setRestaurauntList(_restaurants);
+        provider.setGroceryList(_groceryStores);
+        provider.setTemplessList(_temples);
+      }
+    } catch (e) {
+      log('Error fetching nearby places: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   Future<void> _handleRefresh() async {
     setState(() {
       _isRefreshing = true;
@@ -512,6 +723,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.white,
+      drawer: const CustomAppDrawer(),
       body: SafeArea(
         bottom: false,
         child: GestureDetector(
@@ -640,13 +852,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          Builder(
+                            builder: (context) => IconButton(
+                              icon: const Icon(
+                                Icons.menu,
+                                color: Colors.orange,
+                                size: 28,
+                              ),
+                              onPressed: () =>
+                                  Scaffold.of(context).openDrawer(),
+                              padding: const EdgeInsets.all(8),
+                            ),
+                          ),
                           Expanded(
                             child: ShowAddressText(
                               controller: addressController,
                               onTap: () {
-                                log('address = ${addressController.text}');
+                                // log('address = ${addressController.text}');
                                 onLocationChanged(
                                   addressController.text,
                                   usersRadiusFilter,

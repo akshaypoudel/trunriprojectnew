@@ -18,8 +18,6 @@ class CustomGoogleSignin {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
     try {
-      final user = FirebaseAuth.instance.currentUser;
-
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       final GoogleSignInAuthentication? googleAuth =
           await googleUser?.authentication;
@@ -30,6 +28,7 @@ class CustomGoogleSignin {
       UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
 
+      final user = FirebaseAuth.instance.currentUser;
       bool isNewUser = userCredential.additionalUserInfo!.isNewUser;
 
       if (isNewUser) {

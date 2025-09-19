@@ -68,57 +68,65 @@ class _SearchFieldState extends State<SearchField> {
   }
 
   void _filterItems(String query) {
-    final normalizedQuery = _normalize(query);
+    if (query.isEmpty) {
+      setState(() {
+        _filteredItems.clear();
+      });
+      return;
+    }
+
+    final queryLower = query.toLowerCase().trim();
 
     final filtered = _allItems.where((item) {
-      final normalizedItem = _normalize(item);
-      return normalizedItem.contains(normalizedQuery) ||
-          _isFuzzyMatch(normalizedQuery, normalizedItem);
+      final itemLower = item.toLowerCase().trim();
+
+      // Direct starts with check
+      if (itemLower.startsWith(queryLower)) {
+        return true;
+      }
+
+      // Check if first few characters are similar
+      int checkLength = queryLower.length < 4 ? queryLower.length : 4;
+      checkLength =
+          checkLength > itemLower.length ? itemLower.length : checkLength;
+
+      if (checkLength >= 3) {
+        String querySubstring = queryLower.substring(0, checkLength);
+        String itemSubstring = itemLower.substring(0, checkLength);
+
+        // Calculate similarity for the substring
+        int differences = 0;
+        for (int i = 0; i < checkLength; i++) {
+          if (querySubstring[i] != itemSubstring[i]) {
+            differences++;
+          }
+        }
+
+        // Allow up to 1 difference in first 3-4 characters
+        return differences <= 1;
+      }
+
+      return false;
     }).toList();
+
+    // Sort to prioritize exact matches first
+    filtered.sort((a, b) {
+      final aLower = a.toLowerCase();
+      final bLower = b.toLowerCase();
+
+      if (aLower.startsWith(queryLower) && !bLower.startsWith(queryLower)) {
+        return -1;
+      } else if (!aLower.startsWith(queryLower) &&
+          bLower.startsWith(queryLower)) {
+        return 1;
+      }
+
+      return 0;
+    });
 
     setState(() {
       _filteredItems = filtered;
     });
-  }
-
-  String _normalize(String input) {
-    return input.toLowerCase().trim().replaceAll(RegExp(r'[^\w\s]'), '');
-  }
-
-  bool _isFuzzyMatch(String query, String item) {
-    int distance = _levenshteinDistance(query, item);
-    return distance <= 2;
-  }
-
-  int _levenshteinDistance(String s, String t) {
-    if (s == t) return 0;
-    if (s.isEmpty) return t.length;
-    if (t.isEmpty) return s.length;
-
-    List<List<int>> matrix = List.generate(
-      s.length + 1,
-      (_) => List.filled(t.length + 1, 0),
-    );
-
-    for (int i = 0; i <= s.length; i++) {
-      matrix[i][0] = i;
-    }
-    for (int j = 0; j <= t.length; j++) {
-      matrix[0][j] = j;
-    }
-
-    for (int i = 1; i <= s.length; i++) {
-      for (int j = 1; j <= t.length; j++) {
-        int cost = s[i - 1] == t[j - 1] ? 0 : 1;
-        matrix[i][j] = [
-          matrix[i - 1][j] + 1,
-          matrix[i][j - 1] + 1,
-          matrix[i - 1][j - 1] + cost,
-        ].reduce((a, b) => a < b ? a : b);
-      }
-    }
-
-    return matrix[s.length][t.length];
   }
 
   void _navigateToScreen(String selectedItem) {

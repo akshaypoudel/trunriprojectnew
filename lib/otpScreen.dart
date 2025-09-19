@@ -261,10 +261,11 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
             await SharedPreferences.getInstance();
         sharedPreferences.setString("myPhone", widget.phoneNumber);
 
+        _handlePostSignIn(user, widget.phoneNumber);
+
         if (user != null) {
           await PresenceService.setUserOnline(); // only for current user
         }
-        _handlePostSignIn(user, widget.phoneNumber);
 
         // checkIfUserInAustralia();
       } catch (e) {

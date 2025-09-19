@@ -90,7 +90,7 @@ class GetCategoriesVisuals extends StatelessWidget {
               },
               options: CarouselOptions(
                 height: 200,
-                viewportFraction: 0.2,
+                viewportFraction: 0.25,
                 enableInfiniteScroll: true,
                 enlargeCenterPage: true,
               ),

@@ -8,8 +8,10 @@ import 'package:provider/provider.dart';
 import 'package:trunriproject/chat_module/components/user_tiles.dart';
 import 'package:trunriproject/chat_module/screens/chat_screen.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
+import 'package:trunriproject/settings/string_extension.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 import 'package:trunriproject/subscription/subscription_screen.dart';
+import 'package:trunriproject/widgets/helper.dart';
 
 class PeopleChatsPage extends StatefulWidget {
   const PeopleChatsPage({super.key});
@@ -29,6 +31,14 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
   List<String> sentRequests = [];
   List<String> receivedRequests = [];
 
+// Add these variables to your class
+  static int friendRequestsCount = 2;
+
+  String currentCity = '';
+  String homeTownCity = '';
+
+  // String shortBio = '';
+
   @override
   void initState() {
     super.initState();
@@ -37,13 +47,19 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
   }
 
   Future<void> _loadChats() async {
-    final provider = Provider.of<LocationData>(context, listen: false);
+    // final provider = Provider.of<LocationData>(context, listen: false);
     try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
       final meDoc =
           await FirebaseFirestore.instance.collection('User').doc(uid).get();
       currentEmail = meDoc.get('email');
-      String currentCity = meDoc.get('city');
+      currentCity = meDoc.get('city');
+      homeTownCity = meDoc.get('hometown')['city'];
+
+      // friendRequestsCount = meDoc.get('friendRequestLimit');
+
+      friendRequestsCount = meDoc.data()?['friendRequestLimit'] as int? ?? 0;
+      log('frined request count ============== $friendRequestsCount');
 
       final myFriends = meDoc.data()?['friends'] ?? [];
       final myRequests = meDoc.data()?['friendRequests'] ?? {};
@@ -66,7 +82,11 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
       for (var doc in allUsers.docs) {
         final email = doc['email'];
         final name = doc['name'];
+        final profession = doc['profession'];
+        final userHomeTownCity = doc['hometown']['city'];
         final userCity = doc['city'];
+
+        // shortBio = '$profession in \n$userCity from $hometownCity';
 
         if (email == currentEmail) continue;
 
@@ -76,6 +96,9 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
           'email': email,
           'name': name,
           'profile': doc['profile'] ?? '',
+          'profession': profession,
+          'homeTownCity': userHomeTownCity,
+          'userCity': userCity,
         };
 
         if (friends.contains(email)) {
@@ -109,14 +132,14 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
             'relation': 'friend',
             'lastMessage': lastMessage,
             'lastMessageTime': lastMessageTime,
-            'timestamp': timestamp, // Add this for sorting
+            'timestamp': timestamp,
           });
         } else if (sentRequests.contains(email)) {
           tempOthers.add({...userMap, 'relation': 'sent'});
         } else if (receivedRequests.contains(email)) {
           tempReceived.add({...userMap, 'relation': 'received'});
         } else {
-          if (currentCity != userCity) continue;
+          if (homeTownCity != userHomeTownCity) continue;
 
           tempOthers.add({...userMap, 'relation': 'none'});
         }
@@ -155,11 +178,13 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
 
   Future<void> _sendFriendRequest(String receiverEmail) async {
     final provider = Provider.of<SubscriptionData>(context, listen: false);
-    if (!provider.isUserSubscribed) {
+    if (!provider.isUserSubscribed && friendRequestsCount == 0) {
       _showSubscriptionDialog();
       return;
     }
     _showLoadingDialog();
+
+    // decrement count only for non-subscribers
 
     try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -196,6 +221,14 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
 
         tx.update(meRef, {'friendRequests.sent': mySent});
         tx.update(receiverRef, {'friendRequests.received': receiverReceived});
+
+        if (!provider.isUserSubscribed) {
+          friendRequestsCount--;
+          // Update Firestore
+          tx.update(meRef, {
+            'friendRequestLimit': friendRequestsCount,
+          });
+        }
       });
 
       setState(() {
@@ -209,8 +242,10 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
       sentRequests.add(receiverEmail);
     } catch (e) {
       log('sendFriendRequest error: $e');
+      showSnackBar(context, 'Can\'t send friend request');
     } finally {
       _hideLoadingDialog();
+      _showFreeRequestsWarningDialog(friendRequestsCount);
     }
   }
 
@@ -235,6 +270,9 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
       final senderDoc = senderSnap.docs.first;
       final senderRef = senderDoc.reference;
       final senderName = senderDoc['name'];
+      final senderProfession = senderDoc['profession'];
+      final senderHomeTownCity = senderDoc['hometown']['city'];
+      final senderCity = senderDoc['city'];
       final senderProfile = senderDoc['profile'] ?? '';
 
       await FirebaseFirestore.instance.runTransaction((tx) async {
@@ -278,6 +316,9 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
         friendsList.insert(0, {
           'email': senderEmail,
           'name': senderName,
+          'profession': senderProfession,
+          'city': senderCity,
+          'homeTownCity': senderHomeTownCity,
           'profile': senderProfile,
           'relation': 'friend',
           'lastMessage': '',
@@ -367,9 +408,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    setState(() {
-      // log('friend request = $receivedRequestsList');
-    });
     return Scaffold(
       backgroundColor: Colors.white,
       body: isLoading
@@ -383,18 +421,129 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                       addFriendsList.isEmpty
                   ? ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [
-                        SizedBox(height: 200),
-                        Center(
-                          child: Text(
-                            'No Person Found in your Area',
-                            style: TextStyle(fontSize: 16),
-                          ),
+                      children: [
+                        const SizedBox(height: 120),
+
+                        // Empty State
+                        Column(
+                          children: [
+                            // Icon
+                            Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                color: Colors.orange.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.person_2_outlined,
+                                size: 50,
+                                color: Colors.orange,
+                              ),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // Title
+                            const Text(
+                              'No People Found',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            // Description
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 40),
+                              child: Text(
+                                'No people found in your hometown. Try refreshing or check back later.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // Refresh Button
+                            ElevatedButton.icon(
+                              onPressed: () => _loadChats(),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Refresh'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 24, vertical: 12),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     )
                   : ListView(
+                      padding: const EdgeInsets.all(0),
                       children: [
+                        Container(
+                          margin: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.orange[400]!,
+                                Colors.orange[600]!,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.orange.withOpacity(0.3),
+                                blurRadius: 15,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(25),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.location_on,
+                                        color: Colors.white, size: 20),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      "You are in $currentCity, Australia",
+                                      style: const TextStyle(
+                                          color: Colors.white, fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  "${homeTownCity.capitalizeFirst()} NRIs in Australia",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
                         if (receivedRequestsList.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.all(12.0),
@@ -407,11 +556,21 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Text(
-                                  ' (${receivedRequestsList.length})',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '${receivedRequestsList.length}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -425,6 +584,8 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                             lastMessageTime: '',
                             imageUrl: user['profile'],
                             status: 'received',
+                            shortBio:
+                                '${(user['profession'] ?? '').toString().capitalizeFirst()} in \n${(user['userCity'] ?? '').toString().capitalizeFirst()} from ${(user['homeTownCity'] ?? '').toString().capitalizeFirst()}',
                             onAcceptRequest: () => _acceptFriendRequest(
                               user['email'],
                             ),
@@ -445,11 +606,21 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Text(
-                                  ' (${friendsList.length})',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '${friendsList.length}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -460,6 +631,8 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                             chatType: 'user',
                             userName: user['name'],
                             lastMessage: user['lastMessage'],
+                            shortBio:
+                                '${(user['profession'] ?? '').toString().capitalizeFirst()} in \n${(user['userCity'] ?? '').toString().capitalizeFirst()} from ${(user['homeTownCity'] ?? '').toString().capitalizeFirst()}',
                             lastMessageTime: user['lastMessageTime'],
                             imageUrl: user['profile'],
                             status: 'friend',
@@ -480,9 +653,13 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                         if (addFriendsList.isNotEmpty)
                           const Padding(
                             padding: EdgeInsets.all(12.0),
-                            child: Text('Add Friends',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold)),
+                            child: Text(
+                              'Add Friends',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ...addFriendsList.map(
                           (user) => UserTiles(
@@ -492,6 +669,8 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                             lastMessageTime: '',
                             imageUrl: user['profile'],
                             status: user['relation'],
+                            shortBio:
+                                '${(user['profession'] ?? '').toString().capitalizeFirst()} in \n${(user['userCity'] ?? '').toString().capitalizeFirst()} from ${(user['homeTownCity'] ?? '').toString().capitalizeFirst()}',
                             onSendFriendRequest: () {
                               if (user['relation'] == 'none') {
                                 _sendFriendRequest(user['email']);
@@ -562,7 +741,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                       style: TextStyle(fontSize: 16, color: Colors.black87),
                     )
                   : const Text(
-                      'Adding friends is a premium feature.\nSubscribe now to unlock this and more!',
+                      'Your free friend requests limit is reached.\nSubscribe now to get unlimited requests and more!',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 16, color: Colors.black87),
                     ),
@@ -578,7 +757,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                       Icon(Icons.person_add_alt_1_rounded,
                           color: Colors.orange, size: 22),
                       SizedBox(width: 8),
-                      Text('Send Friend Requests'),
+                      Text('Send Unlimited Friend Requests'),
                     ],
                   ),
                   SizedBox(height: 8),
@@ -610,6 +789,108 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                     ],
                   ),
                 ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Maybe Later'),
+                  ),
+                  // const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.workspace_premium, size: 20),
+                    label: const Text('Subscribe Now'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange.shade100,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Get.to(() => const SubscriptionScreen());
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFreeRequestsWarningDialog(int remainingRequests) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Warning Icon
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.warning_amber_rounded,
+                  size: 32,
+                  color: Colors.orange,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Title
+              const Text(
+                'Friend Request Sent!',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Warning Message with Dynamic Text
+              RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: const TextStyle(fontSize: 16, color: Colors.black87),
+                  children: [
+                    (remainingRequests == 0)
+                        ? const TextSpan(text: 'You have ')
+                        : const TextSpan(text: 'You have only '),
+                    TextSpan(
+                      text: '$remainingRequests',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange,
+                      ),
+                    ),
+                    const TextSpan(text: ' free friend request'),
+                    TextSpan(text: remainingRequests == 1 ? '' : 's'),
+                    const TextSpan(text: ' remaining.\n\n'),
+                    const TextSpan(
+                      text: 'Subscribe now to get unlimited requests!',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
               ),
 
               const SizedBox(height: 24),

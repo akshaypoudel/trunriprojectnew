@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -33,22 +34,37 @@ class _SplashScreenState extends State<SplashScreen> {
   checkLogin() async {
     await Future.delayed(const Duration(seconds: 2)); // short delay
 
-    LocationPermission permission;
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
-        showSnackBar(context, 'Location Permission Not Given.');
-      } else {
-        final position = await Geolocator.getCurrentPosition();
-        final placemarks = await placemarkFromCoordinates(
-            position.latitude, position.longitude);
-
-        final country = placemarks.first.country;
-
-        final provider = Provider.of<LocationData>(context, listen: false);
-        provider.setUserCountry(country ?? '');
+        permission = await Geolocator.requestPermission();
       }
+
+      if (permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always) {
+        // Safe geocoding with timeout + try/catch
+        try {
+          final position = await Geolocator.getCurrentPosition();
+          final placemarks = await placemarkFromCoordinates(
+            position.latitude,
+            position.longitude,
+          ).timeout(const Duration(seconds: 3));
+
+          final country =
+              placemarks.isNotEmpty ? placemarks.first.country : null;
+          final provider = Provider.of<LocationData>(context, listen: false);
+          provider.setUserCountry(country ?? '');
+        } catch (e) {
+          debugPrint("Geocoding failed: $e");
+          // fallback if reverse geocode fails
+          final provider = Provider.of<LocationData>(context, listen: false);
+          provider.setUserCountry('');
+        }
+      } else {
+        showSnackBar(context, 'Location Permission Not Given.');
+      }
+    } catch (e) {
+      log('Error in page');
     }
 
     User? currentUser = FirebaseAuth.instance.currentUser;

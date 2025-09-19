@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:cached_network_image/cached_network_image.dart'; // Add this import
 import 'package:trunriproject/events/tickets/book_tickets.dart';
+import 'package:trunriproject/home/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:trunriproject/widgets/helper.dart';
 
@@ -43,7 +44,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
     photoUrl = data['photo'] != null && data['photo'].isNotEmpty
         ? data['photo']
-        : 'https://via.placeholder.com/400';
+        : Constants.PLACEHOLDER_IMAGE;
     eventName = data['eventName'];
     eventDate = data['eventDate'];
     eventTime = data['eventTime'];

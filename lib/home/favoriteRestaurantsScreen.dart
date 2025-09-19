@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:trunriproject/home/constants.dart';
 import 'package:trunriproject/home/resturentDetailsScreen.dart';
 
 import 'bottom_bar.dart';
@@ -72,7 +73,7 @@ class _FavoriteRestaurantsScreenState extends State<FavoriteRestaurantsScreen> {
                 final restaurant = favoriteRestaurants[index];
                 final photoUrl = restaurant.image.isNotEmpty
                     ? restaurant.image
-                    : 'https://via.placeholder.com/400'; // Path to your default image
+                    : Constants.PLACEHOLDER_IMAGE; // Path to your default image
 
                 return Row(
                   children: [
@@ -94,8 +95,8 @@ class _FavoriteRestaurantsScreenState extends State<FavoriteRestaurantsScreen> {
                             color: Colors.orange,
                           )),
                           errorWidget: (context, url, error) {
-                            return Image.network(
-                                'https://via.placeholder.com/400'); // Path to your default image
+                            return Image.network(Constants
+                                .PLACEHOLDER_IMAGE); // Path to your default image
                           },
                         ),
                       ),

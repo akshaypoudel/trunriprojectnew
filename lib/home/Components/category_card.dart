@@ -21,8 +21,8 @@ class CategoryCard extends StatelessWidget {
         children: [
           Container(
             margin: const EdgeInsets.only(right: 10),
-            height: 56,
-            width: 56,
+            height: 60,
+            width: 60,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(11),
               child: CachedNetworkImage(
@@ -34,7 +34,7 @@ class CategoryCard extends StatelessWidget {
           const SizedBox(height: 4), // Add space between the image and the text
           Container(
             margin: const EdgeInsets.only(right: 10),
-            width: 56, // Adjust width if needed
+            width: 70, // Adjust width if needed
             child: Text(
               text.toString(),
               textAlign: TextAlign.center,
@@ -43,7 +43,7 @@ class CategoryCard extends StatelessWidget {
                 fontSize: 12, // Adjust the font size as needed
               ),
               overflow: TextOverflow.ellipsis,
-              maxLines: 2, // Allow text to wrap to 2 lines if needed
+              maxLines: 1, // Allow text to wrap to 2 lines if needed
             ),
           ),
         ],

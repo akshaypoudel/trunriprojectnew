@@ -181,14 +181,14 @@ class _SignInScreenState extends State<SignInScreen> {
               children: [
                 GestureDetector(
                   onTap: () async {
-                    bool exist = await doesPhoneExist(
-                      '$code${phoneController.text.trim()}',
-                    );
-                    if (exist) {
-                      requestForOtp('$code${phoneController.text.trim()}');
-                    } else {
-                      showSnackBar(context, "User Doesn't Exists");
-                    }
+                    // bool exist = await doesPhoneExist(
+                    //   '$code${phoneController.text.trim()}',
+                    // );
+                    // if (exist) {
+                    requestForOtp('$code${phoneController.text.trim()}');
+                    // } else {
+                    // showSnackBar(context, "User Doesn't Exists");
+                    // }
                   },
                   child: Container(
                     width: size.width,

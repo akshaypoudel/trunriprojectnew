@@ -128,7 +128,7 @@ class GroceryStoreListScreen extends StatelessWidget {
                             : null;
                         final photoUrl = photoReference != null
                             ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoReference&key=${Constants.API_KEY}'
-                            : 'https://via.placeholder.com/400';
+                            : Constants.PLACEHOLDER_IMAGE;
                         final openingHours = store['opening_hours'] ?? {};
 
                         return Container(

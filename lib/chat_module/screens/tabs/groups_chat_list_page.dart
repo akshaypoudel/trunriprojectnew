@@ -290,22 +290,80 @@ class _GroupsChatPageState extends State<GroupsChatPage>
     if (isLoading) return const Center(child: CircularProgressIndicator());
     if (cachedChatList == null || cachedChatList!.isEmpty) {
       return RefreshIndicator(
-        onRefresh: _loadChats,
-        backgroundColor: Colors.white,
-        color: Colors.deepOrange,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            SizedBox(height: 200),
-            Center(
-              child: Text(
-                "No groups yet!!",
-                style: TextStyle(fontSize: 16),
+          onRefresh: _loadChats,
+          backgroundColor: Colors.white,
+          color: Colors.deepOrange,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              const SizedBox(height: 120),
+
+              // Empty State
+              Column(
+                children: [
+                  // Icon
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.people_outline,
+                      size: 50,
+                      color: Colors.orange,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Title
+                  const Text(
+                    'No Groups Found',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Description
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(
+                      'No groups yet. Create one or ask friends to add you!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Refresh Button
+                  ElevatedButton.icon(
+                    onPressed: () => _loadChats(),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Refresh'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-      );
+            ],
+          ));
     }
 
     return RefreshIndicator(
@@ -343,7 +401,8 @@ class _GroupsChatPageState extends State<GroupsChatPage>
                   lastMessage: lastMsg,
                   lastMessageTime: lastTime,
                   imageUrl: imageUrl,
-                  status: 'friend',
+                  status: 'group',
+                  shortBio: '',
                   onOpenChat: () {
                     Navigator.push(
                       context,

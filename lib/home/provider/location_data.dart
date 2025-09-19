@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:trunriproject/widgets/helper.dart';
+// import 'package:trunriproject/widgets/helper.dart';
 
 class LocationData extends ChangeNotifier {
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -23,6 +23,10 @@ class LocationData extends ChangeNotifier {
   String _usersAddress = '';
   String _shortFormAddress = '';
 
+  String _homeTownCity = '';
+  String _homeTownState = '';
+  String _homeTownAddress = '';
+
   String _userCountry = '';
   // final String _state = '';
   // final String _city = '';
@@ -33,7 +37,12 @@ class LocationData extends ChangeNotifier {
   List<Map<String, dynamic>> _eventList = [];
   List<Map<String, dynamic>> _accomodationList = [];
 
+  String get getHomeTownCity => _homeTownCity;
+  String get getHomeTownState => _homeTownState;
+  String get getHomeTownAddress => _homeTownAddress;
+
   double get getLatitude => _latitude;
+
   double get getLongitude => _longitude;
   String get getUserCountry => _userCountry;
   // int get getRadiusFilter => _radiusFilter;
@@ -156,8 +165,12 @@ class LocationData extends ChangeNotifier {
     required bool isInAustralia,
   }) async {
     late DocumentSnapshot addressSnapshot1;
+    late DocumentSnapshot homeTownAddressSnapshot;
 
     log('user is in australia === $isInAustralia');
+
+    homeTownAddressSnapshot =
+        await firestore.collection('User').doc(auth.currentUser!.uid).get();
 
     if (isInAustralia) {
       addressSnapshot1 = await firestore
@@ -169,6 +182,20 @@ class LocationData extends ChangeNotifier {
           .collection('nativeAddress')
           .doc(auth.currentUser!.uid)
           .get();
+    }
+
+    if (homeTownAddressSnapshot.exists) {
+      Map<String, dynamic>? addressSnapshot;
+
+      addressSnapshot = homeTownAddressSnapshot.data() as Map<String, dynamic>?;
+
+      if (addressSnapshot != null) {
+        _homeTownCity = addressSnapshot['hometown']['city'] ?? '';
+        _homeTownState = addressSnapshot['hometown']['state'] ?? '';
+        _homeTownAddress = addressSnapshot['hometown']['address'] ?? '';
+
+        notifyListeners();
+      }
     }
 
     if (addressSnapshot1.exists) {

@@ -29,17 +29,20 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen>
     with SingleTickerProviderStateMixin {
   TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  TextEditingController confirmPasswordController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
+  TextEditingController professionController = TextEditingController();
+  TextEditingController cityController = TextEditingController();
+  TextEditingController stateController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
+
   CustomGoogleSignin googleSignin = CustomGoogleSignin();
-  RxBool hide = true.obs;
-  RxBool hide1 = true.obs;
   String code = "+61";
   bool value = false;
   bool showValidation = false;
   FirebaseAuth auth = FirebaseAuth.instance;
+
+  String termAndCondition = '';
 
   void checkEmailInFirestore() async {
     if (phoneController.text.isEmpty) {
@@ -68,7 +71,6 @@ class _SignUpScreenState extends State<SignUpScreen>
       },
       verificationFailed: (FirebaseAuthException e) {
         showSnackBar(context, "Verification failed: ${e.message}");
-
         log("Verification failed: ${e.message}");
         log("Verification failed: ${code.toString()}");
         log("Verification failed phone number: $completePhoneNum");
@@ -78,7 +80,6 @@ class _SignUpScreenState extends State<SignUpScreen>
         SignUpScreen.verificationOTP = verificationId;
         NewHelper.hideLoader(loader);
         showSnackBar(context, 'OTP sent successfully');
-        NewHelper.hideLoader(loader);
 
         Navigator.push(
           context,
@@ -89,7 +90,8 @@ class _SignUpScreenState extends State<SignUpScreen>
               verificationId: verificationId,
               name: nameController.text.trim(),
               email: emailController.text.trim(),
-              password: passwordController.text.trim(),
+              // profession: professionController.text.trim(), // NEW
+              // homeTown: homeTownController.text.trim(), // NEW
             ),
           ),
         );
@@ -103,12 +105,40 @@ class _SignUpScreenState extends State<SignUpScreen>
   final formKey1 = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    loadTermAndCondition();
+  }
+
+  void loadTermAndCondition() async {
+    try {
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('settings')
+          .doc('settings_document')
+          .get();
+
+      if (docSnapshot.exists) {
+        termAndCondition = docSnapshot.data()?['terms_and_condition'] ?? '';
+        log('Terms and Conditions loaded successfully');
+      } else {
+        termAndCondition = '';
+        log('Settings document not found');
+      }
+    } catch (e) {
+      termAndCondition = '';
+      log('Error loading Terms and Conditions: $e');
+    }
+  }
+
+  @override
   void dispose() {
     emailController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
     nameController.dispose();
     phoneController.dispose();
+    professionController.dispose();
+    cityController.dispose();
+    stateController.dispose();
+    addressController.dispose();
     super.dispose();
   }
 
@@ -148,6 +178,8 @@ class _SignUpScreenState extends State<SignUpScreen>
               ),
             ),
             SizedBox(height: size.height * 0.04),
+
+            // Existing Fields
             CommonTextField(
                 hintText: 'Full Name',
                 controller: nameController,
@@ -161,13 +193,15 @@ class _SignUpScreenState extends State<SignUpScreen>
                   RequiredValidator(errorText: 'Email is required'),
                   EmailValidator(errorText: 'Please enter a valid email'.tr),
                 ]).call),
+
+            // Phone Field (unchanged)
             Padding(
               padding: const EdgeInsets.only(left: 25, right: 25),
               child: IntlPhoneField(
                 flagsButtonPadding: const EdgeInsets.all(8),
                 dropdownIconPosition: IconPosition.trailing,
-                showDropdownIcon: false, // Hide the country selection dropdown
-                enabled: true, // Ensure only the phone number input is editable
+                showDropdownIcon: false,
+                enabled: true,
                 cursorColor: Colors.black,
                 textInputAction: TextInputAction.next,
                 dropdownTextStyle: const TextStyle(color: Colors.black),
@@ -196,7 +230,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                     borderRadius: BorderRadius.circular(11),
                   ),
                 ),
-                initialCountryCode: "AU", // Set to Australia
+                initialCountryCode: "AU",
                 onCountryChanged: (country) {
                   code = '+${country.dialCode}';
                 },
@@ -208,58 +242,60 @@ class _SignUpScreenState extends State<SignUpScreen>
                 },
               ),
             ),
-            Obx(() {
-              return CommonTextField(
-                hintText: 'Password',
-                controller: passwordController,
-                obSecure: !hide.value,
-                suffixIcon: IconButton(
-                  onPressed: () {
-                    hide.value = !hide.value;
-                  },
-                  icon: hide.value
-                      ? const Icon(Icons.visibility_off)
-                      : const Icon(Icons.visibility),
-                ),
+
+            // NEW: Profession Field (Simple hint)
+            CommonTextField(
+                hintText: 'Profession',
+                controller: professionController,
                 validator: MultiValidator([
-                  RequiredValidator(errorText: 'Please enter your password'.tr),
-                  MinLengthValidator(8,
-                      errorText:
-                          'Password must be at least 8 characters, with 1 special character & 1 numerical'
-                              .tr),
-                  // MaxLengthValidator(16, errorText: "Password maximum length is 16"),
-                  PatternValidator(r"(?=.*\W)(?=.*?[#?!@()$%^&*-_])(?=.*[0-9])",
-                      errorText:
-                          "Password must be at least 8 characters, with 1 special character & 1 numerical"
-                              .tr),
-                ]).call,
-              );
-            }),
-            Obx(() {
-              return CommonTextField(
-                hintText: 'Confirm Password',
-                controller: confirmPasswordController,
-                obSecure: !hide1.value,
-                suffixIcon: IconButton(
-                  onPressed: () {
-                    hide1.value = !hide1.value;
-                  },
-                  icon: hide1.value
-                      ? const Icon(Icons.visibility_off)
-                      : const Icon(Icons.visibility),
+                  RequiredValidator(errorText: 'Profession is required'),
+                ]).call),
+
+            const SizedBox(height: 20),
+
+            // NEW: HomeTown Section Header
+            const Padding(
+              padding: EdgeInsets.only(left: 25, right: 25, bottom: 10),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'HomeTown',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xff353047),
+                  ),
                 ),
-                validator: (value) {
-                  if (value!.trim().isEmpty) {
-                    return 'Please enter confirm password';
-                  }
-                  if (value.trim() != passwordController.text.trim()) {
-                    return 'Confirm password is not matching';
-                  }
-                  return null;
-                },
-              );
-            }),
+              ),
+            ),
+
+// NEW: City Field
+            CommonTextField(
+                hintText: 'City',
+                controller: cityController,
+                validator: MultiValidator([
+                  RequiredValidator(errorText: 'City is required'),
+                ]).call),
+
+// NEW: State Field
+            CommonTextField(
+                hintText: 'State',
+                controller: stateController,
+                validator: MultiValidator([
+                  RequiredValidator(errorText: 'State is required'),
+                ]).call),
+
+            // NEW: Address Field
+            CommonTextField(
+                hintText: 'Address',
+                controller: addressController,
+                validator: MultiValidator([
+                  RequiredValidator(errorText: 'Address is required'),
+                ]).call),
+
             const SizedBox(height: 10),
+
+            // Terms & Conditions Checkbox
             Padding(
               padding: const EdgeInsets.only(left: 20),
               child: Row(
@@ -283,7 +319,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                           onChanged: (newValue) {
                             setState(() {
                               value = newValue!;
-                              setState(() {});
                             });
                           }),
                     ),
@@ -293,8 +328,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
-                          // Return the dialog box widget
                           return AlertDialog(
+                            backgroundColor: Colors.white,
                             title: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -311,9 +346,24 @@ class _SignUpScreenState extends State<SignUpScreen>
                                     child: const Icon(Icons.cancel_outlined))
                               ],
                             ),
-                            content: const Text(
-                                'Terms and conditions are part of a contract that ensure parties understand their contractual rights and obligations. Parties draft them into a legal contract, also called a legal agreement, in accordance with local, state, and federal contract laws. They set important boundaries that all contract principals must uphold.'
-                                'Several contract types utilize terms and conditions. When there is a formal agreement to create with another individual or entity, consider how you would like to structure your deal and negotiate the terms and conditions with the other side before finalizing anything. This strategy will help foster a sense of importance and inclusion on all sides.'),
+                            content: SizedBox(
+                              width: double.maxFinite,
+                              height: 400,
+                              child: Scrollbar(
+                                thumbVisibility: true,
+                                child: SingleChildScrollView(
+                                  padding: const EdgeInsets.only(right: 16),
+                                  child: Text(
+                                    termAndCondition,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      height: 1.5,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                             actions: const <Widget>[],
                           );
                         },
@@ -321,11 +371,14 @@ class _SignUpScreenState extends State<SignUpScreen>
                     },
                     child: Row(
                       children: [
-                        const Text('I Accept',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w300,
-                                fontSize: 13,
-                                color: Colors.black)),
+                        const Text(
+                          'I Accept',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w300,
+                            fontSize: 13,
+                            color: Colors.black,
+                          ),
+                        ),
                         Text(
                           ' Terms And Conditions?',
                           style: GoogleFonts.poppins(
@@ -339,7 +392,10 @@ class _SignUpScreenState extends State<SignUpScreen>
                 ],
               ),
             ),
+
             SizedBox(height: size.height * 0.04),
+
+            // Rest of your existing code (Sign Up button, social login, etc.)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25),
               child: Column(
@@ -351,7 +407,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                           checkEmailInFirestore();
                         } else {
                           showSnackBar(
-                              context, 'Please select terms & conditions');
+                            context,
+                            'Please select terms & conditions',
+                          );
                         }
                       }
                     },

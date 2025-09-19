@@ -124,7 +124,7 @@ class TempleHomePageScreen extends StatelessWidget {
                       final photoRef = temple['photos']?[0]?['photo_reference'];
                       final photoUrl = photoRef != null
                           ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoRef&key=${Constants.API_KEY}'
-                          : 'https://via.placeholder.com/400';
+                          : Constants.PLACEHOLDER_IMAGE;
                       final openingHours = temple['opening_hours'] ?? {};
 
                       return Container(
