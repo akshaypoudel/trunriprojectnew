@@ -83,10 +83,10 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
       listen: false,
     ).fetchSubscriptionStatus();
 
-    await Provider.of<SubscriptionData>(
-      context,
-      listen: false,
-    ).fetchSubscriptionFeatures();
+    // await Provider.of<SubscriptionData>(
+    //   context,
+    //   listen: false,
+    // ).fetchSubscriptionFeatures();
 
     Provider.of<LocationData>(context, listen: false)
         .setUserInAustralia(await _handleLocationSource());

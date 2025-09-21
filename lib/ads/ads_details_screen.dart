@@ -938,43 +938,6 @@ class AdvertisementDetailScreen extends StatelessWidget {
   }
 
   Widget _buildFloatingActionButton(BuildContext context) {
-    // return Container(
-    //   decoration: BoxDecoration(boxShadow: [
-    //     BoxShadow(
-    //       color: Colors.deepOrange.withValues(alpha: 0.3),
-    //       blurRadius: 15,
-    //       offset: const Offset(0, 6),
-    //     )
-    //   ]),
-    //   child: FloatingActionButton.extended(
-    //     onPressed: () {
-    //       ScaffoldMessenger.of(context).showSnackBar(
-    //         SnackBar(
-    //           content: const Text(
-    //             'Edit functionality coming soon!',
-    //             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    //           ),
-    //           backgroundColor: Colors.deepOrange,
-    //           behavior: SnackBarBehavior.floating,
-    //           shape: RoundedRectangleBorder(
-    //             borderRadius: BorderRadius.circular(12),
-    //           ),
-    //         ),
-    //       );
-    //     },
-    //     backgroundColor: Colors.deepOrange,
-    //     elevation: 8,
-    //     icon: const Icon(Icons.edit_rounded, color: Colors.white, size: 24),
-    //     label: const Text(
-    //       'Edit Ad',
-    //       style: TextStyle(
-    //         color: Colors.white,
-    //         fontWeight: FontWeight.bold,
-    //         fontSize: 16,
-    //       ),
-    //     ),
-    //   ),
-    // );
     final provider = Provider.of<SubscriptionData>(context, listen: false);
     return SafeArea(
       child: Padding(
@@ -1031,7 +994,7 @@ class AdvertisementDetailScreen extends StatelessWidget {
             ),
             child: FloatingActionButton.extended(
               onPressed: () {
-                if (provider.isUserSubscribed) {
+                if (provider.hasFeature(FeatureType.businessContent)) {
                   Get.to(() => const CreateAdvertisementScreen());
                 } else {
                   _showSubscriptionDialog(context);
@@ -1098,6 +1061,8 @@ class AdvertisementDetailScreen extends StatelessWidget {
   }
 
   void _showSubscriptionDialog(BuildContext context) {
+    final provider = Provider.of<SubscriptionData>(context, listen: false);
+
     showDialog(
       context: context,
       builder: (_) => Dialog(
@@ -1119,15 +1084,17 @@ class AdvertisementDetailScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Posting Events is a premium feature.\nSubscribe now to unlock this and more!',
+              Text(
+                (provider.isUserSubscribed)
+                    ? 'Posting Ads is a Business Feature.\n Upgrade your plan now to unlock this and more!'
+                    : 'Posting Ads is a premium feature.\nSubscribe now to unlock this and more!',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.black87),
+                style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
               const SizedBox(height: 16),
-              const Column(
+              Column(
                 children: [
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Icon(Icons.event_available_outlined,
@@ -1136,8 +1103,8 @@ class AdvertisementDetailScreen extends StatelessWidget {
                       Text('Post Events and Restaurants'),
                     ],
                   ),
-                  SizedBox(height: 8),
-                  Row(
+                  const SizedBox(height: 8),
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Icon(Icons.star_rounded, color: Colors.orange, size: 22),
@@ -1145,19 +1112,23 @@ class AdvertisementDetailScreen extends StatelessWidget {
                       Text('Post & Promote Listings'),
                     ],
                   ),
-                  SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Icon(Icons.group_add_sharp,
-                          color: Colors.orange, size: 22),
-                      SizedBox(width: 8),
-                      Text(
-                          'Send Friend Requests & \nCreate Groups with your friends'),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
+                  const SizedBox(height: 8),
+                  (provider.isUserSubscribed)
+                      ? const SizedBox.shrink()
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Icon(Icons.group_add_sharp,
+                                color: Colors.orange, size: 22),
+                            SizedBox(width: 8),
+                            Text(
+                                'Send Friend Requests & \nCreate Groups with your friends'),
+                          ],
+                        ),
+                  (provider.isUserSubscribed)
+                      ? const SizedBox.shrink()
+                      : const SizedBox(height: 8),
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Icon(Icons.stars_sharp, color: Colors.orange, size: 22),
@@ -1177,7 +1148,11 @@ class AdvertisementDetailScreen extends StatelessWidget {
                   ),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.workspace_premium, size: 20),
-                    label: const Text('Subscribe Now'),
+                    label: Text(
+                      provider.isUserSubscribed
+                          ? 'Upgrade Now'
+                          : 'Subscribe Now',
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange.shade100,
                       shape: RoundedRectangleBorder(

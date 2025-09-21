@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -122,17 +124,8 @@ class NearbyEventsVisual extends StatelessWidget {
                   return GestureDetector(
                     onTap: () {
                       Get.to(EventDetailsScreen(
-                        // eventDate: event['eventDate'],
-                        // eventName: event['eventName'],
-                        // eventTime: event['eventTime'],
-                        // location: event['location'],
-                        // photoUrl: event['photo'],
-                        // price: event['ticketPrice'],
-                        // description: event['description'],
-                        // category: event['category'][0],
-                        // eventType: event['eventType'][0],
-                        // contactInfo: event['contactInformation'],
                         eventData: event,
+                        nearbyEvents: eventList,
                       ));
                     },
                     child: Container(

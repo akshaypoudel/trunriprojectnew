@@ -723,7 +723,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.white,
-      drawer: const CustomAppDrawer(),
+      // drawer: const CustomAppDrawer(),
       body: SafeArea(
         bottom: false,
         child: GestureDetector(
@@ -854,18 +854,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       Row(
                         // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Builder(
-                            builder: (context) => IconButton(
-                              icon: const Icon(
-                                Icons.menu,
-                                color: Colors.orange,
-                                size: 28,
-                              ),
-                              onPressed: () =>
-                                  Scaffold.of(context).openDrawer(),
-                              padding: const EdgeInsets.all(8),
-                            ),
-                          ),
+                          // Builder(
+                          //   builder: (context) => IconButton(
+                          //     icon: const Icon(
+                          //       Icons.menu,
+                          //       color: Colors.orange,
+                          //       size: 28,
+                          //     ),
+                          //     onPressed: () =>
+                          //         Scaffold.of(context).openDrawer(),
+                          //     padding: const EdgeInsets.all(8),
+                          //   ),
+                          // ),
                           Expanded(
                             child: ShowAddressText(
                               controller: addressController,

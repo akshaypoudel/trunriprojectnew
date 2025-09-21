@@ -18,6 +18,9 @@ class SubscriptionDetailsScreen extends StatefulWidget {
 class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
   Map<String, dynamic>? userData;
   List<Map<String, dynamic>> purchaseHistory = [];
+  String planName = '';
+  String planType = '';
+  String billingType = '';
   bool isLoading = true;
 
   @override
@@ -38,11 +41,19 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
 
         if (userDoc.exists) {
           userData = userDoc.data();
+          planType = userData?['planType'] ?? 'individual';
+          billingType = userData?['billingType'] ?? 'annual';
+
+          log('User plan type: $planType');
+          log('User billing type: $billingType');
+
+          // Fetch plan name from SubscriptionPlans
+          await _fetchPlanName();
         }
 
-        // Fetch purchase history (you can modify this query based on your database structure)
+        // Fetch purchase history
         final purchaseQuery = await FirebaseFirestore.instance
-            .collection('purchases') // Adjust collection name as needed
+            .collection('purchases')
             .where('userID', isEqualTo: user.uid)
             .orderBy('purchaseDate', descending: true)
             .get();
@@ -60,22 +71,62 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
     }
   }
 
+  Future<void> _fetchPlanName() async {
+    try {
+      final subscriptionDoc = await FirebaseFirestore.instance
+          .collection('SubscriptionPlans')
+          .doc('SubscriptionsPlans')
+          .get();
+
+      if (subscriptionDoc.exists) {
+        final subscriptionData = subscriptionDoc.data() as Map<String, dynamic>;
+
+        // Get plan name based on user's plan type and billing type
+        if (planType == 'individual') {
+          final individualData = subscriptionData['individual'];
+          if (individualData != null) {
+            final plans = individualData['plans'] as Map<String, dynamic>?;
+            if (plans != null && plans.containsKey(billingType)) {
+              planName = plans[billingType]['name'] ?? 'Pro';
+            }
+          }
+        } else if (planType == 'business') {
+          final businessData = subscriptionData['business'];
+          if (businessData != null) {
+            final plans = businessData['plans'] as Map<String, dynamic>?;
+            if (plans != null && plans.containsKey(billingType)) {
+              planName = plans[billingType]['name'] ?? 'Business';
+            }
+          }
+        }
+
+        // Fallback plan names
+        if (planName.isEmpty) {
+          if (planType == 'business') {
+            planName =
+                billingType == 'basic' ? 'Business Basic' : 'Business Premium';
+          } else {
+            planName = billingType == 'monthly' ? 'Pro Monthly' : 'Pro Annual';
+          }
+        }
+
+        log('Fetched plan name: $planName');
+      }
+    } catch (e) {
+      log('Error fetching plan name: $e');
+      // Set fallback plan name
+      planName = 'Pro';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // if (isLoading) {
-    //   return Scaffold(
-    //     backgroundColor: Colors.grey.shade50,
-    //     body:
-    //   );
-    // }
-
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: _buildAppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
-            // mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (isLoading) ...[
@@ -150,7 +201,9 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
             ),
           ),
           Text(
-            'Manage your TruNri Pro',
+            planName.isNotEmpty
+                ? 'Manage your TruNri $planName'
+                : 'Manage your TruNri Pro',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
@@ -194,7 +247,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -220,7 +273,13 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            isSubscribed ? 'TruNri Pro Active' : 'Subscription Expired',
+            isSubscribed
+                ? (planName.isNotEmpty
+                    ? (planName.contains('Pro'))
+                        ? '$planName Active'
+                        : 'TruNri $planName Active'
+                    : 'TruNri Pro Active')
+                : 'Subscription Expired',
             style: GoogleFonts.poppins(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -233,13 +292,15 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: isSubscribed
-                  ? Colors.green.withValues(alpha: 0.2)
-                  : Colors.red.withValues(alpha: 0.2),
+                  ? Colors.green.withOpacity(0.2)
+                  : Colors.red.withOpacity(0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               isSubscribed
-                  ? 'All premium features unlocked'
+                  ? (planType == 'business'
+                      ? 'All business features unlocked'
+                      : 'All premium features unlocked')
                   : 'Upgrade to access premium features',
               style: GoogleFonts.poppins(
                 fontSize: 14,
@@ -257,7 +318,6 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
   Widget _buildSubscriptionDetailsCard() {
     final subscriptionDate = userData?['subscriptionDate'] as Timestamp?;
     final subscriptionExpiry = userData?['subscriptionExpiry'] as Timestamp?;
-    final isSubscribed = userData?['isSubscribed'] ?? false;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -266,7 +326,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -297,17 +357,49 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Subscription Details',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1A1A),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Subscription Details',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1A1A1A),
+                        ),
+                      ),
+                      if (planName.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          planName,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],
             ),
           ),
+          _buildDetailRow(
+            icon: Icons.label_rounded,
+            title: 'Plan Type',
+            value: planType == 'business' ? 'Business Plan' : 'Individual Plan',
+            color: Colors.purple,
+          ),
+          const SizedBox(height: 16),
+          _buildDetailRow(
+            icon: Icons.credit_card_rounded,
+            title: 'Billing Cycle',
+            value: _getBillingCycleText(),
+            color: Colors.indigo,
+          ),
+          const SizedBox(height: 16),
           _buildDetailRow(
             icon: Icons.play_arrow_rounded,
             title: 'Start Date',
@@ -338,6 +430,14 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
     );
   }
 
+  String _getBillingCycleText() {
+    if (planType == 'business') {
+      return billingType == 'basic' ? 'Basic Plan' : 'Premium Plan';
+    } else {
+      return billingType == 'monthly' ? 'Monthly' : 'Annual';
+    }
+  }
+
   Widget _buildDetailRow({
     required IconData icon,
     required String title,
@@ -361,7 +461,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -409,7 +509,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -526,7 +626,8 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
   Widget _buildPurchaseItem(Map<String, dynamic> purchase) {
     final purchaseDate = purchase['purchaseDate'] as Timestamp?;
     final amount = purchase['amount'] ?? 'N/A';
-    final plan = purchase['plan'] ?? 'TruNri Pro Monthly';
+    final plan = purchase['plan'] ??
+        (planName.isNotEmpty ? planName : 'TruNri Pro Monthly');
     final status = purchase['status'] ?? 'Completed';
 
     return Container(
@@ -545,12 +646,14 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                plan,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1A1A1A),
+              Expanded(
+                child: Text(
+                  plan,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1A1A1A),
+                  ),
                 ),
               ),
               Container(
@@ -591,7 +694,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
               ),
               const Spacer(),
               Text(
-                '\$$amount',
+                amount == 'N/A' ? 'N/A' : '₹$amount',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,

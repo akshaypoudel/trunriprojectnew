@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -385,7 +386,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: Colors.deepOrange,
+              color: Colors.deepOrangeAccent.shade200,
             ),
           ),
           const SizedBox(height: 8),
@@ -411,7 +412,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepOrange,
+                backgroundColor: Colors.deepOrangeAccent.shade200,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -434,81 +435,184 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProUserCard() {
-    return GestureDetector(
-      onTap: () {
-        Get.to(() => const SubscriptionSuccessScreen());
-      },
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.orange.shade50,
-              Colors.white,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.orange.shade300, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.orange.withValues(alpha: 0.2),
-              blurRadius: 20,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.deepOrange, Colors.orange.shade400],
-                ),
-                shape: BoxShape.circle,
-              ),
-              child: Image.asset(
-                'assets/icons/crown.png',
-                height: 32,
-                width: 32,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'TruNri Pro Member',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.deepOrange,
-                    ),
-                  ),
-                  Text(
-                    'Enjoying premium features',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+    return FutureBuilder<Map<String, String>>(
+      future: _fetchUserPlanInfo(),
+      builder: (context, snapshot) {
+        String planName = 'Pro Member';
+        String planDescription = 'Enjoying premium features';
+
+        if (snapshot.hasData) {
+          planName = snapshot.data!['planName'] ?? 'Pro Member';
+          planDescription =
+              snapshot.data!['description'] ?? 'Enjoying premium features';
+        }
+
+        return GestureDetector(
+          onTap: () {
+            Get.to(() => const SubscriptionSuccessScreen());
+          },
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.orange.shade50,
+                  Colors.white,
                 ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.orange.shade300, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
-            Icon(
-              Icons.verified,
-              color: Colors.green.shade500,
-              size: 24,
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.deepOrange, Colors.orange.shade400],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.asset(
+                    'assets/icons/crown.png',
+                    height: 32,
+                    width: 32,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'TruNri $planName',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.deepOrange,
+                        ),
+                      ),
+                      Text(
+                        planDescription,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.verified,
+                  color: Colors.green.shade500,
+                  size: 24,
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
+  }
+
+// Add this helper method to fetch user plan information
+  Future<Map<String, String>> _fetchUserPlanInfo() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) {
+        return {
+          'planName': 'Pro Member',
+          'description': 'Enjoying premium features'
+        };
+      }
+
+      // Fetch user's current plan details
+      final userDoc =
+          await FirebaseFirestore.instance.collection('User').doc(uid).get();
+
+      if (!userDoc.exists) {
+        return {
+          'planName': 'Pro Member',
+          'description': 'Enjoying premium features'
+        };
+      }
+
+      final userData = userDoc.data() as Map<String, dynamic>;
+      final planType = userData['planType'] ?? 'individual';
+      final billingType = userData['billingType'] ?? 'annual';
+      final isSubscribed = userData['isSubscribed'] ?? false;
+
+      if (!isSubscribed) {
+        return {
+          'planName': 'Pro Member',
+          'description': 'Subscription expired'
+        };
+      }
+
+      // Fetch subscription plans data
+      final subscriptionDoc = await FirebaseFirestore.instance
+          .collection('SubscriptionPlans')
+          .doc('SubscriptionsPlans')
+          .get();
+
+      if (!subscriptionDoc.exists) {
+        return {
+          'planName': 'Pro Member',
+          'description': 'Enjoying premium features'
+        };
+      }
+
+      final subscriptionData = subscriptionDoc.data() as Map<String, dynamic>;
+      String planName = 'Pro Member';
+      String description = 'Enjoying premium features';
+
+      if (planType == 'individual') {
+        final individualData = subscriptionData['individual'];
+        if (individualData != null) {
+          final plans = individualData['plans'] as Map<String, dynamic>?;
+          if (plans != null && plans.containsKey(billingType)) {
+            planName = plans[billingType]['name'] ?? 'Pro Member';
+            // Remove "TruNri" from the name if it exists
+            planName = planName.replaceFirst('TruNri ', '');
+            description = 'Enjoying premium features';
+          }
+        }
+      } else if (planType == 'business') {
+        final businessData = subscriptionData['business'];
+        if (businessData != null) {
+          final plans = businessData['plans'] as Map<String, dynamic>?;
+          if (plans != null && plans.containsKey(billingType)) {
+            planName = plans[billingType]['name'] ?? 'Business Member';
+            // Remove "Business" prefix if it exists and keep the tier
+            // if (planName.startsWith('Business ')) {
+            //   planName = planName.substring(9); // Remove "Business "
+            // }
+            description = billingType == 'premium'
+                ? 'Enjoying all business features'
+                : 'Enjoying business features';
+          }
+        }
+      }
+
+      return {'planName': planName, 'description': description};
+    } catch (e) {
+      log('Error fetching user plan info: $e');
+      return {
+        'planName': 'Pro Member',
+        'description': 'Enjoying premium features'
+      };
+    }
   }
 
   void _handleLogout() async {

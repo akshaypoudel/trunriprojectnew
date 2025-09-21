@@ -41,6 +41,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
   String selectedDistance = 'Any distance';
 
   final List<String> timeFilters = [
+    // 'Past',
     'Upcoming',
     'Today',
     'Tomorrow',
@@ -96,7 +97,6 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
     '25 km',
     '50 km',
     '100 km',
-    '150 km',
   ];
 
   @override
@@ -537,6 +537,12 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
       final now = DateTime.now();
 
       switch (timeFilter) {
+        case 'Past':
+          filteredEvents = widget.eventList.where((event) {
+            return _isEventPast(event['eventDate'], now);
+          }).toList();
+          break;
+
         case 'Today':
           filteredEvents = widget.eventList.where((event) {
             return _isEventToday(event['eventDate'], now);
@@ -632,6 +638,22 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
     }
   }
 
+  bool _isEventPast(String? eventDate, DateTime now) {
+    if (eventDate == null || eventDate.isEmpty) return false;
+    try {
+      // log('event date === $eventDate');
+      DateTime eventDateTime = _parseEventDate(eventDate);
+      // log('event date time === $eventDateTime');
+
+      log(' event date before now ---- ${eventDateTime.isBefore(now.add(const Duration(days: 1)))}');
+
+      // Past event = eventDate is strictly before "now"
+      return eventDateTime.isBefore(now.add(const Duration(days: 1)));
+    } catch (e) {
+      return false;
+    }
+  }
+
   DateTime _parseEventDate(String eventDate) {
     try {
       if (eventDate.contains(' ')) {
@@ -645,33 +667,6 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
       log('Date parsing error for: $eventDate, Error: $e');
       rethrow;
     }
-  }
-
-  void _applyLocationFilter(String city) {
-    setState(() {
-      selectedCityGlobal = city;
-      final list = widget.eventList;
-      filteredEvents = list.where((event) {
-        final eventCity = event['city']?.toString().toLowerCase() ?? '';
-        return eventCity.contains(city.toLowerCase());
-      }).toList();
-    });
-  }
-
-  void _applyRadiusFilter(double radiusKm) {
-    final provider = Provider.of<LocationData>(context, listen: false);
-    setState(() {
-      selectedRadiusGlobal = radiusKm;
-      filteredEvents = widget.eventList.where((event) {
-        final evLat = event['latitude'] as double?;
-        final evLng = event['longitude'] as double?;
-        if (evLat == null || evLng == null) return false;
-
-        final distance = haversineDistance(
-            provider.getLatitude, provider.getLongitude, evLat, evLng);
-        return distance <= radiusKm;
-      }).toList();
-    });
   }
 
   double haversineDistance(double lat1, double lon1, double lat2, double lon2) {
@@ -708,12 +703,20 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
                   elevation: 0,
                   pinned: true,
                   expandedHeight: 80,
-                  leading: const SizedBox.shrink(),
+                  leading: IconButton(
+                    padding: const EdgeInsets.only(top: 25),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new,
+                    ),
+                  ),
                   flexibleSpace: FlexibleSpaceBar(
                     background: Container(
                       color: Colors.white,
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+                        padding: const EdgeInsets.fromLTRB(55, 20, 16, 12),
                         child: Column(
                           children: [
                             // Compact Search Bar
@@ -1007,6 +1010,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
                                 Get.to(
                                   EventDetailsScreen(
                                     eventData: event,
+                                    nearbyEvents: widget.eventList,
                                   ),
                                 );
                               },
@@ -1380,21 +1384,117 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
           floatingActionButton: SafeArea(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 7, right: 7),
-              child: FloatingActionButton.extended(
-                onPressed: () {
-                  if (provider.isUserSubscribed) {
-                    Get.to(() => const PostEventScreen());
-                  } else {
-                    _showSubscriptionDialog();
-                  }
-                },
-                backgroundColor: Colors.orange,
-                icon: const Icon(Icons.add, color: Colors.white),
-                label: const Text(
-                  'Post Event',
-                  style: TextStyle(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.deepOrange,
+                      Colors.orange.shade600,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  // Multi-layered border effect
+                  border: Border.all(
                     color: Colors.white,
-                    fontWeight: FontWeight.w600,
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    // Outer glow effect
+                    BoxShadow(
+                      color: Colors.deepOrange.withValues(alpha: 0.6),
+                      blurRadius: 25,
+                      spreadRadius: 3,
+                      offset: const Offset(0, 8),
+                    ),
+                    // Sharp shadow for depth
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 15,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 6),
+                    ),
+                    // Inner highlight
+                    BoxShadow(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      blurRadius: 5,
+                      spreadRadius: -2,
+                      offset: const Offset(-2, -2),
+                    ),
+                  ],
+                ),
+                // Add an inner container for additional border layers
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius:
+                        BorderRadius.circular(21), // Slightly smaller radius
+                    border: Border.all(
+                      color: Colors.orange.shade200.withValues(alpha: 0.8),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: FloatingActionButton.extended(
+                    onPressed: () {
+                      if (provider.hasFeature(FeatureType.businessContent)) {
+                        Get.to(() => const PostEventScreen());
+                      } else {
+                        _showSubscriptionDialog();
+                      }
+                    },
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    extendedPadding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(21),
+                    ),
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            // Border for the icon container
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.add_rounded,
+                            size: 27,
+                            color: Colors.deepOrange,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        const Text(
+                          'Post',
+                          style: TextStyle(
+                            fontSize: 17,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                                color: Colors.black26,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1467,6 +1567,8 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
   }
 
   void _showSubscriptionDialog() {
+    final provider = Provider.of<SubscriptionData>(context, listen: false);
+
     showDialog(
       context: context,
       builder: (_) => Dialog(
@@ -1488,10 +1590,12 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Posting Events is a premium feature.\nSubscribe now to unlock this and more!',
+              Text(
+                (provider.isUserSubscribed)
+                    ? 'Posting Events is a Business Feature.\n Upgrade your plan now to unlock this and more!'
+                    : 'Posting Events is a premium feature.\nSubscribe now to unlock this and more!',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.black87),
+                style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
               const SizedBox(height: 24),
               Row(
@@ -1503,7 +1607,11 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
                   ),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.workspace_premium, size: 20),
-                    label: const Text('Subscribe Now'),
+                    label: Text(
+                      provider.isUserSubscribed
+                          ? 'Upgrade Now'
+                          : 'Subscribe Now',
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange.shade100,
                       shape: RoundedRectangleBorder(

@@ -6,7 +6,9 @@ import 'package:trunriproject/home/bottom_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
+import 'package:trunriproject/subscription/subscription_screen.dart';
 import 'package:trunriproject/widgets/helper.dart';
+import 'dart:developer';
 
 class SubscriptionSuccessScreen extends StatefulWidget {
   const SubscriptionSuccessScreen({super.key});
@@ -17,10 +19,199 @@ class SubscriptionSuccessScreen extends StatefulWidget {
 }
 
 class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
+  bool isLoading = true;
+  Map<String, dynamic>? userPlanData;
+  List<Map<String, dynamic>> planFeatures = [];
+  String planName = '';
+  String planType = '';
+  String billingType = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserPlanData();
+  }
+
+  Future<void> _fetchUserPlanData() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      // Fetch user's current plan details
+      final userDoc =
+          await FirebaseFirestore.instance.collection('User').doc(uid).get();
+
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        planType = userData['planType'] ?? 'individual';
+        billingType = userData['billingType'] ?? 'annual';
+
+        log('User plan type: $planType');
+        log('User billing type: $billingType');
+
+        // Fetch subscription plans data
+        final subscriptionDoc = await FirebaseFirestore.instance
+            .collection('SubscriptionPlans')
+            .doc('SubscriptionsPlans')
+            .get();
+
+        if (subscriptionDoc.exists) {
+          final subscriptionData =
+              subscriptionDoc.data() as Map<String, dynamic>;
+
+          // Get plan-specific features and details
+          await _processPlanData(subscriptionData);
+        }
+      }
+
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      log('Error fetching user plan data: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _processPlanData(Map<String, dynamic> subscriptionData) async {
+    if (planType == 'individual') {
+      // Handle individual plans
+      final individualData = subscriptionData['individual'];
+      if (individualData != null) {
+        final plans = individualData['plans'] as Map<String, dynamic>?;
+        final features = individualData['features'] as Map<String, dynamic>?;
+
+        if (plans != null && plans.containsKey(billingType)) {
+          final currentPlan = plans[billingType];
+          planName = currentPlan['name'] ?? 'Individual Plan';
+
+          // Add plan note as first feature if it exists
+          final planNote = currentPlan['note'] as String? ?? '';
+          if (planNote.isNotEmpty) {
+            planFeatures.add({
+              'title': 'Plan Details',
+              'description': planNote,
+            });
+          }
+        }
+
+        if (features != null) {
+          final additionalFeatures = features.values
+              .map<Map<String, dynamic>>((feature) => {
+                    'title': feature['title'] ?? '',
+                    'description': feature['description'] ?? '',
+                  })
+              .toList();
+          planFeatures.addAll(additionalFeatures);
+        }
+      }
+    } else if (planType == 'business') {
+      // Handle business plans
+      final businessData = subscriptionData['business'];
+      if (businessData != null) {
+        final plans = businessData['plans'] as Map<String, dynamic>?;
+        final features = businessData['features'] as Map<String, dynamic>?;
+
+        if (plans != null && plans.containsKey(billingType)) {
+          final currentPlan = plans[billingType];
+          planName = currentPlan['name'] ?? 'Business Plan';
+          await _addIndividualPlanFeaturesForBusiness(subscriptionData);
+
+          // Add plan note as first feature if it exists
+          final planNote = currentPlan['note'] as String?;
+          if (planNote != null && planNote.isNotEmpty) {
+            planFeatures.add({
+              'title': 'Plan Limits',
+              'description': planNote,
+            });
+          }
+        }
+
+        // Add individual plan features inclusion notice
+
+        if (features != null) {
+          List<Map<String, dynamic>> additionalFeatures = [];
+
+          // For business plans, show features based on plan tier
+          if (billingType == 'basic') {
+            // Basic plan gets features 1 and 2
+            final basicFeatureIds = ['1', '2'];
+            additionalFeatures = features.entries
+                .where((entry) => basicFeatureIds.contains(entry.value['id']))
+                .map<Map<String, dynamic>>((entry) => {
+                      'title': entry.value['title'] ?? '',
+                      'description': entry.value['description'] ?? '',
+                    })
+                .toList();
+          } else if (billingType == 'premium') {
+            // Premium plan gets all features
+            additionalFeatures = features.values
+                .map<Map<String, dynamic>>((feature) => {
+                      'title': feature['title'] ?? '',
+                      'description': feature['description'] ?? '',
+                    })
+                .toList();
+          }
+
+          planFeatures.addAll(additionalFeatures);
+        }
+      }
+    }
+
+    log('Plan name: $planName');
+    log('Plan features: $planFeatures');
+  }
+
+// New method to add individual plan features for business plans
+  Future<void> _addIndividualPlanFeaturesForBusiness(
+      Map<String, dynamic> subscriptionData) async {
+    final individualData = subscriptionData['individual'];
+    if (individualData != null) {
+      final features = individualData['features'] as Map<String, dynamic>?;
+
+      if (features != null) {
+        // Create a list of individual feature titles for display
+        List<String> individualFeatureTitles = features.values
+            .map<String>((feature) => feature['title'] ?? '')
+            .where((title) => title.isNotEmpty)
+            .toList();
+
+        // Add the inclusion notice as a feature
+        planFeatures.add({
+          'title': 'Includes All Individual Features',
+          'description':
+              'This business plan includes: ${individualFeatureTitles.join(', ')}',
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final featureTitles =
-        Provider.of<SubscriptionData>(context, listen: false).features;
+    if (isLoading) {
+      return Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.orange.shade50,
+                Colors.white,
+                Colors.orange.shade50,
+              ],
+            ),
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: Colors.deepOrange,
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       body: Container(
@@ -44,11 +235,11 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
                 leading: Container(
                   margin: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: Colors.white.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: Colors.black.withOpacity(0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 2),
                       ),
@@ -68,13 +259,16 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Column(
                     children: [
-                      // const SizedBox(height: 20),
                       _buildSuccessHeader(),
                       const SizedBox(height: 40),
-                      _buildFeaturesCard(featureTitles),
+                      _buildFeaturesCard(),
                       const SizedBox(height: 30),
                       _buildContinueButton(),
                       const SizedBox(height: 20),
+                      if (_shouldShowUpgradeButton()) ...[
+                        _buildUpgradePlanButton(),
+                        const SizedBox(height: 20),
+                      ],
                       _buildCancelSubscriptionButton(),
                       const SizedBox(height: 40),
                     ],
@@ -86,6 +280,82 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
         ),
       ),
     );
+  }
+
+  // Method to check if upgrade button should be shown
+  bool _shouldShowUpgradeButton() {
+    // Show upgrade button if user is NOT on Business Premium plan
+    return !(planType == 'business' && billingType == 'premium');
+  }
+
+// Method to build the upgrade plan button
+  Widget _buildUpgradePlanButton() {
+    String buttonText = _getUpgradeButtonText();
+
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.red.shade300,
+            Colors.red.shade500,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.purple.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: () {
+          Get.to(() => const SubscriptionScreen());
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.upgrade_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              buttonText,
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+// Method to get appropriate button text based on current plan
+  String _getUpgradeButtonText() {
+    if (planType == 'business' && billingType == 'basic') {
+      return 'Upgrade to Premium';
+    } else if (planType == 'individual') {
+      return 'Upgrade to Business';
+    } else {
+      return 'Upgrade Plan';
+    }
   }
 
   Widget _buildSuccessHeader() {
@@ -106,7 +376,7 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.orange.withValues(alpha: 0.3),
+                color: Colors.orange.withOpacity(0.3),
                 blurRadius: 30,
                 spreadRadius: 10,
               ),
@@ -126,7 +396,7 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.deepOrange.withValues(alpha: 0.4),
+                  color: Colors.deepOrange.withOpacity(0.4),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -173,7 +443,9 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
                 ),
               ),
               child: Text(
-                'Welcome to TruNri Pro',
+                planName.isNotEmpty
+                    ? 'Welcome to $planName'
+                    : 'Welcome to TruNri Pro',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -187,7 +459,9 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
         const SizedBox(height: 20),
 
         Text(
-          'You now have access to all premium features\nand exclusive benefits!',
+          planType == 'business'
+              ? 'You now have access to all business features\nand exclusive benefits!'
+              : 'You now have access to all premium features\nand exclusive benefits!',
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             fontSize: 16,
@@ -200,37 +474,56 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
     );
   }
 
-  Widget _buildFeaturesCard(List<Map<String, String>> featureTitle) {
+  Widget _buildFeaturesCard() {
     // Pool of generic icons
     final List<IconData> iconPool = [
-      Icons.star_rounded,
-      Icons.check_circle,
-      Icons.circle,
-      Icons.circle_outlined,
-      Icons.diamond,
-      Icons.square_rounded,
-      Icons.label,
+      Icons.info_outline_rounded, // Special icon for plan note/limits
+      Icons.star_rounded, // Special icon for individual features inclusion
+      Icons.business_rounded,
+      Icons.upload_file_rounded,
+      Icons.trending_up_rounded,
+      Icons.people_rounded,
+      Icons.notifications_active_rounded,
+      Icons.diamond_rounded,
     ];
 
     // Pool of generic colors
     final List<Color> colorPool = [
+      Colors.blue, // Special color for plan note/limits
+      Colors.purple, // Special color for individual features inclusion
       Colors.deepOrange,
-      Colors.blue,
       Colors.green,
-      Colors.purple,
       Colors.indigo,
       Colors.teal,
       Colors.orange,
+      Colors.pink,
     ];
 
-    // Build FeatureData list using rotation
-    final features = List<FeatureData>.generate(featureTitle.length, (index) {
-      final f = featureTitle[index];
+    // Build FeatureData list using actual plan features
+    final features = List<FeatureData>.generate(planFeatures.length, (index) {
+      final feature = planFeatures[index];
+
+      // Use special styling for special features
+      IconData icon = iconPool[index % iconPool.length];
+      Color color = colorPool[index % colorPool.length];
+
+      // Special handling for plan note/limits
+      if (feature['title'] == 'Plan Details' ||
+          feature['title'] == 'Plan Limits') {
+        icon = Icons.info_outline_rounded;
+        color = Colors.blue;
+      }
+      // Special handling for individual features inclusion
+      else if (feature['title'] == 'Includes All Individual Features') {
+        icon = Icons.star_rounded;
+        color = Colors.purple;
+      }
+
       return FeatureData(
-        title: f['title'] ?? '',
-        subtitle: f['description'] ?? '',
-        icon: iconPool[index % iconPool.length], // rotate icons
-        color: colorPool[index % colorPool.length], // rotate colors
+        title: feature['title'] ?? '',
+        subtitle: feature['description'] ?? '',
+        icon: icon,
+        color: color,
       );
     });
 
@@ -261,35 +554,76 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
-                    Icons.star_rounded,
+                  child: Icon(
+                    planType == 'business'
+                        ? Icons.business_rounded
+                        : Icons.star_rounded,
                     color: Colors.white,
                     size: 24,
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Premium Features',
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1A1A),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        planType == 'business'
+                            ? 'Business Features'
+                            : 'Premium Features',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1A1A1A),
+                        ),
+                      ),
+                      if (planName.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          planName,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          ...features.asMap().entries.map((entry) {
-            final index = entry.key;
-            final feature = entry.value;
-            return _buildFeatureItem(feature, index == features.length - 1);
-          }),
+          if (features.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                'No features available for this plan.',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            )
+          else
+            ...features.asMap().entries.map((entry) {
+              final index = entry.key;
+              final feature = entry.value;
+              return _buildFeatureItem(feature, index == features.length - 1);
+            }),
         ],
       ),
     );
   }
 
   Widget _buildFeatureItem(FeatureData feature, bool isLast) {
+    // Check if this is a special feature
+    bool isPlanNote =
+        feature.title == 'Plan Details' || feature.title == 'Plan Limits';
+    bool isIndividualInclusion =
+        feature.title == 'Includes All Individual Features';
+    bool isSpecialFeature = isPlanNote || isIndividualInclusion;
+
     return Column(
       children: [
         Padding(
@@ -299,8 +633,13 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: feature.color.withValues(alpha: 0.1),
+                  color: feature.color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
+                  // Add special border for special features
+                  border: isSpecialFeature
+                      ? Border.all(
+                          color: feature.color.withOpacity(0.3), width: 1)
+                      : null,
                 ),
                 child: Icon(
                   feature.icon,
@@ -317,7 +656,9 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
                       feature.title,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: isSpecialFeature
+                            ? FontWeight.w700
+                            : FontWeight.w600,
                         color: const Color(0xFF1A1A1A),
                       ),
                     ),
@@ -328,6 +669,8 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
                         fontSize: 14,
                         color: Colors.grey.shade600,
                         fontWeight: FontWeight.w500,
+                        fontStyle:
+                            isPlanNote ? FontStyle.italic : FontStyle.normal,
                       ),
                     ),
                   ],
@@ -336,12 +679,24 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade50,
+                  color: isIndividualInclusion
+                      ? Colors.purple.shade50
+                      : isPlanNote
+                          ? Colors.blue.shade50
+                          : Colors.green.shade50,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.check_rounded,
-                  color: Colors.green.shade600,
+                  isIndividualInclusion
+                      ? Icons.star
+                      : isPlanNote
+                          ? Icons.info
+                          : Icons.check_rounded,
+                  color: isIndividualInclusion
+                      ? Colors.purple.shade600
+                      : isPlanNote
+                          ? Colors.blue.shade600
+                          : Colors.green.shade600,
                   size: 18,
                 ),
               ),
@@ -374,7 +729,7 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.deepOrange.withValues(alpha: 0.3),
+            color: Colors.deepOrange.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -426,13 +781,13 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
           end: Alignment.bottomRight,
         ),
         border: Border.all(
-          color: Colors.deepOrange, // Border color
-          width: 2, // Border thickness
+          color: Colors.deepOrange,
+          width: 2,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.deepOrange.withValues(alpha: 0.3),
+            color: Colors.deepOrange.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -507,9 +862,9 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
 
                 // Message
                 Text(
-                  "Are you sure you want to cancel your subscription?\n\n"
+                  "Are you sure you want to cancel your ${planName.isNotEmpty ? planName : 'subscription'}?\n\n"
                   "Your subscription will remain active until the end of the current billing cycle. "
-                  "You will not be charged for the next month.",
+                  "You will not be charged for the next billing period.",
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Colors.grey[700],
@@ -551,14 +906,13 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
                       child: ElevatedButton(
                         onPressed: () async {
                           try {
-                            // Get current user ID
                             String uid = FirebaseAuth.instance.currentUser!.uid;
                             final provider = Provider.of<SubscriptionData>(
                                 context,
                                 listen: false);
 
                             provider.changeSubscriptionStatus(false);
-                            // Update Firestore
+
                             await FirebaseFirestore.instance
                                 .collection('User')
                                 .doc(uid)
@@ -566,8 +920,6 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
                               "isSubscribed": false,
                               "subscriptionExpiry": Timestamp.now(),
                             });
-
-                            // Optionally show a confirmation snackbar/toast
 
                             showSnackBar(
                                 context, "Subscription cancelled successfully");

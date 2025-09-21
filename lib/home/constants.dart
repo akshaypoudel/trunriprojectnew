@@ -1,6 +1,6 @@
 class Constants {
   static String _API_KEY = 'AIzaSyB7alyJjGKtzTgmMFlf_iuidTLPZS13GgU';
-  static String _RAZORPAY_KEY = 'rzp_test_QXKKLlzZ8sGdkE';
+  static String _RAZORPAY_KEY = 'rzp_test_RKEAjbo6ucXW4H';
 
   static const String _PLACEHOLDER_IMAGE =
       'https://placehold.co/600x400.png?text=!';

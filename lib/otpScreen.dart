@@ -81,6 +81,13 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
       'isSubscribed': false,
       'isBlocked': false,
       'subscriptionExpiry': DateTime.now(),
+      'friendRequestLimit': 2,
+      'profession': 'Software Engineer',
+      'hometown': {
+        'city': 'Delhi',
+        'state': 'Delhi',
+        'address': 'Delhi, India',
+      },
       'friends': [],
       'friendRequests': {
         'sent': [],
