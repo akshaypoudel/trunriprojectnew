@@ -202,6 +202,18 @@ class _SearchFieldState extends State<SearchField> {
                         showSuggestions.value = false;
                       }
                     },
+                    onFieldSubmitted: (value) {
+                      if (_filteredItems.isNotEmpty && showSuggestions.value) {
+                        String selectedItem = _filteredItems[0];
+                        _controller.text = selectedItem;
+                        showSuggestions.value = false;
+                        setState(() {
+                          _filteredItems.clear();
+                        });
+                        _navigateToScreen(selectedItem);
+                        _controller.clear();
+                      }
+                    },
                     decoration: InputDecoration(
                       floatingLabelBehavior: FloatingLabelBehavior.never,
                       hintText: "Search TruNri Services",

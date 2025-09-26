@@ -12,7 +12,9 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
 import 'package:trunriproject/currentLocation.dart';
+import 'package:trunriproject/events/test.dart';
 import 'package:trunriproject/home/constants.dart';
+import 'package:trunriproject/home/favourites/favourites_screen.dart';
 import 'package:trunriproject/home/home_screen_visuals/custom_app_drawer.dart';
 import 'package:trunriproject/home/home_screen_visuals/get_banners_visual.dart';
 import 'package:trunriproject/home/home_screen_visuals/get_categories_visuals.dart';
@@ -656,9 +658,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchAllNearbyPlaces(
       double lat, double long, int radiusFilter) async {
     try {
-      // log('Starting to fetch all nearby places for radius: ${radiusFilter}km');
-
-      // Show loading indicator for longer operations
       if (mounted) {
         setState(() {
           _isLoading = true;
@@ -883,11 +882,26 @@ class _HomeScreenState extends State<HomeScreen> {
                           IconButton(
                             icon: CircleAvatar(
                               backgroundColor: Colors.orange.shade50,
-                              child: const Icon(Icons.notifications_sharp,
-                                  color: Colors.orange),
+                              child: const Icon(
+                                Icons.favorite,
+                                color: Colors.red,
+                              ),
                             ),
                             onPressed: () {
-                              Get.to(const NotificationScreen());
+                              Get.to(() => const FavouritesScreen());
+                            },
+                          ),
+
+                          IconButton(
+                            icon: CircleAvatar(
+                              backgroundColor: Colors.orange.shade50,
+                              child: const Icon(
+                                Icons.notifications_sharp,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            onPressed: () {
+                              Get.to(() => const NotificationScreen());
                             },
                           ),
                         ],

@@ -123,10 +123,12 @@ class NearbyEventsVisual extends StatelessWidget {
                   final event = eventList[index];
                   return GestureDetector(
                     onTap: () {
-                      Get.to(EventDetailsScreen(
-                        eventData: event,
-                        nearbyEvents: eventList,
-                      ));
+                      Get.to(
+                        EventDetailsScreen(
+                          eventData: event,
+                          nearbyEvents: eventList,
+                        ),
+                      );
                     },
                     child: Container(
                       width: 242,

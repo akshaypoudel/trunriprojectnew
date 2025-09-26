@@ -2,19 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class UserTiles extends StatelessWidget {
-  const UserTiles(
-      {super.key,
-      required this.userName,
-      required this.lastMessage,
-      required this.lastMessageTime,
-      required this.chatType,
-      required this.status,
-      required this.shortBio,
-      this.imageUrl,
-      this.onSendFriendRequest,
-      this.onOpenChat,
-      this.onAcceptRequest,
-      this.onDeclineRequest});
+  const UserTiles({
+    super.key,
+    required this.userName,
+    required this.lastMessage,
+    required this.lastMessageTime,
+    required this.chatType,
+    required this.status,
+    required this.shortBio,
+    this.imageUrl,
+    this.onSendFriendRequest,
+    this.onOpenChat,
+    this.onAcceptRequest,
+    this.onDeclineRequest,
+    this.onUnfriend,
+    this.onBlock,
+    this.onDeleteRequest,
+    this.onCancelRequest,
+  });
 
   final String userName;
   final String lastMessage;
@@ -27,11 +32,16 @@ class UserTiles extends StatelessWidget {
   final void Function()? onOpenChat;
   final void Function()? onAcceptRequest;
   final void Function()? onDeclineRequest;
+  final void Function()? onUnfriend;
+  final void Function()? onBlock;
+  final void Function()? onDeleteRequest;
+  final void Function()? onCancelRequest;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: (chatType == 'group') ? onOpenChat : () {},
+      onLongPress: () => _showActionBottomSheet(context),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
@@ -104,6 +114,358 @@ class UserTiles extends StatelessWidget {
     );
   }
 
+  void _showActionBottomSheet(BuildContext context) {
+    List<Widget> actions = [];
+
+    switch (status) {
+      case 'friend':
+        actions = [
+          _buildActionTile(
+            context,
+            icon: Icons.message,
+            title: 'Send Message',
+            subtitle: 'Start a conversation',
+            onTap: () {
+              Navigator.pop(context);
+              onOpenChat?.call();
+            },
+          ),
+          _buildActionTile(
+            context,
+            icon: Icons.person_remove,
+            title: 'Unfriend',
+            subtitle: 'Remove from friends list',
+            color: Colors.orange,
+            onTap: () {
+              Navigator.pop(context);
+              _showConfirmationDialog(
+                context,
+                'Unfriend $userName?',
+                'This person will be removed from your friends list.',
+                onUnfriend,
+              );
+            },
+          ),
+          _buildActionTile(
+            context,
+            icon: Icons.block,
+            title: 'Block',
+            subtitle: 'Block this person',
+            color: Colors.red,
+            onTap: () {
+              Navigator.pop(context);
+              _showConfirmationDialog(
+                context,
+                'Block $userName?',
+                'This person will no longer be able to send you messages or friend requests.',
+                onBlock,
+              );
+            },
+          ),
+        ];
+        break;
+
+      case 'sent':
+        actions = [
+          _buildActionTile(
+            context,
+            icon: Icons.cancel_outlined,
+            title: 'Cancel Request',
+            subtitle: 'Cancel friend request',
+            color: Colors.orange,
+            onTap: () {
+              Navigator.pop(context);
+              _showConfirmationDialog(
+                context,
+                'Cancel friend request?',
+                'Your friend request to $userName will be cancelled.',
+                onCancelRequest,
+              );
+            },
+          ),
+          _buildActionTile(
+            context,
+            icon: Icons.block,
+            title: 'Block',
+            subtitle: 'Block this person',
+            color: Colors.red,
+            onTap: () {
+              Navigator.pop(context);
+              _showConfirmationDialog(
+                context,
+                'Block $userName?',
+                'This person will no longer be able to send you messages or friend requests.',
+                onBlock,
+              );
+            },
+          ),
+        ];
+        break;
+
+      case 'received':
+        actions = [
+          _buildActionTile(
+            context,
+            icon: Icons.check_circle,
+            title: 'Accept Request',
+            subtitle: 'Accept friend request',
+            color: Colors.green,
+            onTap: () {
+              Navigator.pop(context);
+              onAcceptRequest?.call();
+            },
+          ),
+          _buildActionTile(
+            context,
+            icon: Icons.delete_outline,
+            title: 'Delete Request',
+            subtitle: 'Delete friend request',
+            color: Colors.orange,
+            onTap: () {
+              Navigator.pop(context);
+              _showConfirmationDialog(
+                context,
+                'Delete friend request?',
+                'The friend request from $userName will be deleted.',
+                onDeleteRequest,
+              );
+            },
+          ),
+          _buildActionTile(
+            context,
+            icon: Icons.block,
+            title: 'Block',
+            subtitle: 'Block this person',
+            color: Colors.red,
+            onTap: () {
+              Navigator.pop(context);
+              _showConfirmationDialog(
+                context,
+                'Block $userName?',
+                'This person will no longer be able to send you messages or friend requests.',
+                onBlock,
+              );
+            },
+          ),
+        ];
+        break;
+
+      case 'group':
+        actions = [
+          _buildActionTile(
+            context,
+            icon: Icons.message,
+            color: Colors.deepOrangeAccent,
+            title: 'Send Message',
+            subtitle: 'Start a conversation',
+            onTap: () {
+              Navigator.pop(context);
+              onOpenChat?.call();
+            },
+          ),
+        ];
+        break;
+
+      default: // 'none' status
+        actions = [
+          _buildActionTile(
+            context,
+            icon: Icons.person_add,
+            title: 'Send Friend Request',
+            subtitle: 'Add as friend',
+            color: Colors.orange,
+            onTap: () {
+              Navigator.pop(context);
+              onSendFriendRequest?.call();
+            },
+          ),
+          _buildActionTile(
+            context,
+            icon: Icons.block,
+            title: 'Block',
+            subtitle: 'Block this person',
+            color: Colors.red,
+            onTap: () {
+              Navigator.pop(context);
+              _showConfirmationDialog(
+                context,
+                'Block $userName?',
+                'This person will no longer be able to send you messages or friend requests.',
+                onBlock,
+              );
+            },
+          ),
+        ];
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+            // User info header
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  _buildAvatar(),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          userName,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          shortBio,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const Divider(height: 1),
+
+            // Action buttons
+            ...actions,
+
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    Color? color,
+    required VoidCallback onTap,
+  }) {
+    final actionColor = color ?? Colors.grey[700];
+
+    return ListTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: actionColor!.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          icon,
+          color: actionColor,
+          size: 22,
+        ),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: actionColor,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(
+          color: Colors.grey[600],
+          fontSize: 12,
+        ),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  void _showConfirmationDialog(
+    BuildContext context,
+    String title,
+    String content,
+    VoidCallback? onConfirm,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        content: Text(
+          content,
+          style: TextStyle(
+            color: Colors.grey[700],
+            fontSize: 16,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onConfirm?.call();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Rest of your existing methods (_buildAvatar, _buildActionWidgets) remain the same
   Widget _buildAvatar() {
     return Container(
       width: 60,

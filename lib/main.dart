@@ -9,6 +9,7 @@ import 'package:trunriproject/SplashScreen.dart';
 import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
 import 'package:trunriproject/chat_module/services/internet_checker.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
+import 'package:trunriproject/home/favourites/favourite_provider.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 
@@ -81,6 +82,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (_) => SubscriptionData()),
         ChangeNotifierProvider(create: (_) => LocationData()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(create: (_) => FavouritesProvider()),
       ],
       child: GetMaterialApp(
         title: 'TruNri',

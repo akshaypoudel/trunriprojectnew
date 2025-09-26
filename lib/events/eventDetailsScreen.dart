@@ -4,10 +4,14 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:trunriproject/home/favourites/favourite_model.dart';
+import 'package:trunriproject/home/favourites/favourite_provider.dart';
+import 'package:trunriproject/widgets/helper.dart';
 import 'package:url_launcher/url_launcher.dart'; // Add this for opening Google Maps
 import 'package:trunriproject/events/tickets/book_tickets.dart';
 import 'package:trunriproject/home/constants.dart';
@@ -28,6 +32,7 @@ class EventDetailsScreen extends StatefulWidget {
 
 class _EventDetailsScreenState extends State<EventDetailsScreen> {
   List? photoUrl;
+  String? eventId;
   String? eventName;
   String? eventTime;
   String? eventDate;
@@ -59,6 +64,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         ? data['photo']
         : [Constants.PLACEHOLDER_IMAGE];
     eventName = data['eventName'];
+    eventId = data['eventId'];
     eventDate = data['eventDate'];
     eventTime = data['eventTime'];
     location = data['location'];
@@ -215,15 +221,52 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   color: Colors.black.withOpacity(0.5),
                   shape: BoxShape.circle,
                 ),
-                child: IconButton(
-                  icon: Icon(
-                    isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isBookmarked = !isBookmarked;
-                    });
+                child: Consumer<FavouritesProvider>(
+                  builder: (context, favProvider, child) {
+                    // Remove FutureBuilder - just use local state directly
+                    final isFavorited = favProvider.isFavouriteLocal(
+                      eventId!,
+                      FavouriteType.events,
+                    );
+
+                    return IconButton(
+                      icon: Icon(
+                        isFavorited
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_outline,
+                        color: Colors.red,
+                      ),
+                      onPressed: () async {
+                        if (isFavorited) {
+                          final success =
+                              await favProvider.removeFromFavourites(
+                            eventId!,
+                            FavouriteType.events,
+                          );
+                          if (success && mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Removed from favorites'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        } else {
+                          final success = await favProvider.addToFavourites(
+                            eventId!,
+                            FavouriteType.events,
+                          );
+                          if (success && mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Added to favorites'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                    );
                   },
                 ),
               ),

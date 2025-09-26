@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:trunriproject/home/constants.dart';
+import 'package:trunriproject/home/favourites/favourite_model.dart';
 import 'package:trunriproject/home/resturentDetailsScreen.dart';
 
 class TempleHomePageScreen extends StatelessWidget {
@@ -209,6 +210,7 @@ class TempleHomePageScreen extends StatelessWidget {
                                 Get.to(
                                   ResturentDetailsScreen(
                                     name: name,
+                                    type: FavouriteType.temples,
                                     rating: rating,
                                     desc: 'No Description Available',
                                     openingTime: openingHours['opening'] ??

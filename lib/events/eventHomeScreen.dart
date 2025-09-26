@@ -73,6 +73,54 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
       'color': Colors.purple,
       'gradient': [Colors.purple.shade400, Colors.purple.shade600],
     },
+    {
+      'name': 'Travel',
+      'icon': Icons.flight_takeoff_rounded,
+      'color': Colors.teal,
+      'gradient': [Colors.teal.shade400, Colors.teal.shade600],
+    },
+    {
+      'name': 'Education',
+      'icon': Icons.school_rounded,
+      'color': Colors.indigo,
+      'gradient': [Colors.indigo.shade400, Colors.indigo.shade600],
+    },
+    {
+      'name': 'Activities',
+      'icon': Icons.explore_rounded,
+      'color': Colors.cyan,
+      'gradient': [Colors.cyan.shade400, Colors.cyan.shade600],
+    },
+    {
+      'name': 'Sports',
+      'icon': Icons.sports_soccer_rounded,
+      'color': Colors.red,
+      'gradient': [Colors.red.shade400, Colors.red.shade600],
+    },
+    {
+      'name': 'Dancing',
+      'icon': Icons.music_note_rounded, // closest built-in
+      'color': Colors.pink,
+      'gradient': [Colors.pink.shade400, Colors.pink.shade600],
+    },
+    {
+      'name': 'Meet-ups',
+      'icon': Icons.group_rounded,
+      'color': Colors.deepOrange,
+      'gradient': [Colors.deepOrange.shade400, Colors.deepOrange.shade600],
+    },
+    {
+      'name': 'Wellness',
+      'icon': Icons.self_improvement_rounded,
+      'color': Colors.lightGreen,
+      'gradient': [Colors.lightGreen.shade400, Colors.lightGreen.shade600],
+    },
+    {
+      'name': 'Social',
+      'icon': Icons.people_alt_rounded,
+      'color': Colors.deepPurple,
+      'gradient': [Colors.deepPurple.shade400, Colors.deepPurple.shade600],
+    },
   ];
 
   // NEW: Filter options
@@ -846,109 +894,105 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
                 const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
                 // Interactive Category Tabs
+
                 SliverToBoxAdapter(
-                  child: Container(
-                    height: 100,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: categories.map((category) {
+                  child: SizedBox(
+                    height: 110, // enough for icon + text
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: categories.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 5),
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
                         final isSelected =
                             selectedCategories.contains(category['name']);
 
-                        return Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedCategories.clear();
-                                  selectedCategories.add(category['name']);
-                                  _applyAdvancedFilters();
-                                });
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedCategories.clear();
+                              selectedCategories.add(category['name']);
+                              _applyAdvancedFilters();
+                            });
 
-                                _animationController.forward().then((_) {
-                                  _animationController.reverse();
-                                });
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                                child: Column(
-                                  children: [
-                                    AnimatedContainer(
-                                      duration:
-                                          const Duration(milliseconds: 300),
-                                      width: isSelected ? 64 : 56,
-                                      height: isSelected ? 64 : 56,
-                                      decoration: BoxDecoration(
-                                        gradient: isSelected
-                                            ? LinearGradient(
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                                colors: category['gradient'],
-                                              )
-                                            : null,
-                                        color:
-                                            !isSelected ? Colors.white : null,
-                                        borderRadius: BorderRadius.circular(18),
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? Colors.transparent
-                                              : Colors.grey[300]!,
-                                          width: 1.5,
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: isSelected
-                                                ? (category['color'] as Color)
-                                                    .withOpacity(0.4)
-                                                : Colors.grey.withOpacity(0.1),
-                                            blurRadius: isSelected ? 12 : 6,
-                                            offset:
-                                                Offset(0, isSelected ? 6 : 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: AnimatedScale(
-                                        scale: isSelected ? 1.1 : 1.0,
-                                        duration:
-                                            const Duration(milliseconds: 200),
-                                        child: Icon(
-                                          category['icon'],
-                                          color: isSelected
-                                              ? Colors.white
-                                              : Colors.grey[600],
-                                          size: isSelected ? 28 : 24,
-                                        ),
-                                      ),
+                            _animationController.forward().then((_) {
+                              _animationController.reverse();
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            width: 80, // fixed width instead of Expanded
+                            child: Column(
+                              children: [
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  width: isSelected ? 64 : 56,
+                                  height: isSelected ? 64 : 56,
+                                  decoration: BoxDecoration(
+                                    gradient: isSelected
+                                        ? LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: category['gradient'],
+                                          )
+                                        : null,
+                                    color: !isSelected ? Colors.white : null,
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? Colors.transparent
+                                          : Colors.grey[300]!,
+                                      width: 1.5,
                                     ),
-                                    const SizedBox(height: 8),
-                                    AnimatedDefaultTextStyle(
-                                      duration:
-                                          const Duration(milliseconds: 200),
-                                      style: TextStyle(
+                                    boxShadow: [
+                                      BoxShadow(
                                         color: isSelected
-                                            ? category['color']
-                                            : Colors.grey[600],
-                                        fontSize: isSelected ? 11 : 10,
-                                        fontWeight: isSelected
-                                            ? FontWeight.w700
-                                            : FontWeight.w500,
+                                            ? (category['color'] as Color)
+                                                .withOpacity(0.4)
+                                            : Colors.grey.withOpacity(0.1),
+                                        blurRadius: isSelected ? 12 : 6,
+                                        offset: Offset(0, isSelected ? 6 : 2),
                                       ),
-                                      child: Text(
-                                        category['name'].toString(),
-                                        textAlign: TextAlign.center,
-                                        maxLines: 1,
-                                      ),
+                                    ],
+                                  ),
+                                  child: AnimatedScale(
+                                    scale: isSelected ? 1.1 : 1.0,
+                                    duration: const Duration(milliseconds: 200),
+                                    child: Icon(
+                                      category['icon'],
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.grey[600],
+                                      size: isSelected ? 28 : 24,
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                AnimatedDefaultTextStyle(
+                                  duration: const Duration(milliseconds: 200),
+                                  style: TextStyle(
+                                    color: isSelected
+                                        ? category['color']
+                                        : Colors.grey[600],
+                                    fontSize: isSelected ? 11 : 10,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                  ),
+                                  child: Text(
+                                    category['name'].toString(),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
-                      }).toList(),
+                      },
                     ),
                   ),
                 ),

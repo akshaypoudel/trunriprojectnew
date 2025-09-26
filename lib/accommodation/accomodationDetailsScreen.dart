@@ -3,13 +3,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trunriproject/chat_module/context_chats/screens/context_chat_screen.dart';
 import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
+import 'package:trunriproject/home/favourites/favourite_model.dart';
+import 'package:trunriproject/home/favourites/favourite_provider.dart';
 import 'package:trunriproject/imageviewer/full_screen_image_viewer.dart';
-import 'package:trunriproject/widgets/helper.dart';
+// import 'package:trunriproject/widgets/helper.dart';
 
 class AccommodationDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> accommodation;
@@ -103,35 +106,57 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
                 onPressed: () => Navigator.pop(context),
               ),
             ),
-            // actions: [
-            //   Container(
-            //     margin: const EdgeInsets.all(8),
-            //     decoration: BoxDecoration(
-            //       color: Colors.white.withOpacity(0.9),
-            //       borderRadius: BorderRadius.circular(12),
-            //       boxShadow: [
-            //         BoxShadow(
-            //           color: Colors.black.withOpacity(0.1),
-            //           blurRadius: 8,
-            //           offset: const Offset(0, 2),
-            //         ),
-            //       ],
-            //     ),
-            //     child: IconButton(
-            //       icon:
-            //           const Icon(Icons.favorite_border, color: Colors.black87),
-            //       onPressed: () {
-            //         // Add to favorites functionality
-            //         Get.snackbar(
-            //           'Favorites',
-            //           'Added to favorites!',
-            //           backgroundColor: Colors.deepOrange,
-            //           colorText: Colors.white,
-            //         );
-            //       },
-            //     ),
-            //   ),
-            // ],
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12.0),
+                child: Consumer<FavouritesProvider>(
+                  builder: (context, favProvider, child) {
+                    final isFavorited = favProvider.isFavouriteLocal(
+                      postId,
+                      FavouriteType.accommodation,
+                    );
+
+                    return GestureDetector(
+                      onTap: () async {
+                        if (isFavorited) {
+                          await favProvider.removeFromFavourites(
+                            postId,
+                            FavouriteType.accommodation,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Removed from favorites'),
+                                backgroundColor: Colors.red),
+                          );
+                        } else {
+                          await favProvider.addToFavourites(
+                            postId,
+                            FavouriteType.accommodation,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Added to favorites'),
+                                backgroundColor: Colors.green),
+                          );
+                        }
+                      },
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white, // White circular background
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: Icon(
+                          isFavorited ? Icons.favorite : Icons.favorite_border,
+                          color: Colors.redAccent,
+                          size: 24,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
 
           // Content

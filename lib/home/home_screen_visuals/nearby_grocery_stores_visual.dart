@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:trunriproject/home/constants.dart';
+import 'package:trunriproject/home/favourites/favourite_model.dart';
 import 'package:trunriproject/home/groceryStoreListScreen.dart';
 import 'package:trunriproject/home/resturentDetailsScreen.dart';
 import 'package:trunriproject/home/section_title.dart';
@@ -126,6 +127,7 @@ class NearbyGroceryStoresVisual extends StatelessWidget {
                         Get.to(
                             ResturentDetailsScreen(
                               name: name.toString(),
+                              type: FavouriteType.grocery,
                               rating: rating,
                               desc: description.toString(),
                               openingTime: openingHours.toString(),
@@ -138,7 +140,7 @@ class NearbyGroceryStoresVisual extends StatelessWidget {
                             arguments: [lat, lng]);
                       },
                       child: Container(
-                        height: 180,
+                        height: 200,
                         width: 200,
                         margin: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(

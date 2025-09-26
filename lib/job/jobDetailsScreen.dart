@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:trunriproject/chat_module/context_chats/screens/context_chat_screen.dart';
 import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/home/bottom_bar.dart';
+import 'package:trunriproject/home/favourites/favourite_model.dart';
+import 'package:trunriproject/home/favourites/favourite_provider.dart';
 import 'package:trunriproject/job/uploadResumeScreen.dart';
 
 class JobDetailsScreen extends StatefulWidget {
@@ -91,6 +94,57 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
                 onPressed: () => Navigator.pop(context),
               ),
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12.0),
+                child: Consumer<FavouritesProvider>(
+                  builder: (context, favProvider, child) {
+                    final isFavorited = favProvider.isFavouriteLocal(
+                      postId,
+                      FavouriteType.jobs,
+                    );
+
+                    return GestureDetector(
+                      onTap: () async {
+                        if (isFavorited) {
+                          await favProvider.removeFromFavourites(
+                            postId,
+                            FavouriteType.jobs,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Removed from favorites'),
+                                backgroundColor: Colors.red),
+                          );
+                        } else {
+                          await favProvider.addToFavourites(
+                            postId,
+                            FavouriteType.jobs,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Added to favorites'),
+                                backgroundColor: Colors.green),
+                          );
+                        }
+                      },
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white, // White circular background
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: Icon(
+                          isFavorited ? Icons.favorite : Icons.favorite_border,
+                          color: Colors.redAccent,
+                          size: 24,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
 
           // Content

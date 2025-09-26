@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,6 +9,8 @@ import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:intl/intl.dart';
 import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/chat_module/services/chat_services.dart';
+
+import '../../widgets/helper.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({
@@ -32,6 +35,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   final AuthServices authServices = AuthServices();
 
   String? availableEmailInDB;
+  String? otherUserEmail;
   bool isKeyboardVisible = false;
 
   @override
@@ -83,6 +87,41 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       Future.delayed(const Duration(milliseconds: 300), () {
         scrollToBottom();
       });
+    }
+  }
+
+// In your ChatScreen's initState or message sending method
+  Future<bool> _isUserBlocked(String userEmail) async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final myDoc =
+          await FirebaseFirestore.instance.collection('User').doc(uid).get();
+
+      final blockedUsers =
+          List<String>.from(myDoc.data()?['blockedUsers'] ?? []);
+
+      // Check if I blocked them
+      if (blockedUsers.contains(userEmail)) return true;
+
+      // Check if they blocked me
+      final theirDoc = await FirebaseFirestore.instance
+          .collection('User')
+          .where('email', isEqualTo: userEmail)
+          .limit(1)
+          .get();
+
+      if (theirDoc.docs.isNotEmpty) {
+        final theirBlockedUsers =
+            List<String>.from(theirDoc.docs.first.data()['blockedUsers'] ?? []);
+        if (theirBlockedUsers
+            .contains(FirebaseAuth.instance.currentUser!.email)) {
+          return true;
+        }
+      }
+
+      return false;
+    } catch (e) {
+      return false;
     }
   }
 
@@ -291,6 +330,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   void sendMessages() async {
+    if (await _isUserBlocked(widget.receiversID)) {
+      showSnackBar(context, 'Cannot send message to this user');
+      return;
+    }
     if (messageController.text.isNotEmpty) {
       HapticFeedback.lightImpact();
       String messageText = messageController.text;

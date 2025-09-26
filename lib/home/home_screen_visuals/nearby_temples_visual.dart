@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:trunriproject/home/constants.dart';
+import 'package:trunriproject/home/favourites/favourite_model.dart';
 import 'package:trunriproject/home/resturentDetailsScreen.dart';
 
 class NearbyTemplesVisual extends StatelessWidget {
@@ -114,6 +115,7 @@ class NearbyTemplesVisual extends StatelessWidget {
                     Get.to(
                       ResturentDetailsScreen(
                         name: name.toString(),
+                        type: FavouriteType.temples,
                         rating: rating,
                         desc: description.toString(),
                         openingTime: openingHours.toString(),

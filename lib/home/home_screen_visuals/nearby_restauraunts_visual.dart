@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:trunriproject/home/constants.dart';
+import 'package:trunriproject/home/favourites/favourite_model.dart';
 import 'package:trunriproject/home/resturentDetailsScreen.dart';
 import 'package:trunriproject/home/resturentItemListScreen.dart';
 import 'package:trunriproject/home/section_title.dart';
@@ -131,6 +132,7 @@ class NearbyRestaurauntsVisual extends StatelessWidget {
                         Get.to(
                           ResturentDetailsScreen(
                             name: name.toString(),
+                            type: FavouriteType.restaurants,
                             rating: rating,
                             desc: description.toString(),
                             openingTime: openingHours.toString(),

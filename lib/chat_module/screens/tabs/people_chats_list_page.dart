@@ -25,19 +25,18 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
   List<Map<String, dynamic>> friendsList = [];
   List<Map<String, dynamic>> addFriendsList = [];
   List<Map<String, dynamic>> receivedRequestsList = [];
+  List<Map<String, dynamic>> homeTownFriendsList =
+      []; // New list for hometown friends
   String? currentEmail;
   bool isLoading = false;
   List<String> friends = [];
   List<String> sentRequests = [];
   List<String> receivedRequests = [];
 
-// Add these variables to your class
   static int friendRequestsCount = 2;
 
   String currentCity = '';
   String homeTownCity = '';
-
-  // String shortBio = '';
 
   @override
   void initState() {
@@ -46,8 +45,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
     _loadChats();
   }
 
-  Future<void> _loadChats() async {
-    // final provider = Provider.of<LocationData>(context, listen: false);
+  Future<void> _loadChats123() async {
     try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
       final meDoc =
@@ -56,10 +54,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
       currentCity = meDoc.get('city');
       homeTownCity = meDoc.get('hometown')['city'];
 
-      // friendRequestsCount = meDoc.get('friendRequestLimit');
-
       friendRequestsCount = meDoc.data()?['friendRequestLimit'] as int? ?? 0;
-      log('frined request count ============== $friendRequestsCount');
 
       final myFriends = meDoc.data()?['friends'] ?? [];
       final myRequests = meDoc.data()?['friendRequests'] ?? {};
@@ -74,6 +69,8 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
       List<Map<String, dynamic>> tempFriends = [];
       List<Map<String, dynamic>> tempOthers = [];
       List<Map<String, dynamic>> tempReceived = [];
+      List<Map<String, dynamic>> tempHomeTownFriends =
+          []; // New list for hometown friends
 
       if (allUsers.docs.isEmpty) {
         return;
@@ -86,11 +83,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
         final userHomeTownCity = doc['hometown']['city'];
         final userCity = doc['city'];
 
-        // shortBio = '$profession in \n$userCity from $hometownCity';
-
         if (email == currentEmail) continue;
-
-        // if (userCity != currentCity) continue;
 
         final userMap = {
           'email': email,
@@ -139,9 +132,17 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
         } else if (receivedRequests.contains(email)) {
           tempReceived.add({...userMap, 'relation': 'received'});
         } else {
-          if (homeTownCity != userHomeTownCity) continue;
+          if (currentCity != userCity) continue;
 
           tempOthers.add({...userMap, 'relation': 'none'});
+        }
+
+        if (homeTownCity == userHomeTownCity &&
+            email != currentEmail &&
+            !friends.contains(email) &&
+            !sentRequests.contains(email) &&
+            !receivedRequests.contains(email)) {
+          tempHomeTownFriends.add({...userMap, 'relation': 'none'});
         }
       }
 
@@ -164,6 +165,139 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
         friendsList = tempFriends;
         addFriendsList = tempOthers;
         receivedRequestsList = tempReceived;
+        homeTownFriendsList = tempHomeTownFriends; // Set hometown friends list
+        isLoading = false;
+      });
+    } catch (e) {
+      log('error in load chat === $e');
+    }
+  }
+
+  Future<void> _loadChats() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final meDoc =
+          await FirebaseFirestore.instance.collection('User').doc(uid).get();
+      currentEmail = meDoc.get('email');
+      currentCity = meDoc.get('city');
+      homeTownCity = meDoc.get('hometown')['city'];
+
+      friendRequestsCount = meDoc.data()?['friendRequestLimit'] as int? ?? 0;
+
+      final myFriends = meDoc.data()?['friends'] ?? [];
+      final myRequests = meDoc.data()?['friendRequests'] ?? {};
+
+      friends = List<String>.from(myFriends);
+      sentRequests = List<String>.from(myRequests['sent'] ?? []);
+      receivedRequests = List<String>.from(myRequests['received'] ?? []);
+
+      final allUsers =
+          await FirebaseFirestore.instance.collection('User').get();
+
+      List<Map<String, dynamic>> tempFriends = [];
+      List<Map<String, dynamic>> tempOthers = []; // Add Friends - Same City
+      List<Map<String, dynamic>> tempReceived = [];
+      List<Map<String, dynamic>> tempHomeTownFriends =
+          []; // HomeTown Friends - Same HomeTown
+
+      if (allUsers.docs.isEmpty) {
+        return;
+      }
+
+      for (var doc in allUsers.docs) {
+        final email = doc['email'];
+        final name = doc['name'];
+        final profession = doc['profession'];
+        final userHomeTownCity = doc['hometown']['city'];
+        final userCity = doc['city'];
+
+        if (email == currentEmail) continue;
+
+        final userMap = {
+          'email': email,
+          'name': name,
+          'profile': doc['profile'] ?? '',
+          'profession': profession,
+          'homeTownCity': userHomeTownCity,
+          'userCity': userCity,
+        };
+
+        if (friends.contains(email)) {
+          // Fetch last message & time
+          String roomId = _getChatRoomId(currentEmail!, email);
+          final messageSnapshot = await FirebaseFirestore.instance
+              .collection('chat_rooms')
+              .doc(roomId)
+              .collection('messages')
+              .orderBy('timestamp', descending: true)
+              .limit(1)
+              .get();
+
+          String lastMessage = '';
+          String lastMessageTime = '';
+          Timestamp? timestamp;
+
+          if (messageSnapshot.docs.isNotEmpty) {
+            final msg = messageSnapshot.docs.first;
+            lastMessage = msg['message'] ?? '';
+            timestamp = msg['timestamp'];
+            if (timestamp != null) {
+              final dateTime = timestamp.toDate();
+              lastMessageTime =
+                  TimeOfDay.fromDateTime(dateTime).format(context);
+            }
+          }
+
+          tempFriends.add({
+            ...userMap,
+            'relation': 'friend',
+            'lastMessage': lastMessage,
+            'lastMessageTime': lastMessageTime,
+            'timestamp': timestamp,
+          });
+        } else if (sentRequests.contains(email)) {
+          // Add to Add Friends if same city
+          if (currentCity == userCity) {
+            tempOthers.add({...userMap, 'relation': 'sent'});
+          }
+          // Add to HomeTown Friends if same hometown
+          if (homeTownCity == userHomeTownCity) {
+            tempHomeTownFriends.add({...userMap, 'relation': 'sent'});
+          }
+        } else if (receivedRequests.contains(email)) {
+          tempReceived.add({...userMap, 'relation': 'received'});
+        } else {
+          // Add to Add Friends if same city (regardless of hometown)
+          if (currentCity == userCity) {
+            tempOthers.add({...userMap, 'relation': 'none'});
+          }
+          // Add to HomeTown Friends if same hometown (regardless of city)
+          if (homeTownCity == userHomeTownCity) {
+            tempHomeTownFriends.add({...userMap, 'relation': 'none'});
+          }
+        }
+      }
+
+      // Sort by timestamp descending
+      tempFriends.sort((a, b) {
+        final tsA = a['timestamp'] as Timestamp?;
+        final tsB = b['timestamp'] as Timestamp?;
+        if (tsA == null && tsB == null) return 0;
+        if (tsA == null) return 1;
+        if (tsB == null) return -1;
+        return tsB.compareTo(tsA);
+      });
+
+      // Remove timestamp from final display
+      for (var friend in tempFriends) {
+        friend.remove('timestamp');
+      }
+
+      setState(() {
+        friendsList = tempFriends;
+        addFriendsList = tempOthers;
+        receivedRequestsList = tempReceived;
+        homeTownFriendsList = tempHomeTownFriends;
         isLoading = false;
       });
     } catch (e) {
@@ -183,8 +317,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
       return;
     }
     _showLoadingDialog();
-
-    // decrement count only for non-subscribers
 
     try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -224,7 +356,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
 
         if (!provider.isUserSubscribed) {
           friendRequestsCount--;
-          // Update Firestore
           tx.update(meRef, {
             'friendRequestLimit': friendRequestsCount,
           });
@@ -238,6 +369,14 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
           }
           return user;
         }).toList();
+
+        // Also update hometown friends list
+        homeTownFriendsList = homeTownFriendsList.map((user) {
+          if (user['email'] == receiverEmail) {
+            return {...user, 'relation': 'sent'};
+          }
+          return user;
+        }).toList();
       });
       sentRequests.add(receiverEmail);
     } catch (e) {
@@ -245,7 +384,9 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
       showSnackBar(context, 'Can\'t send friend request');
     } finally {
       _hideLoadingDialog();
-      _showFreeRequestsWarningDialog(friendRequestsCount);
+      if (!provider.isUserSubscribed) {
+        _showFreeRequestsWarningDialog(friendRequestsCount);
+      }
     }
   }
 
@@ -311,7 +452,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
         });
       });
 
-      // Add to top of friendsList with no message
       setState(() {
         friendsList.insert(0, {
           'email': senderEmail,
@@ -325,7 +465,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
           'lastMessageTime': '',
         });
 
-        // Remove from friend request UI
         receivedRequestsList.removeWhere((u) => u['email'] == senderEmail);
         receivedRequests.remove(senderEmail);
       });
@@ -379,7 +518,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
         tx.update(senderRef, {'friendRequests.sent': senderSent});
       });
 
-      // Update UI locally
       final declinedUser = receivedRequestsList.firstWhere(
         (u) => u['email'] == senderEmail,
         orElse: () => {},
@@ -395,8 +533,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
             'relation': 'none',
           });
         }
-
-        //isLoading = false; // Hide loading indicator
       });
     } catch (e) {
       log('error === $e');
@@ -405,9 +541,237 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
     }
   }
 
+  Future<void> _unfriendUser(String userEmail) async {
+    _showLoadingDialog();
+
+    try {
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final meRef = FirebaseFirestore.instance.collection('User').doc(uid);
+
+      final userSnap = await FirebaseFirestore.instance
+          .collection('User')
+          .where('email', isEqualTo: userEmail)
+          .limit(1)
+          .get();
+
+      if (userSnap.docs.isEmpty) {
+        _hideLoadingDialog();
+        return;
+      }
+
+      final userDoc = userSnap.docs.first;
+      final userRef = userDoc.reference;
+
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final meSnapshot = await tx.get(meRef);
+        final userSnapshot = await tx.get(userRef);
+
+        List<String> myFriends =
+            List<String>.from(meSnapshot.get('friends') ?? []);
+        List<String> userFriends =
+            List<String>.from(userSnapshot.get('friends') ?? []);
+
+        myFriends.remove(userEmail);
+        userFriends.remove(currentEmail);
+
+        tx.update(meRef, {'friends': myFriends});
+        tx.update(userRef, {'friends': userFriends});
+      });
+
+      setState(() {
+        final unfriendedUser = friendsList.firstWhere(
+          (user) => user['email'] == userEmail,
+          orElse: () => {},
+        );
+
+        friendsList.removeWhere((user) => user['email'] == userEmail);
+        friends.remove(userEmail);
+
+        if (unfriendedUser.isNotEmpty) {
+          addFriendsList.add({
+            ...unfriendedUser,
+            'relation': 'none',
+          });
+        }
+      });
+
+      _hideLoadingDialog();
+      showSnackBar(context, 'User unfriended successfully');
+    } catch (e) {
+      _hideLoadingDialog();
+      log('error unfriending user: $e');
+      showSnackBar(context, 'Failed to unfriend user');
+    }
+  }
+
+  Future<void> _blockUser(String userEmail) async {
+    _showLoadingDialog();
+
+    try {
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final meRef = FirebaseFirestore.instance.collection('User').doc(uid);
+
+      final userSnap = await FirebaseFirestore.instance
+          .collection('User')
+          .where('email', isEqualTo: userEmail)
+          .limit(1)
+          .get();
+
+      if (userSnap.docs.isEmpty) {
+        _hideLoadingDialog();
+        return;
+      }
+
+      final userDoc = userSnap.docs.first;
+      final userRef = userDoc.reference;
+
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final meSnapshot = await tx.get(meRef);
+        final userSnapshot = await tx.get(userRef);
+
+        List<String> blockedUsers =
+            List<String>.from(meSnapshot.data()?['blockedUsers'] ?? []);
+        List<String> myFriends =
+            List<String>.from(meSnapshot.get('friends') ?? []);
+        Map<String, dynamic> myRequests =
+            meSnapshot.get('friendRequests') ?? {'sent': [], 'received': []};
+
+        List<String> theirFriends =
+            List<String>.from(userSnapshot.get('friends') ?? []);
+        Map<String, dynamic> theirRequests =
+            userSnapshot.get('friendRequests') ?? {'sent': [], 'received': []};
+
+        if (!blockedUsers.contains(userEmail)) {
+          blockedUsers.add(userEmail);
+        }
+
+        myFriends.remove(userEmail);
+        theirFriends.remove(currentEmail);
+
+        List<String> mySent = List<String>.from(myRequests['sent'] ?? []);
+        List<String> myReceived =
+            List<String>.from(myRequests['received'] ?? []);
+        List<String> theirSent = List<String>.from(theirRequests['sent'] ?? []);
+        List<String> theirReceived =
+            List<String>.from(theirRequests['received'] ?? []);
+
+        mySent.remove(userEmail);
+        myReceived.remove(userEmail);
+        theirSent.remove(currentEmail);
+        theirReceived.remove(currentEmail);
+
+        tx.update(meRef, {
+          'blockedUsers': blockedUsers,
+          'friends': myFriends,
+          'friendRequests': {
+            'sent': mySent,
+            'received': myReceived,
+          },
+        });
+
+        tx.update(userRef, {
+          'friends': theirFriends,
+          'friendRequests': {
+            'sent': theirSent,
+            'received': theirReceived,
+          },
+        });
+      });
+
+      setState(() {
+        friendsList.removeWhere((user) => user['email'] == userEmail);
+        addFriendsList.removeWhere((user) => user['email'] == userEmail);
+        receivedRequestsList.removeWhere((user) => user['email'] == userEmail);
+        homeTownFriendsList.removeWhere((user) => user['email'] == userEmail);
+
+        friends.remove(userEmail);
+        sentRequests.remove(userEmail);
+        receivedRequests.remove(userEmail);
+      });
+
+      _hideLoadingDialog();
+      showSnackBar(context, 'User blocked successfully');
+    } catch (e) {
+      _hideLoadingDialog();
+      log('error blocking user: $e');
+      showSnackBar(context, 'Failed to block user');
+    }
+  }
+
+  Future<void> _cancelFriendRequest(String receiverEmail) async {
+    _showLoadingDialog();
+
+    try {
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final meRef = FirebaseFirestore.instance.collection('User').doc(uid);
+
+      final receiverSnap = await FirebaseFirestore.instance
+          .collection('User')
+          .where('email', isEqualTo: receiverEmail)
+          .limit(1)
+          .get();
+
+      if (receiverSnap.docs.isEmpty) {
+        _hideLoadingDialog();
+        return;
+      }
+
+      final receiverDoc = receiverSnap.docs.first;
+      final receiverRef = receiverDoc.reference;
+
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final meSnapshot = await tx.get(meRef);
+        final receiverSnapshot = await tx.get(receiverRef);
+
+        final myRequests =
+            meSnapshot.get('friendRequests') ?? {'sent': [], 'received': []};
+        final receiverRequests = receiverSnapshot.get('friendRequests') ??
+            {'sent': [], 'received': []};
+
+        final mySent = List<String>.from(myRequests['sent'] ?? []);
+        final receiverReceived =
+            List<String>.from(receiverRequests['received'] ?? []);
+
+        mySent.remove(receiverEmail);
+        receiverReceived.remove(currentEmail);
+
+        tx.update(meRef, {'friendRequests.sent': mySent});
+        tx.update(receiverRef, {'friendRequests.received': receiverReceived});
+      });
+
+      setState(() {
+        addFriendsList = addFriendsList.map((user) {
+          if (user['email'] == receiverEmail) {
+            return {...user, 'relation': 'none'};
+          }
+          return user;
+        }).toList();
+
+        // Also update hometown friends list
+        homeTownFriendsList = homeTownFriendsList.map((user) {
+          if (user['email'] == receiverEmail) {
+            return {...user, 'relation': 'none'};
+          }
+          return user;
+        }).toList();
+
+        sentRequests.remove(receiverEmail);
+      });
+
+      _hideLoadingDialog();
+      showSnackBar(context, 'Friend request cancelled');
+    } catch (e) {
+      _hideLoadingDialog();
+      log('error cancelling request: $e');
+      showSnackBar(context, 'Failed to cancel request');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final provider = Provider.of<SubscriptionData>(context);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: isLoading
@@ -418,16 +782,14 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
               color: Colors.deepOrange,
               child: receivedRequestsList.isEmpty &&
                       friendsList.isEmpty &&
-                      addFriendsList.isEmpty
+                      addFriendsList.isEmpty &&
+                      homeTownFriendsList.isEmpty
                   ? ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
                         const SizedBox(height: 120),
-
-                        // Empty State
                         Column(
                           children: [
-                            // Icon
                             Container(
                               width: 100,
                               height: 100,
@@ -441,10 +803,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                                 color: Colors.orange,
                               ),
                             ),
-
                             const SizedBox(height: 24),
-
-                            // Title
                             const Text(
                               'No People Found',
                               style: TextStyle(
@@ -453,10 +812,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                                 color: Colors.black87,
                               ),
                             ),
-
                             const SizedBox(height: 8),
-
-                            // Description
                             const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 40),
                               child: Text(
@@ -468,10 +824,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                                 ),
                               ),
                             ),
-
                             const SizedBox(height: 24),
-
-                            // Refresh Button
                             ElevatedButton.icon(
                               onPressed: () => _loadChats(),
                               icon: const Icon(Icons.refresh),
@@ -554,6 +907,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
+                                    color: Colors.red,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -604,6 +958,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
+                                    color: Colors.green,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -636,6 +991,9 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                             lastMessageTime: user['lastMessageTime'],
                             imageUrl: user['profile'],
                             status: 'friend',
+                            onUnfriend: () =>
+                                _unfriendUser(user['email'] ?? ''),
+                            onBlock: () => _blockUser(user['email'] ?? ''),
                             onOpenChat: () {
                               Navigator.push(
                                 context,
@@ -654,10 +1012,11 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                           const Padding(
                             padding: EdgeInsets.all(12.0),
                             child: Text(
-                              'Add Friends',
+                              'People Near You',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.orange,
                               ),
                             ),
                           ),
@@ -676,8 +1035,193 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                                 _sendFriendRequest(user['email']);
                               }
                             },
+                            onCancelRequest: () =>
+                                _cancelFriendRequest(user['email']),
+                            onBlock: () => _blockUser(user['email']),
                           ),
                         ),
+
+                        // New Hometown Friends Section
+                        if (!provider.isUserSubscribed &&
+                            homeTownFriendsList.isNotEmpty)
+                          Container(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.grey[100]!,
+                                  Colors.grey[200]!,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                  color: Colors.orange.withOpacity(0.3)),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange.withOpacity(0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: const Icon(
+                                          Icons.lock,
+                                          color: Colors.orange,
+                                          size: 24,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                const Text(
+                                                  'Hometown Friends',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.deepPurple,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                  child: Text(
+                                                    '${homeTownFriendsList.length}',
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Connect with people from ${homeTownCity.capitalizeFirst()}',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    '🔓 Unlock this feature to connect with people from your hometown who are now living across Australia!',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton.icon(
+                                    onPressed: () => Get.to(
+                                        () => const SubscriptionScreen()),
+                                    icon: const Icon(Icons.workspace_premium,
+                                        size: 20),
+                                    label: const Text('Unlock Premium'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 24, vertical: 12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                        // Show actual hometown friends for subscribed users
+                        if (provider.isUserSubscribed &&
+                            homeTownFriendsList.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.home_outlined,
+                                    color: Colors.deepPurple, size: 22),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Hometown Friends',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.deepPurple,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.deepPurple,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '${homeTownFriendsList.length}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (provider.isUserSubscribed)
+                          ...homeTownFriendsList.map(
+                            (user) => UserTiles(
+                              chatType: 'user',
+                              userName: user['name'],
+                              lastMessage: '',
+                              lastMessageTime: '',
+                              imageUrl: user['profile'],
+                              status: user['relation'],
+                              shortBio:
+                                  '${(user['profession'] ?? '').toString().capitalizeFirst()} in \n${(user['userCity'] ?? '').toString().capitalizeFirst()} from ${(user['homeTownCity'] ?? '').toString().capitalizeFirst()}',
+                              onSendFriendRequest: () {
+                                if (user['relation'] == 'none') {
+                                  _sendFriendRequest(user['email']);
+                                }
+                              },
+                              onCancelRequest: () =>
+                                  _cancelFriendRequest(user['email']),
+                              onBlock: () => _blockUser(user['email']),
+                            ),
+                          ),
                       ],
                     ),
             ),
@@ -716,13 +1260,9 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Premium Icon or Image
               const Icon(Icons.lock_outline_rounded,
                   size: 48, color: Colors.deepOrange),
-
               const SizedBox(height: 12),
-
-              // Title
               const Text(
                 'Premium Feature',
                 style: TextStyle(
@@ -730,10 +1270,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                   fontWeight: FontWeight.w700,
                 ),
               ),
-
               const SizedBox(height: 8),
-
-              // Description
               (isGroup)
                   ? const Text(
                       'Creating Group is a premium feature.\nSubscribe now to unlock this and more!',
@@ -745,10 +1282,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 16, color: Colors.black87),
                     ),
-
               const SizedBox(height: 16),
-
-              // Feature Highlights
               const Column(
                 children: [
                   Row(
@@ -790,10 +1324,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                   ),
                 ],
               ),
-
               const SizedBox(height: 24),
-
-              // Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -801,7 +1332,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                     onPressed: () => Navigator.of(context).pop(),
                     child: const Text('Maybe Later'),
                   ),
-                  // const SizedBox(width: 8),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.workspace_premium, size: 20),
                     label: const Text('Subscribe Now'),
@@ -839,7 +1369,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Warning Icon
               Container(
                 width: 64,
                 height: 64,
@@ -854,8 +1383,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Title
               const Text(
                 'Friend Request Sent!',
                 style: TextStyle(
@@ -865,8 +1392,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                 ),
               ),
               const SizedBox(height: 12),
-
-              // Warning Message with Dynamic Text
               RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
@@ -892,10 +1417,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                   ],
                 ),
               ),
-
               const SizedBox(height: 24),
-
-              // Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -903,7 +1425,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                     onPressed: () => Navigator.of(context).pop(),
                     child: const Text('Maybe Later'),
                   ),
-                  // const SizedBox(width: 8),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.workspace_premium, size: 20),
                     label: const Text('Subscribe Now'),
