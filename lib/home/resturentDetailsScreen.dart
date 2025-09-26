@@ -137,8 +137,8 @@ class _ResturentDetailsScreenState extends State<ResturentDetailsScreen> {
                       right: 20,
                       child: Consumer<FavouritesProvider>(
                         builder: (context, favProvider, child) {
-                          final isFavorite =
-                              favProvider.isFavouriteLocal(itemId, widget.type);
+                          final isFavorite = favProvider.isFavouriteFromCache(
+                              itemId, widget.type);
 
                           return GestureDetector(
                             onTap: () async {
@@ -255,8 +255,8 @@ class _ResturentDetailsScreenState extends State<ResturentDetailsScreen> {
                           ),
                           Consumer<FavouritesProvider>(
                             builder: (context, favProvider, child) {
-                              final isFavorite = favProvider.isFavouriteLocal(
-                                  itemId, widget.type);
+                              final isFavorite = favProvider
+                                  .isFavouriteFromCache(itemId, widget.type);
                               return IconButton(
                                 onPressed: () async {
                                   if (!isFavorite) {

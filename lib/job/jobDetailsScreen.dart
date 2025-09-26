@@ -97,40 +97,70 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 12.0),
-                child: Consumer<FavouritesProvider>(
-                  builder: (context, favProvider, child) {
-                    final isFavorited = favProvider.isFavouriteLocal(
-                      postId,
-                      FavouriteType.jobs,
-                    );
+                child: FutureBuilder<bool>(
+                  future: context.read<FavouritesProvider>().isFavouriteLocal(
+                        postId,
+                        FavouriteType.jobs,
+                      ),
+                  builder: (context, snapshot) {
+                    // Show loading state while checking
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: const Icon(
+                          Icons.favorite_border,
+                          color: Colors.red,
+                          size: 24,
+                        ),
+                      );
+                    }
+
+                    final isFavorited = snapshot.data ?? false;
 
                     return GestureDetector(
                       onTap: () async {
+                        final favProvider = context.read<FavouritesProvider>();
+
                         if (isFavorited) {
-                          await favProvider.removeFromFavourites(
+                          final success =
+                              await favProvider.removeFromFavourites(
                             postId,
                             FavouriteType.jobs,
                           );
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                          if (success && mounted) {
+                            // Force rebuild to check new status
+                            setState(() {});
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
                                 content: Text('Removed from favorites'),
-                                backgroundColor: Colors.red),
-                          );
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
                         } else {
-                          await favProvider.addToFavourites(
+                          final success = await favProvider.addToFavourites(
                             postId,
                             FavouriteType.jobs,
                           );
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                          if (success && mounted) {
+                            // Force rebuild to check new status
+                            setState(() {});
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
                                 content: Text('Added to favorites'),
-                                backgroundColor: Colors.green),
-                          );
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
                         }
                       },
                       child: Container(
                         decoration: const BoxDecoration(
-                          color: Colors.white, // White circular background
+                          color: Colors.white,
                           shape: BoxShape.circle,
                         ),
                         padding: const EdgeInsets.all(8),

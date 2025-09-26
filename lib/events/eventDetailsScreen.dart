@@ -215,6 +215,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   },
                 ),
               ),
+
+              // In your EventDetailsScreen - replace the heart icon with this:
               Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -223,48 +225,62 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 ),
                 child: Consumer<FavouritesProvider>(
                   builder: (context, favProvider, child) {
-                    // Remove FutureBuilder - just use local state directly
-                    final isFavorited = favProvider.isFavouriteLocal(
-                      eventId!,
-                      FavouriteType.events,
-                    );
-
-                    return IconButton(
-                      icon: Icon(
-                        isFavorited
-                            ? Icons.favorite_rounded
-                            : Icons.favorite_outline,
-                        color: Colors.red,
-                      ),
-                      onPressed: () async {
-                        if (isFavorited) {
-                          final success =
-                              await favProvider.removeFromFavourites(
-                            eventId!,
-                            FavouriteType.events,
+                    return FutureBuilder<bool>(
+                      future: favProvider.isFavouriteLocal(
+                          eventId!, FavouriteType.events),
+                      builder: (context, snapshot) {
+                        // Show loading state briefly if needed
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const IconButton(
+                            onPressed: null,
+                            icon: Icon(
+                              Icons.favorite_outline,
+                              color: Colors.red,
+                            ),
                           );
-                          if (success && mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Removed from favorites'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        } else {
-                          final success = await favProvider.addToFavourites(
-                            eventId!,
-                            FavouriteType.events,
-                          );
-                          if (success && mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Added to favorites'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          }
                         }
+
+                        final isFavorited = snapshot.data ?? false;
+
+                        return IconButton(
+                          icon: Icon(
+                            isFavorited
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_outline,
+                            color: Colors.red,
+                          ),
+                          onPressed: () async {
+                            if (isFavorited) {
+                              final success =
+                                  await favProvider.removeFromFavourites(
+                                eventId!,
+                                FavouriteType.events,
+                              );
+                              if (success && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Removed from favorites'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            } else {
+                              final success = await favProvider.addToFavourites(
+                                eventId!,
+                                FavouriteType.events,
+                              );
+                              if (success && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Added to favorites'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                        );
                       },
                     );
                   },
