@@ -723,7 +723,7 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
                         ),
                       ),
               ),
-              const SizedBox(height: 120),
+              const SizedBox(height: 100),
             ],
           ),
         ),

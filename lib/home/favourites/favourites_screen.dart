@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/home/constants.dart';
@@ -509,6 +511,7 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
   }
 
   void _navigateToSeeAll(FavouriteType type, List<FavouriteItem> items) {
+    log(items.first.toString());
     Navigator.push(
       context,
       MaterialPageRoute(

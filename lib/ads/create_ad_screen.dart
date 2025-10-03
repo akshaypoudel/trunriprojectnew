@@ -21,6 +21,114 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
   int _currentPage = 0;
   bool _isLoading = false;
 
+  final Map<String, List<String>> australiaStatesWithCities = {
+    'New South Wales': [
+      'Sydney',
+      'Newcastle',
+      'Wollongong',
+      'Albury',
+      'Bathurst',
+      'Coffs Harbour',
+      'Dubbo',
+      'Gosford',
+      'Maitland',
+      'Tamworth',
+      'Wagga Wagga',
+      'Nowra',
+      'Orange',
+      'Port Macquarie',
+      'Lismore',
+      'Tweed Heads',
+      'Shellharbour',
+      'Queanbeyan'
+    ],
+    'Victoria': [
+      'Melbourne',
+      'Geelong',
+      'Ballarat',
+      'Bendigo',
+      'Shepparton',
+      'Mildura',
+      'Warrnambool',
+      'Wodonga',
+      'Traralgon',
+      'Melton',
+      'Sunbury',
+      'Bacchus Marsh',
+      'Horsham',
+      'Echuca',
+      'Wangaratta',
+      'Sale'
+    ],
+    'Queensland': [
+      'Brisbane',
+      'Gold Coast',
+      'Cairns',
+      'Townsville',
+      'Toowoomba',
+      'Mackay',
+      'Rockhampton',
+      'Bundaberg',
+      'Hervey Bay',
+      'Caloundra',
+      'Gladstone',
+      'Ipswich',
+      'Logan City',
+      'Gympie',
+      'Palm Cove',
+      'Mount Isa',
+      'Maryborough'
+    ],
+    'Western Australia': [
+      'Perth',
+      'Fremantle',
+      'Bunbury',
+      'Albany',
+      'Kalgoorlie',
+      'Geraldton',
+      'Mandurah',
+      'Broome',
+      'Karratha',
+      'Port Hedland',
+      'Busselton'
+    ],
+    'South Australia': [
+      'Adelaide',
+      'Mount Gambier',
+      'Murray Bridge',
+      'Port Lincoln',
+      'Whyalla',
+      'Port Augusta',
+      'Victor Harbor',
+      'Gawler'
+    ],
+    'Tasmania': [
+      'Hobart',
+      'Launceston',
+      'Devonport',
+      'Burnie',
+      'Ulverstone',
+      'Kingston',
+      'Glenorchy'
+    ],
+    'Northern Territory': [
+      'Darwin',
+      'Alice Springs',
+      'Tennant Creek',
+      'Katherine'
+    ],
+    'Australian Capital Territory': [
+      'Canberra',
+      'Belconnen',
+      'Gungahlin',
+      'Woden Valley',
+      'Tuggeranong'
+    ],
+  };
+
+  String? _selectedState;
+  String? _selectedCity;
+
   // Form Controllers
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -30,8 +138,8 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
   final _phoneController = TextEditingController();
   final _websiteController = TextEditingController();
   final _addressController = TextEditingController();
-  final _cityController = TextEditingController();
-  final _stateController = TextEditingController();
+  // final _cityController = TextEditingController();
+  // final _stateController = TextEditingController();
   final _countryController = TextEditingController(text: 'Australia');
   final _latitudeController = TextEditingController();
   final _longitudeController = TextEditingController();
@@ -62,8 +170,6 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
     _phoneController.dispose();
     _websiteController.dispose();
     _addressController.dispose();
-    _cityController.dispose();
-    _stateController.dispose();
     _countryController.dispose();
     _latitudeController.dispose();
     _longitudeController.dispose();
@@ -279,31 +385,165 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
                 value?.isEmpty == true ? 'Address is required' : null,
           ),
           const SizedBox(height: 20),
+          // Row(
+          //   children: [
+          //     Expanded(
+          //       child: _buildTextFormField(
+          //         controller: _cityController,
+          //         label: 'City',
+          //         hint: 'Enter city',
+          //         icon: Icons.location_city_rounded,
+          //         validator: (value) =>
+          //             value?.isEmpty == true ? 'City is required' : null,
+          //       ),
+          //     ),
+          //     const SizedBox(width: 16),
+          //     Expanded(
+          //       child: _buildTextFormField(
+          //         controller: _stateController,
+          //         label: 'State',
+          //         hint: 'Enter state',
+          //         icon: Icons.map_rounded,
+          //         validator: (value) =>
+          //             value?.isEmpty == true ? 'State is required' : null,
+          //       ),
+          //     ),
+          //   ],
+          // ),
+
           Row(
             children: [
               Expanded(
-                child: _buildTextFormField(
-                  controller: _cityController,
-                  label: 'City',
-                  hint: 'Enter city',
-                  icon: Icons.location_city_rounded,
-                  validator: (value) =>
-                      value?.isEmpty == true ? 'City is required' : null,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedState,
+                    dropdownColor: Colors.white,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      labelText: 'State',
+                      labelStyle: const TextStyle(
+                        color: Colors.deepOrange,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(
+                            color: Colors.deepOrange, width: 2),
+                      ),
+                      contentPadding: const EdgeInsets.all(20),
+                    ),
+                    items: australiaStatesWithCities.keys
+                        .map((state) => DropdownMenuItem(
+                              value: state,
+                              child: Text(
+                                state,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedState = value;
+                        // _cityController.clear();
+                        _selectedCity = null;
+                      });
+                    },
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'State is required'
+                        : null,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: _buildTextFormField(
-                  controller: _stateController,
-                  label: 'State',
-                  hint: 'Enter state',
-                  icon: Icons.map_rounded,
-                  validator: (value) =>
-                      value?.isEmpty == true ? 'State is required' : null,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedCity,
+                    dropdownColor: Colors.white,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      labelText: 'City',
+                      labelStyle: const TextStyle(
+                        color: Colors.deepOrange,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(
+                            color: Colors.deepOrange, width: 2),
+                      ),
+                      contentPadding: const EdgeInsets.all(20),
+                    ),
+                    items: _selectedState == null
+                        ? []
+                        : australiaStatesWithCities[_selectedState!]!
+                            .map((city) => DropdownMenuItem(
+                                  value: city,
+                                  child: Text(city,
+                                      style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500)),
+                                ))
+                            .toList(),
+                    onChanged: _selectedState == null
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _selectedCity = value;
+                            });
+                          },
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'City is required'
+                        : null,
+                  ),
                 ),
               ),
             ],
           ),
+
           const SizedBox(height: 20),
           _buildTextFormField(
             controller: _countryController,
@@ -513,6 +753,8 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
       child: DropdownButtonFormField<String>(
         value: value,
         onChanged: onChanged,
+        dropdownColor: Colors.white,
+        focusColor: Colors.white,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(
@@ -966,8 +1208,8 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
             _priceController.text.isNotEmpty;
       case 1:
         return _addressController.text.isNotEmpty &&
-            _cityController.text.isNotEmpty &&
-            _stateController.text.isNotEmpty &&
+            _selectedCity!.isNotEmpty &&
+            _selectedState!.isNotEmpty &&
             _countryController.text.isNotEmpty;
       case 2:
         return _emailController.text.isNotEmpty &&
@@ -1067,8 +1309,8 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
         },
         'location': {
           'address': _addressController.text.trim(),
-          'city': _cityController.text.trim(),
-          'state': _stateController.text.trim(),
+          'city': _selectedCity,
+          'state': _selectedState,
           'country': _countryController.text.trim(),
           'latitude': double.tryParse(_latitudeController.text) ?? 0.0,
           'longitude': double.tryParse(_longitudeController.text) ?? 0.0,

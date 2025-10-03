@@ -93,6 +93,7 @@ class FirebaseFireStoreService {
   Future<bool> updateProfile({
     required String name,
     required String address,
+    required String profession,
     // required File? profileImage,
     // required bool allowChange,
     required BuildContext context,
@@ -111,7 +112,10 @@ class FirebaseFireStoreService {
       //   }
       // }
 
-      Map<String, dynamic> updateData = {"name": name};
+      Map<String, dynamic> updateData = {
+        "name": name,
+        "profession": profession,
+      };
 
       // if (imageUrl != null && provider.getProfileImage.isNotEmpty) {
       //   updateData["profile"] = imageUrl;

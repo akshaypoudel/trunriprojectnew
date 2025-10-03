@@ -611,9 +611,8 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
 
         case 'Upcoming':
         default:
-          filteredEvents = widget.eventList.where((event) {
-            return _isEventUpcoming(event['eventDate'], now);
-          }).toList();
+          // Show all events regardless of date for 'Upcoming'
+          filteredEvents = List.from(widget.eventList);
           break;
       }
 
@@ -864,7 +863,8 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
                                 boxShadow: isSelected
                                     ? [
                                         BoxShadow(
-                                          color: Colors.orange.withOpacity(0.3),
+                                          color: Colors.orange
+                                              .withValues(alpha: 0.3),
                                           blurRadius: 6,
                                           offset: const Offset(0, 2),
                                         ),
@@ -950,8 +950,9 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
                                       BoxShadow(
                                         color: isSelected
                                             ? (category['color'] as Color)
-                                                .withOpacity(0.4)
-                                            : Colors.grey.withOpacity(0.1),
+                                                .withValues(alpha: 0.4)
+                                            : Colors.grey
+                                                .withValues(alpha: 0.1),
                                         blurRadius: isSelected ? 12 : 6,
                                         offset: Offset(0, isSelected ? 6 : 2),
                                       ),
@@ -1066,7 +1067,8 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.withOpacity(0.15),
+                                      color:
+                                          Colors.grey.withValues(alpha: 0.15),
                                       blurRadius: 10,
                                       offset: const Offset(0, 4),
                                     ),
@@ -1128,10 +1130,10 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
                                                     begin: Alignment.topCenter,
                                                     end: Alignment.bottomCenter,
                                                     colors: [
-                                                      Colors.black
-                                                          .withOpacity(0.1),
-                                                      Colors.black
-                                                          .withOpacity(0.7),
+                                                      Colors.black.withValues(
+                                                          alpha: 0.1),
+                                                      Colors.black.withValues(
+                                                          alpha: 0.7),
                                                     ],
                                                   ),
                                                 ),
@@ -1147,7 +1149,8 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
                                                         const EdgeInsets.all(8),
                                                     decoration: BoxDecoration(
                                                       color: Colors.white
-                                                          .withOpacity(0.9),
+                                                          .withValues(
+                                                              alpha: 0.9),
                                                       shape: BoxShape.circle,
                                                     ),
                                                     child: const Icon(
@@ -1162,7 +1165,8 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
                                                         const EdgeInsets.all(8),
                                                     decoration: BoxDecoration(
                                                       color: Colors.white
-                                                          .withOpacity(0.9),
+                                                          .withValues(
+                                                              alpha: 0.9),
                                                       shape: BoxShape.circle,
                                                     ),
                                                     child: const Icon(
@@ -1183,7 +1187,7 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
                                                     const EdgeInsets.all(12),
                                                 decoration: BoxDecoration(
                                                   color: Colors.black
-                                                      .withOpacity(0.8),
+                                                      .withValues(alpha: 0.15),
                                                   borderRadius:
                                                       BorderRadius.circular(12),
                                                 ),

@@ -24,7 +24,8 @@ class NewOtpScreen extends StatefulWidget {
   final String verificationId;
   String? name;
   String? email;
-  String? password;
+  String? profession;
+  Map<String, dynamic>? hometown;
   final bool isSignInScreen;
 
   NewOtpScreen({
@@ -33,7 +34,8 @@ class NewOtpScreen extends StatefulWidget {
     required this.verificationId,
     this.name,
     this.email,
-    this.password,
+    this.profession,
+    this.hometown,
     required this.isSignInScreen,
   });
 
@@ -62,7 +64,8 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
     String completePhoneNum,
     String name,
     String email,
-    String password,
+    String profession,
+    Map<String, dynamic> hometown,
   ) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     OverlayEntry loader = NewHelper.overlayLoader(context);
@@ -73,20 +76,19 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
       'name': name,
       'email': email,
       'phoneNumber': completePhoneNum,
-      'password': password,
-      'address': "",
-      'profile': "",
+      'profile': '',
+      'address': '',
       'isOnline': true,
       'lastSeen': Timestamp.now(),
       'isSubscribed': false,
       'isBlocked': false,
       'subscriptionExpiry': DateTime.now(),
       'friendRequestLimit': 2,
-      'profession': 'Software Engineer',
+      'profession': profession,
       'hometown': {
-        'city': 'Delhi',
-        'state': 'Delhi',
-        'address': 'Delhi, India',
+        'city': hometown['city'],
+        'state': hometown['state'],
+        'address': hometown['address'],
       },
       'friends': [],
       'friendRequests': {
@@ -151,22 +153,40 @@ class _NewOtpScreenState extends State<NewOtpScreen> {
         );
 
         await FirebaseAuth.instance.signInWithCredential(credential);
-        showSnackBar(context, "User registered successfully");
 
+///////////////////////////////
         SharedPreferences sharedPreferences =
             await SharedPreferences.getInstance();
         sharedPreferences.setString("myPhone", widget.phoneNumber);
+//////////////////////////////////
+
+        final QuerySnapshot result = await FirebaseFirestore.instance
+            .collection('User')
+            .where('phoneNumber', isEqualTo: widget.phoneNumber)
+            .get();
+
+        if (result.docs.isNotEmpty) {
+          Navigator.pop(context);
+          showSnackBar(
+              context, "User is already registered with this phoneNumber");
+          FirebaseAuth.instance.signOut();
+          NewHelper.hideLoader(loader);
+          return;
+        }
 
         register(
           widget.phoneNumber,
           widget.name!,
           widget.email!,
-          widget.password!,
+          widget.profession!,
+          widget.hometown!,
         );
+
+        showSnackBar(context, "User registered successfully");
 
         checkIfUserInAustralia();
       } catch (e) {
-        showSnackBar(context, "Invalid OTP");
+        showSnackBar(context, "Invalid OTP error $e");
       }
     }
 

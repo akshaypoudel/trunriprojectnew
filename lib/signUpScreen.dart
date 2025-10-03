@@ -50,15 +50,6 @@ class _SignUpScreenState extends State<SignUpScreen>
       return;
     }
     String completePhoneNum = "$code${phoneController.text.trim()}";
-    final QuerySnapshot result = await FirebaseFirestore.instance
-        .collection('User')
-        .where('phoneNumber', isEqualTo: completePhoneNum)
-        .get();
-
-    if (result.docs.isNotEmpty) {
-      showSnackBar(context, "User is already registered with this phoneNumber");
-      return;
-    }
 
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
@@ -90,8 +81,12 @@ class _SignUpScreenState extends State<SignUpScreen>
               verificationId: verificationId,
               name: nameController.text.trim(),
               email: emailController.text.trim(),
-              // profession: professionController.text.trim(), // NEW
-              // homeTown: homeTownController.text.trim(), // NEW
+              profession: professionController.text.trim(),
+              hometown: {
+                'city': cityController.text.trim(),
+                'state': stateController.text.trim(),
+                'address': addressController.text.trim(),
+              }, // NEW
             ),
           ),
         );
@@ -268,7 +263,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                 ),
               ),
             ),
-
 // NEW: City Field
             CommonTextField(
                 hintText: 'City',
@@ -276,7 +270,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                 validator: MultiValidator([
                   RequiredValidator(errorText: 'City is required'),
                 ]).call),
-
 // NEW: State Field
             CommonTextField(
                 hintText: 'State',
@@ -462,7 +455,10 @@ class _SignUpScreenState extends State<SignUpScreen>
                     children: [
                       GestureDetector(
                         onTap: () {
-                          googleSignin.signInWithGoogle(context);
+                          googleSignin.signInWithGoogle(
+                            context,
+                            termAndCondition: termAndCondition,
+                          );
                         },
                         child: socialIcon(
                           "assets/images/google.png",

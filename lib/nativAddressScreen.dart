@@ -139,14 +139,21 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
                 Text("State", style: GoogleFonts.poppins(fontSize: 14)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
+                  dropdownColor: Colors.white,
                   value: stateController.text.isNotEmpty
                       ? stateController.text
                       : null,
                   decoration:
                       const InputDecoration(border: OutlineInputBorder()),
                   items: australianStates
-                      .map((state) =>
-                          DropdownMenuItem(value: state, child: Text(state)))
+                      .map(
+                        (state) => DropdownMenuItem(
+                          value: state,
+                          child: Text(
+                            state,
+                          ),
+                        ),
+                      )
                       .toList(),
                   onChanged: (value) {
                     setState(() {
@@ -162,6 +169,7 @@ class _PickUpAddressScreenState extends State<PickUpAddressScreen> {
                 Text("City", style: GoogleFonts.poppins(fontSize: 14)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
+                  dropdownColor: Colors.white,
                   value: cityController.text.isNotEmpty
                       ? cityController.text
                       : null,

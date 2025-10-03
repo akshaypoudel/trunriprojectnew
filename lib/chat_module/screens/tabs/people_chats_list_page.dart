@@ -45,134 +45,6 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
     _loadChats();
   }
 
-  Future<void> _loadChats123() async {
-    try {
-      final uid = FirebaseAuth.instance.currentUser!.uid;
-      final meDoc =
-          await FirebaseFirestore.instance.collection('User').doc(uid).get();
-      currentEmail = meDoc.get('email');
-      currentCity = meDoc.get('city');
-      homeTownCity = meDoc.get('hometown')['city'];
-
-      friendRequestsCount = meDoc.data()?['friendRequestLimit'] as int? ?? 0;
-
-      final myFriends = meDoc.data()?['friends'] ?? [];
-      final myRequests = meDoc.data()?['friendRequests'] ?? {};
-
-      friends = List<String>.from(myFriends);
-      sentRequests = List<String>.from(myRequests['sent'] ?? []);
-      receivedRequests = List<String>.from(myRequests['received'] ?? []);
-
-      final allUsers =
-          await FirebaseFirestore.instance.collection('User').get();
-
-      List<Map<String, dynamic>> tempFriends = [];
-      List<Map<String, dynamic>> tempOthers = [];
-      List<Map<String, dynamic>> tempReceived = [];
-      List<Map<String, dynamic>> tempHomeTownFriends =
-          []; // New list for hometown friends
-
-      if (allUsers.docs.isEmpty) {
-        return;
-      }
-
-      for (var doc in allUsers.docs) {
-        final email = doc['email'];
-        final name = doc['name'];
-        final profession = doc['profession'];
-        final userHomeTownCity = doc['hometown']['city'];
-        final userCity = doc['city'];
-
-        if (email == currentEmail) continue;
-
-        final userMap = {
-          'email': email,
-          'name': name,
-          'profile': doc['profile'] ?? '',
-          'profession': profession,
-          'homeTownCity': userHomeTownCity,
-          'userCity': userCity,
-        };
-
-        if (friends.contains(email)) {
-          // Fetch last message & time
-          String roomId = _getChatRoomId(currentEmail!, email);
-          final messageSnapshot = await FirebaseFirestore.instance
-              .collection('chat_rooms')
-              .doc(roomId)
-              .collection('messages')
-              .orderBy('timestamp', descending: true)
-              .limit(1)
-              .get();
-
-          String lastMessage = '';
-          String lastMessageTime = '';
-          Timestamp? timestamp;
-
-          if (messageSnapshot.docs.isNotEmpty) {
-            final msg = messageSnapshot.docs.first;
-            lastMessage = msg['message'] ?? '';
-            timestamp = msg['timestamp'];
-            if (timestamp != null) {
-              final dateTime = timestamp.toDate();
-              lastMessageTime =
-                  TimeOfDay.fromDateTime(dateTime).format(context);
-            }
-          }
-
-          tempFriends.add({
-            ...userMap,
-            'relation': 'friend',
-            'lastMessage': lastMessage,
-            'lastMessageTime': lastMessageTime,
-            'timestamp': timestamp,
-          });
-        } else if (sentRequests.contains(email)) {
-          tempOthers.add({...userMap, 'relation': 'sent'});
-        } else if (receivedRequests.contains(email)) {
-          tempReceived.add({...userMap, 'relation': 'received'});
-        } else {
-          if (currentCity != userCity) continue;
-
-          tempOthers.add({...userMap, 'relation': 'none'});
-        }
-
-        if (homeTownCity == userHomeTownCity &&
-            email != currentEmail &&
-            !friends.contains(email) &&
-            !sentRequests.contains(email) &&
-            !receivedRequests.contains(email)) {
-          tempHomeTownFriends.add({...userMap, 'relation': 'none'});
-        }
-      }
-
-      // Sort by timestamp descending
-      tempFriends.sort((a, b) {
-        final tsA = a['timestamp'] as Timestamp?;
-        final tsB = b['timestamp'] as Timestamp?;
-        if (tsA == null && tsB == null) return 0;
-        if (tsA == null) return 1;
-        if (tsB == null) return -1;
-        return tsB.compareTo(tsA);
-      });
-
-      // Remove timestamp from final display
-      for (var friend in tempFriends) {
-        friend.remove('timestamp');
-      }
-
-      setState(() {
-        friendsList = tempFriends;
-        addFriendsList = tempOthers;
-        receivedRequestsList = tempReceived;
-        homeTownFriendsList = tempHomeTownFriends; // Set hometown friends list
-        isLoading = false;
-      });
-    } catch (e) {
-      log('error in load chat === $e');
-    }
-  }
-
   Future<void> _loadChats() async {
     try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -181,6 +53,9 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
       currentEmail = meDoc.get('email');
       currentCity = meDoc.get('city');
       homeTownCity = meDoc.get('hometown')['city'];
+
+      final currentCityLower = currentCity.toString().toLowerCase();
+      final homeTownCityLower = homeTownCity.toString().toLowerCase();
 
       friendRequestsCount = meDoc.data()?['friendRequestLimit'] as int? ?? 0;
 
@@ -210,6 +85,9 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
         final profession = doc['profession'];
         final userHomeTownCity = doc['hometown']['city'];
         final userCity = doc['city'];
+
+        final userCityLower = userCity.toString().toLowerCase();
+        final userHomeTownCityLower = userHomeTownCity.toString().toLowerCase();
 
         if (email == currentEmail) continue;
 
@@ -257,22 +135,22 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
           });
         } else if (sentRequests.contains(email)) {
           // Add to Add Friends if same city
-          if (currentCity == userCity) {
+          if (currentCityLower == userCityLower) {
             tempOthers.add({...userMap, 'relation': 'sent'});
           }
           // Add to HomeTown Friends if same hometown
-          if (homeTownCity == userHomeTownCity) {
+          if (homeTownCityLower == userHomeTownCityLower) {
             tempHomeTownFriends.add({...userMap, 'relation': 'sent'});
           }
         } else if (receivedRequests.contains(email)) {
           tempReceived.add({...userMap, 'relation': 'received'});
         } else {
           // Add to Add Friends if same city (regardless of hometown)
-          if (currentCity == userCity) {
+          if (currentCityLower == userCityLower) {
             tempOthers.add({...userMap, 'relation': 'none'});
           }
           // Add to HomeTown Friends if same hometown (regardless of city)
-          if (homeTownCity == userHomeTownCity) {
+          if (homeTownCityLower == userHomeTownCityLower) {
             tempHomeTownFriends.add({...userMap, 'relation': 'none'});
           }
         }
@@ -702,6 +580,8 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
     _showLoadingDialog();
 
     try {
+      final provider = Provider.of<SubscriptionData>(context, listen: false);
+
       final uid = FirebaseAuth.instance.currentUser!.uid;
       final meRef = FirebaseFirestore.instance.collection('User').doc(uid);
 
@@ -737,6 +617,13 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
 
         tx.update(meRef, {'friendRequests.sent': mySent});
         tx.update(receiverRef, {'friendRequests.received': receiverReceived});
+
+        if (!provider.isUserSubscribed) {
+          friendRequestsCount++;
+          tx.update(meRef, {
+            'friendRequestLimit': friendRequestsCount,
+          });
+        }
       });
 
       setState(() {

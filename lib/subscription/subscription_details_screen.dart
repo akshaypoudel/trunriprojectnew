@@ -80,6 +80,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
 
       if (subscriptionDoc.exists) {
         final subscriptionData = subscriptionDoc.data() as Map<String, dynamic>;
+        // log('subscriptionData == $subscriptionData');
 
         // Get plan name based on user's plan type and billing type
         if (planType == 'individual') {

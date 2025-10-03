@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/home/resturentItemListScreen.dart';
 import 'package:trunriproject/job/jobHomePageScreen.dart';
@@ -19,216 +20,165 @@ class ExplorScreen extends StatefulWidget {
 }
 
 class _ExplorScreenState extends State<ExplorScreen> {
+  final Color orangeColor = Colors.deepOrange.shade400;
+
+  Widget buildTile({
+    required BuildContext context,
+    required String title,
+    required IconData iconData,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      height: 80, // smaller height
+      margin: const EdgeInsets.symmetric(
+          horizontal: 16, vertical: 8), // less vertical margin
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.deepOrange.withOpacity(0.12),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        splashColor: orangeColor.withOpacity(0.2),
+        child: Center(
+          child: ListTile(
+            minLeadingWidth: 60,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+            leading: CircleAvatar(
+              radius: 24, // smaller radius
+              backgroundColor: iconColor.withOpacity(0.2),
+              child: FaIcon(
+                iconData,
+                color: iconColor,
+                size: 26, // smaller icon size
+              ),
+            ),
+            title: Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16, // smaller font
+                color: Colors.grey[900],
+              ),
+            ),
+            trailing: Icon(
+              Icons.arrow_forward_ios,
+              color: orangeColor.withOpacity(0.8),
+              size: 20,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<LocationData>(context, listen: false);
-    final subscriptionProvider =
-        Provider.of<SubscriptionData>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Explore'),
         backgroundColor: Colors.white,
-      ),
-      extendBody: true,
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        bottom: false,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              top: 10,
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.all(10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            spreadRadius: 2,
-                            blurRadius: 5,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        onTap: () {
-                          Get.to(
-                            ResturentItemListScreen(
-                              restaurant_List: Provider.of<LocationData>(
-                                      context,
-                                      listen: false)
-                                  .getRestaurauntList,
-                            ),
-                          );
-                        },
-                        leading: Image.asset(
-                          'assets/icons/rasturent.png',
-                        ),
-                        title: const Text('Restaurant'),
-                        trailing: const Icon(
-                          Icons.arrow_forward_ios_outlined,
-                          size: 15,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.all(10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            spreadRadius: 2,
-                            blurRadius: 5,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        onTap: () {
-                          Get.to(
-                            GroceryStoreListScreen(
-                              groceryStores: provider.getGroceryList,
-                            ),
-                          );
-                        },
-                        leading: Image.asset('assets/icons/grocery.png'),
-                        title: const Text('Grocery Stores'),
-                        trailing: const Icon(
-                          Icons.arrow_forward_ios_outlined,
-                          size: 15,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.all(10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            spreadRadius: 2,
-                            blurRadius: 5,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        leading: Image.asset('assets/icons/accommodation.png'),
-                        title: const Text('Accommodation'),
-                        onTap: () {
-                          Get.to(const Accommodationoptionscreen());
-                        },
-                        trailing: const Icon(
-                          Icons.arrow_forward_ios_outlined,
-                          size: 15,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.all(10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            spreadRadius: 2,
-                            blurRadius: 5,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        onTap: () {
-                          Get.to(const JobHomePageScreen());
-                        },
-                        leading: Image.asset('assets/icons/jobs.png'),
-                        title: const Text('Jobs'),
-                        trailing: const Icon(
-                          Icons.arrow_forward_ios_outlined,
-                          size: 15,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.all(10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            spreadRadius: 2,
-                            blurRadius: 5,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        onTap: () {
-                          Get.to(
-                            TempleHomePageScreen(
-                              templesList: provider.getTemplesList,
-                            ),
-                          );
-                        },
-                        leading: Image.asset('assets/icons/templs.png'),
-                        title: const Text('Temple'),
-                        trailing: const Icon(
-                          Icons.arrow_forward_ios_outlined,
-                          size: 15,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.all(10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            spreadRadius: 2,
-                            blurRadius: 5,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        onTap: () {
-                          Get.to(
-                            EventDiscoveryScreen(
-                              eventList: provider.getEventList,
-                            ),
-                          );
-                        },
-                        leading: Image.asset('assets/icons/events.png'),
-                        title: const Text('Event'),
-                        trailing: const Icon(
-                          Icons.arrow_forward_ios_outlined,
-                          size: 15,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+        elevation: 0,
+        titleSpacing: 0,
+        title: const Padding(
+          padding: EdgeInsets.only(left: 16.0),
+          child: Text(
+            'Explore',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 24,
+              fontWeight: FontWeight.w500,
             ),
-          ],
+          ),
+        ),
+      ),
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            children: [
+              buildTile(
+                context: context,
+                title: 'Restaurant',
+                iconData: FontAwesomeIcons.utensils,
+                iconColor: Colors.redAccent,
+                onTap: () {
+                  Get.to(
+                    ResturentItemListScreen(
+                      restaurant_List: provider.getRestaurauntList,
+                    ),
+                  );
+                },
+              ),
+              buildTile(
+                context: context,
+                title: 'Grocery Stores',
+                iconData: FontAwesomeIcons.shoppingBasket,
+                iconColor: Colors.green,
+                onTap: () {
+                  Get.to(
+                    GroceryStoreListScreen(
+                      groceryStores: provider.getGroceryList,
+                    ),
+                  );
+                },
+              ),
+              buildTile(
+                context: context,
+                title: 'Accommodation',
+                iconData: FontAwesomeIcons.hotel,
+                iconColor: Colors.blueAccent,
+                onTap: () {
+                  Get.to(const Accommodationoptionscreen());
+                },
+              ),
+              buildTile(
+                context: context,
+                title: 'Jobs',
+                iconData: FontAwesomeIcons.briefcase,
+                iconColor: Colors.purpleAccent,
+                onTap: () {
+                  Get.to(const JobHomePageScreen());
+                },
+              ),
+              buildTile(
+                context: context,
+                title: 'Temple',
+                iconData: FontAwesomeIcons.placeOfWorship,
+                iconColor: Colors.orangeAccent,
+                onTap: () {
+                  Get.to(
+                    TempleHomePageScreen(
+                      templesList: provider.getTemplesList,
+                    ),
+                  );
+                },
+              ),
+              buildTile(
+                context: context,
+                title: 'Event',
+                iconData: FontAwesomeIcons.calendarAlt,
+                iconColor: Colors.deepOrange,
+                onTap: () {
+                  Get.to(
+                    EventDiscoveryScreen(
+                      eventList: provider.getEventList,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

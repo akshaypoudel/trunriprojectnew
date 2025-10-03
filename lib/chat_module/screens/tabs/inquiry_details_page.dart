@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:trunriproject/chat_module/context_chats/screens/context_chat_screen.dart';
 
@@ -57,8 +58,16 @@ class _InquiryDetailsPageState extends State<InquiryDetailsPage>
                 fontSize: 16,
               ),
               tabs: const [
-                Tab(text: "Sent", icon: Icon(Icons.send_outlined)),
-                Tab(text: "Received", icon: Icon(Icons.inbox_outlined)),
+                Tab(
+                  text: "Sent",
+                  icon: Icon(
+                    FontAwesomeIcons.paperPlane,
+                  ),
+                ),
+                Tab(
+                  text: "Received",
+                  icon: Icon(FontAwesomeIcons.inbox),
+                ),
               ],
             ),
           ),
@@ -152,8 +161,8 @@ class _InquiryDetailsPageState extends State<InquiryDetailsPage>
                     ),
                     child: Icon(
                       type == "sent"
-                          ? Icons.send_outlined
-                          : Icons.inbox_outlined,
+                          ? FontAwesomeIcons.paperPlane
+                          : FontAwesomeIcons.inbox,
                       size: 64,
                       color: Colors.deepOrange.shade300,
                     ),

@@ -13,6 +13,7 @@ import 'package:trunriproject/subscription/phone_number_verification.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 import 'package:trunriproject/subscription/subscription_success_screen.dart';
 import 'package:trunriproject/widgets/helper.dart';
+import 'package:uuid/uuid.dart';
 
 const daysInAYear = (30 * 12);
 const daysInAMonth = 30;
@@ -31,6 +32,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   String selectedPlan = 'individual';
   String selectedBillingType = 'annual';
   bool isLoading = true;
+
+  Uuid uuid = const Uuid();
 
   // User's current subscription info
   String? currentPlanType;
@@ -1421,15 +1424,19 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         planPrice = (selectedBusinessPlan['price'] as num).toDouble();
       }
 
-      await firestore.collection('purchases').doc(uid).set({
-        'userID': AuthServices().getCurrentUser()!.uid,
-        'plan': planName,
-        'planType': selectedPlan,
-        'billingType': selectedBillingType,
-        'purchaseDate': FieldValue.serverTimestamp(),
-        'status': 'Completed',
-        'amount': planPrice,
-      }, SetOptions(merge: true));
+      String purchaseId = uuid.v4();
+
+      await firestore.collection('purchases').doc(purchaseId).set(
+        {
+          'userID': AuthServices().getCurrentUser()!.uid,
+          'plan': planName,
+          'planType': selectedPlan,
+          'billingType': selectedBillingType,
+          'purchaseDate': FieldValue.serverTimestamp(),
+          'status': 'Completed',
+          'amount': planPrice,
+        },
+      );
 
       Provider.of<SubscriptionData>(context, listen: false)
           .changeSubscriptionStatus(true);

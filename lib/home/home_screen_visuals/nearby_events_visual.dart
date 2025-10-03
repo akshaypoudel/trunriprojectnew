@@ -5,6 +5,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/events/eventDetailsScreen.dart';
 import 'package:trunriproject/events/eventHomeScreen.dart';
@@ -111,8 +112,8 @@ class NearbyEventsVisual extends StatelessWidget {
             }
 
             return Container(
-              height: 170,
-              margin: const EdgeInsets.only(left: 20),
+              height: 280,
+              margin: const EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
@@ -131,27 +132,196 @@ class NearbyEventsVisual extends StatelessWidget {
                       );
                     },
                     child: Container(
-                      width: 242,
+                      width: 260,
+                      height: 250,
                       margin: const EdgeInsets.only(right: 10),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: event['photo'].isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: event['photo'][0],
-                                height: 180,
-                                width: 200,
-                                fit: BoxFit.cover,
-                              )
-                            : Image.asset("assets/images/singing.jpeg",
-                                height: 150,
-                                width: double.infinity,
-                                fit: BoxFit.cover),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.white,
+                        border: BoxBorder.all(
+                          width: 1,
+                          color: Colors.black.withValues(alpha: 0.15),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withValues(alpha: 0.8),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          // Top half - image with overlay
+                          Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(20),
+                                  topRight: Radius.circular(20),
+                                ),
+                                child: event['photo'].isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: event['photo'][0],
+                                        height: 140,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.asset(
+                                        "assets/images/singing.jpeg",
+                                        height: 140,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      ),
+                              ),
+                              // Gradient overlay for text/icon clarity
+                              Positioned.fill(
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(20),
+                                      topRight: Radius.circular(20),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Top content (icon, event type, name)
+                              const Positioned(
+                                left: 16,
+                                top: 12,
+                                child: Icon(Icons.music_note,
+                                    color: Colors.white, size: 26),
+                              ),
+                              Positioned(
+                                right: 18,
+                                top: 14,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.18),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    event['category'][0] ?? 'Music',
+                                    style: const TextStyle(
+                                        fontSize: 13, color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                left: 16,
+                                bottom: 14,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.5),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    event['eventName'] ?? "Event Name",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          // Bottom half - content
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 14),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(20),
+                                bottomRight: Radius.circular(20),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.access_time,
+                                        size: 16, color: Colors.black54),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      formatEventDateTime(
+                                        event['eventDate'],
+                                        event['eventTime'],
+                                      ),
+                                      style: const TextStyle(
+                                          fontSize: 14, color: Colors.black87),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.location_on,
+                                        size: 16, color: Colors.black54),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        event['location'] ?? 'Event Location',
+                                        maxLines: 2,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black87,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 18),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.shade50,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        "\$${event['ticketPrice'] ?? 'Free'}",
+                                        style: const TextStyle(
+                                          color: Colors.blue,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      "${event['interested'] ?? '0'} interested",
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey.shade700,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
                       ),
                     ),
                   );
                 },
                 options: CarouselOptions(
-                  height: 450,
+                  height: 850,
                   viewportFraction: 0.65,
                   enlargeCenterPage: true,
                   autoPlay: true,
@@ -163,5 +333,28 @@ class NearbyEventsVisual extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String formatEventDateTime(String rawDateStr, String timeStr) {
+    try {
+      // Strip day prefix (e.g. "Sat ")
+      String dateStr = rawDateStr.split(' ').length > 1
+          ? rawDateStr.split(' ')[1]
+          : rawDateStr;
+
+      DateTime date = DateTime.parse(dateStr); // expects 'yyyy-MM-dd'
+      DateFormat dateFormat = DateFormat('MMM dd, yyyy'); // Dec 15, 2024 format
+      DateFormat timeFormat = DateFormat.jm(); // 6:00 PM format
+
+      // Assuming eventTime is 'HH:mm' 24hr format as before
+      DateTime time = DateFormat('HH:mm').parse(timeStr);
+
+      String formattedDate = dateFormat.format(date);
+      String formattedTime = timeFormat.format(time);
+
+      return '$formattedDate - $formattedTime';
+    } catch (e) {
+      return '$rawDateStr - $timeStr'; // fallback
+    }
   }
 }

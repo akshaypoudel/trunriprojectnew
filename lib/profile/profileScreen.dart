@@ -26,9 +26,11 @@ import '../home/firestore_service.dart';
 import 'addressListScreen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key, this.fromLogin, this.home});
-  final bool? fromLogin;
-  final bool? home;
+  const ProfileScreen({
+    super.key,
+  });
+  // final bool? fromLogin;
+  // final bool? home;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -40,13 +42,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   File userImageFile = File("");
   bool isEditing = false;
   bool isNameTextChanged = false;
+  bool isProfessionChanged = false;
   bool dataLoaded = true;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController professionController = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
   String name = '';
   String email = '';
+  String profession = '';
   String imageUrl = '';
 
   updateProfile() async {
@@ -60,18 +65,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
         address: '',
         context: context,
         name: nameController.text.trim(),
+        profession: professionController.text.trim(),
         updated: (bool value) {
           if (value) {
-            if (widget.fromLogin == false) {
-              Get.back();
-            } else {
-              fetchUserData();
-            }
+            // if (widget.fromLogin == false) {
+            // Get.back();
+            // } else {
+            fetchUserData();
+            // }
           } else {
             showSnackBar(context, "Failed to update profile");
           }
         },
       );
+      await fetchUserData();
+      setState(() {});
     } catch (e) {
       showSnackBar(context, "Error updating profile $e");
     }
@@ -113,9 +121,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         nameController.text = userData['name'] ?? '';
         emailController.text = userData['email'] ?? '';
+        professionController.text = userData['profesison'] ?? '';
 
         name = userData['name'] ?? '';
         email = userData['email'] ?? '';
+        profession = userData['profession'] ?? '';
       } else {
         showSnackBar(context, "User data not found for phone number");
       }
@@ -150,174 +160,204 @@ class _ProfileScreenState extends State<ProfileScreen> {
       extendBody: true,
       appBar: _buildAppBar(),
       body: dataLoaded
-          ? Container(
-              height: Get.height,
-              color: Colors.white,
-              padding: const EdgeInsets.only(left: 15, top: 20, right: 15),
-              child: GestureDetector(
-                onTap: () {
-                  FocusScope.of(context).unfocus();
-                },
-                child: Form(
-                  key: formKey,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              onTap: () {
-                                NewHelper.showImagePickerSheet(
-                                    gotImage: (File gg) {
-                                      final provider =
-                                          Provider.of<ChatProvider>(context,
-                                              listen: false);
-                                      userImageFile = gg;
-                                      if (userImageFile != File("")) {
-                                        fireStoreService.updateProfilePicture(
-                                            context, userImageFile);
-                                        fireStoreService
-                                            .updateProfilePictureForCommunity(
-                                                userImageFile);
-                                      }
+          ? RefreshIndicator(
+              color: Colors.deepOrange,
+              backgroundColor: Colors.white,
+              onRefresh: () async {
+                await fetchUserData();
+                setState(() {});
+              },
+              child: Container(
+                height: Get.height,
+                color: Colors.white,
+                padding: const EdgeInsets.only(left: 15, top: 20, right: 15),
+                child: GestureDetector(
+                  onTap: () {
+                    FocusScope.of(context).unfocus();
+                  },
+                  child: Form(
+                    key: formKey,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              GestureDetector(
+                                behavior: HitTestBehavior.translucent,
+                                onTap: () {
+                                  NewHelper.showImagePickerSheet(
+                                      gotImage: (File gg) {
+                                        final provider =
+                                            Provider.of<ChatProvider>(context,
+                                                listen: false);
+                                        userImageFile = gg;
+                                        if (userImageFile != File("")) {
+                                          fireStoreService.updateProfilePicture(
+                                              context, userImageFile);
+                                          fireStoreService
+                                              .updateProfilePictureForCommunity(
+                                                  userImageFile);
+                                        }
 
-                                      setState(() {
-                                        imageUrl = provider.getProfileImage;
-                                      });
-                                    },
-                                    context: context);
-                              },
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    width: 130,
-                                    height: 130,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          width: 4, color: Colors.white),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          spreadRadius: 2,
-                                          blurRadius: 10,
-                                          color: Colors.black
-                                              .withValues(alpha: 0.1),
-                                        )
-                                      ],
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius:
-                                          BorderRadius.circular(10000),
-                                      child: Consumer<ChatProvider>(
-                                        builder:
-                                            (context, chatProvider, child) {
-                                          // Use provider image first, fallback to local imageUrl, then show icon
-                                          final displayImageUrl = chatProvider
-                                                  .getProfileImage.isNotEmpty
-                                              ? chatProvider.getProfileImage
-                                              : imageUrl;
+                                        setState(() {
+                                          imageUrl = provider.getProfileImage;
+                                        });
+                                      },
+                                      context: context);
+                                },
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      width: 130,
+                                      height: 130,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                            width: 4, color: Colors.white),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            spreadRadius: 2,
+                                            blurRadius: 10,
+                                            color: Colors.black
+                                                .withValues(alpha: 0.1),
+                                          )
+                                        ],
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(10000),
+                                        child: Consumer<ChatProvider>(
+                                          builder:
+                                              (context, chatProvider, child) {
+                                            // Use provider image first, fallback to local imageUrl, then show icon
+                                            final displayImageUrl = chatProvider
+                                                    .getProfileImage.isNotEmpty
+                                                ? chatProvider.getProfileImage
+                                                : imageUrl;
 
-                                          return displayImageUrl.isNotEmpty
-                                              ? CachedNetworkImage(
-                                                  imageUrl: displayImageUrl,
-                                                  fit: BoxFit.cover,
-                                                  placeholder: (context, url) =>
-                                                      Container(
-                                                    color: Colors.grey[200],
-                                                    child: const Center(
-                                                      child:
-                                                          CircularProgressIndicator(),
+                                            return displayImageUrl.isNotEmpty
+                                                ? CachedNetworkImage(
+                                                    imageUrl: displayImageUrl,
+                                                    fit: BoxFit.cover,
+                                                    placeholder:
+                                                        (context, url) =>
+                                                            Container(
+                                                      color: Colors.grey[200],
+                                                      child: const Center(
+                                                        child:
+                                                            CircularProgressIndicator(),
+                                                      ),
                                                     ),
-                                                  ),
-                                                  errorWidget:
-                                                      (context, url, error) =>
-                                                          Icon(
+                                                    errorWidget:
+                                                        (context, url, error) =>
+                                                            Icon(
+                                                      CupertinoIcons
+                                                          .person_alt_circle,
+                                                      size: 45,
+                                                      color:
+                                                          Colors.grey.shade700,
+                                                    ),
+                                                  )
+                                                : Icon(
                                                     CupertinoIcons
                                                         .person_alt_circle,
                                                     size: 45,
                                                     color: Colors.grey.shade700,
-                                                  ),
-                                                )
-                                              : Icon(
-                                                  CupertinoIcons
-                                                      .person_alt_circle,
-                                                  size: 45,
-                                                  color: Colors.grey.shade700,
-                                                );
-                                        },
+                                                  );
+                                          },
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Container(
-                                      height: 40,
-                                      width: 40,
-                                      decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            width: 4,
-                                            color: Colors.white,
-                                          ),
-                                          color: Colors.blue),
-                                      child: const Icon(
-                                        Icons.edit,
-                                        color: Colors.white,
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Container(
+                                        height: 40,
+                                        width: 40,
+                                        decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              width: 4,
+                                              color: Colors.white,
+                                            ),
+                                            color: Colors.blue),
+                                        child: const Icon(
+                                          Icons.edit,
+                                          color: Colors.white,
+                                        ),
                                       ),
-                                    ),
-                                  )
-                                ],
+                                    )
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(
-                              width: 20,
-                            ),
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  TextFormField(
-                                    decoration: InputDecoration(
-                                      // border: InputBorder.none,
-                                      hintText: name,
+                              const SizedBox(
+                                width: 20,
+                              ),
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    TextFormField(
+                                      decoration: InputDecoration(
+                                        // border: InputBorder.none,
+                                        hintText: name,
+                                      ),
+                                      readOnly: !isEditing,
+                                      onChanged: (v) {
+                                        setState(() {
+                                          isNameTextChanged = true;
+                                        });
+                                      },
+                                      controller: nameController,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 20,
+                                          color: Colors.black),
                                     ),
-                                    readOnly: !isEditing,
-                                    onChanged: (v) {
-                                      setState(() {
-                                        isNameTextChanged = true;
-                                      });
-                                    },
-                                    controller: nameController,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 20,
-                                        color: Colors.black),
-                                  ),
-                                  TextFormField(
-                                    decoration: InputDecoration(
-                                      hintText: email,
+                                    TextFormField(
+                                      decoration: InputDecoration(
+                                        hintText: email,
+                                      ),
+                                      readOnly: true,
+                                      controller: emailController,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 14,
+                                          color: Colors.black),
                                     ),
-                                    readOnly: true,
-                                    controller: emailController,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w400,
+                                    TextFormField(
+                                      decoration: InputDecoration(
+                                        // border: InputBorder.none,
+                                        hintText: (profession.isEmpty)
+                                            ? 'Profession'
+                                            : profession,
+                                      ),
+                                      readOnly: !isEditing,
+                                      onChanged: (v) {
+                                        setState(() {
+                                          isProfessionChanged = true;
+                                        });
+                                      },
+                                      controller: professionController,
+                                      style: const TextStyle(
+                                        // fontWeight: FontWeight.w600,
                                         fontSize: 14,
-                                        color: Colors.black),
-                                  ),
-                                ],
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 40,
-                        ),
-                        _buildSubscriptionSection(),
-                        const SizedBox(height: 45),
-                        _buildMenuSection(),
-                        const SizedBox(height: 95),
-                      ],
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 40,
+                          ),
+                          _buildSubscriptionSection(),
+                          const SizedBox(height: 45),
+                          _buildMenuSection(),
+                          const SizedBox(height: 95),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -755,9 +795,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: InkWell(
               borderRadius: BorderRadius.circular(25),
               onTap: () {
-                if (isEditing && isNameTextChanged) {
+                if (isEditing && (isNameTextChanged || isProfessionChanged)) {
                   setState(() {
                     isNameTextChanged = false;
+                    isProfessionChanged = false;
                   });
                   updateProfile();
                 }

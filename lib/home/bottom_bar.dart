@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:icons_plus/icons_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/chat_module/screens/chat_list_screen.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
@@ -83,11 +84,6 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
       listen: false,
     ).fetchSubscriptionStatus();
 
-    // await Provider.of<SubscriptionData>(
-    //   context,
-    //   listen: false,
-    // ).fetchSubscriptionFeatures();
-
     Provider.of<LocationData>(context, listen: false)
         .setUserInAustralia(await _handleLocationSource());
 
@@ -152,56 +148,75 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      extendBody: true,
+      // extendBody: true,
       body: IndexedStack(
         index: myCurrentIndex,
         children: pages,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.blueGrey,
-        currentIndex: myCurrentIndex,
-        onTap: (index) {
-          setState(() {
-            myCurrentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(
-              Icons.home,
-              size: 30,
-            ),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore_outlined),
-            label: 'Explore',
-            activeIcon: Icon(
-              Icons.explore,
-              size: 30,
+
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(
+              color: Colors.black.withOpacity(0.15),
+              width: 1,
             ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.message_outlined),
-            activeIcon: Icon(
-              Icons.message_rounded,
-              size: 30,
-            ),
-            label: 'Chats',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_3_outlined),
-            activeIcon: Icon(
-              Icons.person_3,
-              size: 30,
-            ),
-            label: 'Profile',
-          ),
-        ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            for (int i = 0; i < 4; i++)
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => myCurrentIndex = i),
+                  child: Container(
+                    margin:
+                        const EdgeInsets.symmetric(vertical: 7, horizontal: 19),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 7, horizontal: 2),
+                    decoration: BoxDecoration(
+                      color: myCurrentIndex == i
+                          ? Colors.orange.withOpacity(0.11)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          [
+                            OctIcons.home,
+                            FontAwesome.compass,
+                            FontAwesome.comment,
+                            OctIcons.person,
+                          ][i],
+                          size: 22,
+                          color: myCurrentIndex == i
+                              ? Colors.orange
+                              : Colors.grey[600],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          ["Home", "Explore", "Chat", "Account"][i],
+                          style: TextStyle(
+                            color: myCurrentIndex == i
+                                ? Colors.orange
+                                : Colors.grey[700],
+                            fontWeight: myCurrentIndex == i
+                                ? FontWeight.bold
+                                : FontWeight.w500,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
