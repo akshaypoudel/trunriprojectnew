@@ -376,24 +376,16 @@ class _HomeScreenState extends State<HomeScreen> {
           final data = json.decode(response.body);
           allResults.addAll(data['results']);
 
-          // Add debugging
-          // log('Restaurants - Radius: ${radiusFilter}km - Current batch: ${data['results'].length} - Total: ${allResults.length}');
-          // log('Restaurants - Status: ${data['status']}');
-
           nextPageToken = data['next_page_token'];
 
-          // Google requires a short delay before using next_page_token
           if (nextPageToken != null) {
             await Future.delayed(const Duration(seconds: 2));
-            // log('Restaurants - Next page token available, fetching more results...');
           }
         } else {
           log('Restaurants - HTTP Error: ${response.statusCode}');
           break;
         }
       } while (nextPageToken != null);
-
-      // log('Restaurants - Final total results: ${allResults.length}');
     } catch (e) {
       log('Restaurants fetch error: $e');
     }
@@ -426,24 +418,16 @@ class _HomeScreenState extends State<HomeScreen> {
           final data = json.decode(response.body);
           allResults.addAll(data['results']);
 
-          // Add debugging
-          // log('Grocery - Radius: ${radiusFilter}km - Current batch: ${data['results'].length} - Total: ${allResults.length}');
-          // log('Grocery - Status: ${data['status']}');
-
           nextPageToken = data['next_page_token'];
 
-          // Google requires a short delay before using next_page_token
           if (nextPageToken != null) {
             await Future.delayed(const Duration(seconds: 2));
-            // log('Grocery - Next page token available, fetching more results...');
           }
         } else {
           log('Grocery - HTTP Error: ${response.statusCode}');
           break;
         }
       } while (nextPageToken != null);
-
-      // log('Grocery - Final total results: ${allResults.length}');
     } catch (e) {
       log('Grocery fetch error: $e');
       if (mounted) {
@@ -488,24 +472,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
           allResults.addAll(filteredBatch);
 
-          // Add debugging
-          // log('Temples - Radius: ${radiusFilter}km - Current batch: ${currentBatch.length} - Filtered: ${filteredBatch.length} - Total: ${allResults.length}');
-          // log('Temples - Status: ${data['status']}');
-
           nextPageToken = data['next_page_token'];
 
-          // Google requires a short delay before using next_page_token
           if (nextPageToken != null) {
             await Future.delayed(const Duration(seconds: 2));
-            // log('Temples - Next page token available, fetching more results...');
           }
         } else {
           log('Temples - HTTP Error: ${response.statusCode}');
           break;
         }
       } while (nextPageToken != null);
-
-      // log('Temples - Final total results: ${allResults.length}');
     } catch (e) {
       log('Temples fetch error: $e');
       if (mounted) {
@@ -514,87 +490,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return allResults;
-  }
-
-  Future<List<dynamic>> _fetchIndianRestaurants11(
-    double latitude,
-    double longitude,
-    int radiusFilter,
-  ) async {
-    try {
-      final radiusInMeters = radiusFilter * 1000;
-      final url =
-          'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radiusInMeters&type=restaurant&keyword=indian&key=${Constants.API_KEY}';
-
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['results'];
-      }
-    } catch (e) {
-      log('error ====== $e');
-    }
-    return [];
-  }
-
-  Future<List<dynamic>> _fetchGroceryStores11(
-    double latitude,
-    double longitude,
-    int radiusFilter,
-  ) async {
-    final provider = Provider.of<LocationData>(context, listen: false);
-
-    final radiusInMeters = radiusFilter * 1000;
-    final url =
-        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radiusInMeters&type=grocery_or_supermarket&keyword=indian&key=${Constants.API_KEY}';
-
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      // if (mounted) {
-      //   setState(() {
-      //     _groceryStores = data['results'];
-      //     provider.setGroceryList(_groceryStores);
-      //   });
-      // }
-      return data['results'];
-    } else {
-      showSnackBar(context, 'Failed to Fetch Grocery Stores Data');
-      return [];
-    }
-  }
-
-  Future<List<dynamic>> _fetchTemples11(
-    double latitude,
-    double longitude,
-    int radiusFilter,
-  ) async {
-    final provider = Provider.of<LocationData>(context, listen: false);
-
-    final radiusInMeters = radiusFilter * 1000;
-    final url =
-        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radiusInMeters&type=hindu_temple&keyword=temple&key=${Constants.API_KEY}';
-
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      // if (mounted) {
-      //   setState(() {
-      //     _temples = data['results'];
-      //     _temples = _temples.where((temple) {
-      //       return temple['photos'] != null &&
-      //           temple['photos'][0]['photo_reference'] != null;
-      //     }).toList();
-      //     provider.setTemplessList(_temples);
-      //   });
-      // }
-      return data['results'];
-    } else {
-      // throw Exception('Failed to fetch data');
-      showSnackBar(context, 'Failed to Fetch Temples Data');
-      return [];
-    }
   }
 
   Future<List<String>> fetchImageData() async {
@@ -623,35 +518,6 @@ class _HomeScreenState extends State<HomeScreen> {
     } else {
       isInAustralia = false;
       getCurrentLocationByAddress();
-    }
-  }
-
-  Future<void> _fetchAllNearbyPlaces111(
-      double lat, double long, int radiusFilter) async {
-    try {
-      // Fetch all data simultaneously
-      final results = await Future.wait([
-        _fetchIndianRestaurants(lat, long, radiusFilter),
-        _fetchGroceryStores(lat, long, radiusFilter),
-        _fetchTemples(lat, long, radiusFilter),
-      ]);
-
-      // Update all data in a single setState to minimize rebuilds
-      if (mounted) {
-        setState(() {
-          _restaurants = results[0];
-          _groceryStores = results[1];
-          _temples = results[2];
-        });
-
-        // Update providers after state is set
-        final provider = Provider.of<LocationData>(context, listen: false);
-        provider.setRestaurauntList(_restaurants);
-        provider.setGroceryList(_groceryStores);
-        provider.setTemplessList(_temples);
-      }
-    } catch (e) {
-      log('Error fetching nearby places: $e');
     }
   }
 
@@ -851,25 +717,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Builder(
-                          //   builder: (context) => IconButton(
-                          //     icon: const Icon(
-                          //       Icons.menu,
-                          //       color: Colors.orange,
-                          //       size: 28,
-                          //     ),
-                          //     onPressed: () =>
-                          //         Scaffold.of(context).openDrawer(),
-                          //     padding: const EdgeInsets.all(8),
-                          //   ),
-                          // ),
                           Expanded(
                             child: ShowAddressText(
                               controller: addressController,
                               onTap: () {
-                                // log('address = ${addressController.text}');
                                 onLocationChanged(
                                   addressController.text,
                                   usersRadiusFilter,
@@ -891,7 +743,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               Get.to(() => const FavouritesScreen());
                             },
                           ),
-
                           IconButton(
                             icon: CircleAvatar(
                               backgroundColor: Colors.orange.shade50,

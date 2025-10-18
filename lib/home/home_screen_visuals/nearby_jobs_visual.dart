@@ -13,7 +13,8 @@ class NearbyJobsVisual extends StatelessWidget {
     var width = MediaQuery.of(context).size.width;
 
     return SizedBox(
-      height: (isInAustralia) ? height * .32 : height * .26,
+      // height: (isInAustralia) ? height * .37 : height * .35,
+      height: height * .32,
       width: width,
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('jobs').snapshots(),
@@ -28,7 +29,6 @@ class NearbyJobsVisual extends StatelessWidget {
             return _buildNoJobsWidget();
           }
 
-          // ✅ Filter jobs where isApproved == true
           final jobList = snapshot.data!.docs
               .map((doc) => doc.data() as Map<String, dynamic>)
               .where((job) => job['isApproved'] == true)
@@ -42,76 +42,86 @@ class NearbyJobsVisual extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             itemCount: jobList.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            separatorBuilder: (_, __) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
               Map<String, dynamic> data = jobList[index];
 
               return Container(
-                width: 260,
-                padding: const EdgeInsets.all(12),
+                width: 265,
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300, width: 1.2),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withValues(alpha: 0.5),
-                      blurRadius: 5,
-                      offset: const Offset(2, 2),
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 8),
+                    Text(
+                      data['positionName'] ?? 'No Position Mentioned',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.black87,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 10),
                     buildInfoRow(
                       icon: Icons.business,
-                      label: "Company:",
                       value: data['companyName'] ?? 'No company name',
                       color: Colors.orange,
                     ),
                     const SizedBox(height: 8),
                     buildInfoRow(
-                      icon: Icons.badge,
-                      label: "Position:",
-                      value: data['positionName'] ?? 'No Position Mentioned',
+                      icon: Icons.location_on_outlined,
+                      value: data['city'] ?? 'No city',
                       color: Colors.red,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     buildInfoRow(
-                      icon: Icons.school,
-                      label: "Education:",
-                      value: data['eduction'] ?? 'No education',
+                      icon: Icons.badge,
+                      value: data['experience'] ?? 'No experience',
                       color: Colors.green,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     buildInfoRow(
-                      icon: Icons.work_outline,
-                      label: "Employment Type:",
-                      value: data['employmentType'] ?? 'No employment type',
+                      icon: Icons.school,
+                      value: data['eduction'] ?? 'No education',
                       color: Colors.purple,
                     ),
-                    const SizedBox(height: 12),
+                    const Spacer(),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton(
+                      child: OutlinedButton(
                         onPressed: () {
                           Get.to(JobDetailsScreen(data: data));
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          elevation: 15,
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(
+                              color: Colors.deepOrangeAccent, width: 1.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
+                          backgroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
                         child: const Text(
                           "View Details",
                           style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontSize: 15),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepOrangeAccent,
+                            fontSize: 15,
+                          ),
                         ),
                       ),
                     ),
@@ -131,11 +141,11 @@ class NearbyJobsVisual extends StatelessWidget {
       children: [
         Container(
           width: 200,
-          margin: const EdgeInsets.symmetric(horizontal: 100),
-          padding: const EdgeInsets.all(10),
+          margin: const EdgeInsets.symmetric(horizontal: 80),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.orange.shade50,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: Colors.deepOrange.shade200),
           ),
           child: Column(
@@ -143,7 +153,7 @@ class NearbyJobsVisual extends StatelessWidget {
             children: [
               const Icon(
                 Icons.business_center,
-                size: 48,
+                size: 46,
                 color: Colors.orangeAccent,
               ),
               const SizedBox(height: 12),
@@ -175,36 +185,27 @@ class NearbyJobsVisual extends StatelessWidget {
 
   Widget buildInfoRow({
     required IconData icon,
-    required String label,
     required String value,
     required Color color,
   }) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(icon, size: 16, color: color),
+        Icon(
+          icon,
+          size: 18,
+          color: color,
+        ),
         const SizedBox(width: 6),
         Expanded(
-          child: RichText(
-            maxLines: 1,
-            text: TextSpan(
-              text: '$label ',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.black,
-              ),
-              children: [
-                TextSpan(
-                  text: value,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.normal,
-                    fontSize: 15,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 15,
+              color: Colors.black87,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

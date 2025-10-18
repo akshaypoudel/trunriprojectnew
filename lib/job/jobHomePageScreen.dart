@@ -7,12 +7,9 @@ import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:trunriproject/chat_module/services/auth_service.dart';
-import 'package:trunriproject/home/favourites/favourite_model.dart';
-import 'package:trunriproject/home/favourites/favourite_provider.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/job/addJobScreen.dart';
 import 'package:trunriproject/job/jobDetailsScreen.dart';
-import 'package:trunriproject/subscription/subscription_data.dart';
 
 enum ActiveFilter { none, city, radius }
 
@@ -667,8 +664,8 @@ class _JobHomePageScreenState extends State<JobHomePageScreen> {
                         borderRadius: BorderRadius.circular(12),
                         gradient: LinearGradient(
                           colors: [
-                            Colors.deepOrange,
-                            Colors.orange.shade400,
+                            Colors.orangeAccent,
+                            Colors.orange.shade700,
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,

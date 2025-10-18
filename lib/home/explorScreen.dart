@@ -94,8 +94,8 @@ class _ExplorScreenState extends State<ExplorScreen> {
             'Explore',
             style: TextStyle(
               color: Colors.black,
-              fontSize: 27,
-              fontWeight: FontWeight.w500,
+              fontSize: 26,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ),
