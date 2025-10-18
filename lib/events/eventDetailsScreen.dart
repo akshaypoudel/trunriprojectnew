@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -284,6 +285,83 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                       },
                     );
                   },
+                ),
+              ),
+
+              ////////////////////////
+
+              Container(
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: PopupMenuButton<String>(
+                  color: Colors.white,
+                  surfaceTintColor: Colors.white,
+                  icon: const Icon(Icons.more_vert, color: Colors.white),
+                  onSelected: (value) async {
+                    if (value == 'report') {
+                      final bool confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              backgroundColor: Colors.white,
+                              title: const Text('Report Content'),
+                              content: const Text(
+                                  'Do you really want to report this content?'),
+                              actions: [
+                                TextButton(
+                                  child: const Text('No'),
+                                  onPressed: () => Navigator.of(ctx).pop(false),
+                                ),
+                                TextButton(
+                                  child: const Text('Yes'),
+                                  onPressed: () => Navigator.of(ctx).pop(true),
+                                ),
+                              ],
+                            ),
+                          ) ??
+                          false;
+
+                      if (confirmed) {
+                        try {
+                          await FirebaseFirestore.instance
+                              .collection('MakeEvent')
+                              .doc(eventId)
+                              .update({'isReported': true});
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Content reported successfully'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Failed to report content: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      }
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'report',
+                      child: Row(
+                        children: [
+                          Icon(Icons.flag, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('Report this Content'),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

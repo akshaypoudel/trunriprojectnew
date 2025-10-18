@@ -1319,6 +1319,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
         'tags': _selectedTags,
         'isActive': true,
         'isApproved': false, // Requires approval
+        'isReported': false,
         'likes': 0,
         'views': 0,
         'ownerId':

@@ -403,7 +403,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         .collection('User')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
-
     if (snapshot.exists) {
       setState(() {
         availableEmailInDB = snapshot.get('email') ?? '';
