@@ -82,7 +82,8 @@ class _SignInScreenState extends State<SignInScreen> {
         showSnackBar(context, "User Logged In Successfully");
       },
       verificationFailed: (FirebaseAuthException e) {
-        showSnackBar(context, "Verification failed: ${e.message}");
+        showSnackBar(context,
+            "Firebase Premium is required to Sign in with Real Numbers, Please use Test phone numbers to sign in for now.");
         NewHelper.hideLoader(loader);
       },
       codeSent: (String verificationId, int? resendToken) {

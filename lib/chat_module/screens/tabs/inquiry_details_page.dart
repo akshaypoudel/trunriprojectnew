@@ -48,25 +48,29 @@ class _InquiryDetailsPageState extends State<InquiryDetailsPage>
               labelColor: Colors.deepOrangeAccent,
               unselectedLabelColor: Colors.grey.shade600,
               indicatorColor: Colors.deepOrangeAccent,
-              indicatorWeight: 3,
+              indicatorWeight: 1,
               labelStyle: const TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 16,
+                fontSize: 13,
               ),
               unselectedLabelStyle: const TextStyle(
                 fontWeight: FontWeight.w500,
-                fontSize: 16,
+                fontSize: 13,
               ),
               tabs: const [
                 Tab(
                   text: "Sent",
                   icon: Icon(
                     FontAwesomeIcons.paperPlane,
+                    size: 21,
                   ),
                 ),
                 Tab(
                   text: "Received",
-                  icon: Icon(FontAwesomeIcons.inbox),
+                  icon: Icon(
+                    FontAwesomeIcons.inbox,
+                    size: 21,
+                  ),
                 ),
               ],
             ),

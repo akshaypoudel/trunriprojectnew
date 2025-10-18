@@ -52,14 +52,14 @@ class _EventDiscoveryScreenState extends State<EventDiscoveryScreen>
     {
       'name': 'All',
       'icon': Icons.apps_rounded,
-      'color': Colors.blue,
-      'gradient': [Colors.blue.shade400, Colors.blue.shade600],
+      'color': Colors.amber,
+      'gradient': [Colors.amber.shade400, Colors.amber.shade600],
     },
     {
       'name': 'Traditional',
       'icon': Icons.temple_hindu_rounded,
-      'color': Colors.orange,
-      'gradient': [Colors.orange.shade400, Colors.orange.shade600],
+      'color': Colors.brown,
+      'gradient': [Colors.brown.shade400, Colors.brown.shade600],
     },
     {
       'name': 'Business',

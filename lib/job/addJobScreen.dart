@@ -77,16 +77,16 @@ class _AddJobScreenState extends State<AddJobScreen> {
     '10 Hour shift',
     '12 Hour shift',
     'Less than 8 hours',
-    'shift work',
-    'morning shift',
-    'day shift',
-    'afternoon shift',
-    'evening shift',
-    'night shift',
-    'rotating roster',
-    'fixed shift',
-    'monday to friday',
-    'every weekend',
+    'Shift Work',
+    'Morning shift',
+    'Day Shift',
+    'Afternoon Shift',
+    'Evening Shift',
+    'Night Shift',
+    'Rotating Roster',
+    'Fixed Shift',
+    'Monday to Friday',
+    'Every Weekend',
   ];
 
   String? timeOfAdd;
@@ -96,7 +96,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
     '3 to 7 days',
     '1 to 2 weeks',
     '2 to 4 weeks',
-    'more Then 4 weeks',
+    'More Then 4 weeks',
   ];
 
   String? industryType;
@@ -338,11 +338,11 @@ class _AddJobScreenState extends State<AddJobScreen> {
                       });
                     },
                     decoration: const InputDecoration(
-                      labelText: 'schedule',
+                      labelText: 'Schedule',
                       border: OutlineInputBorder(),
                     ),
                     validator:
-                        RequiredValidator(errorText: 'schedule is required')
+                        RequiredValidator(errorText: 'Schedule is required')
                             .call,
                   ),
                 ),
@@ -395,7 +395,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
                           controller: minimumSalaryController,
                           validator: MultiValidator([
                             RequiredValidator(
-                              errorText: 'minimum Salary is required',
+                              errorText: 'Minimum Salary is required',
                             ),
                           ]).call),
                     ),
@@ -407,7 +407,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
                           controller: maximunSalaryController,
                           validator: MultiValidator([
                             RequiredValidator(
-                                errorText: 'maximun Salary is required'),
+                                errorText: 'Maximun Salary is required'),
                           ]).call),
                     ),
                   ],

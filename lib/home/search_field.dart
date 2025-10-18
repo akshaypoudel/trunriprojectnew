@@ -225,7 +225,7 @@ class _SearchFieldState extends State<SearchField> {
                         fontWeight: FontWeight.w400,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
-                          vertical: 16, horizontal: 14),
+                          vertical: 20, horizontal: 14),
                       disabledBorder: OutlineInputBorder(
                         borderSide:
                             const BorderSide(color: Colors.orange, width: 1),
@@ -253,6 +253,7 @@ class _SearchFieldState extends State<SearchField> {
               const SizedBox(width: 10),
             ],
           ),
+          const SizedBox(height: 15),
           if (_filteredItems.isNotEmpty)
             Obx(
               () {

@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -149,73 +148,77 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
     return Scaffold(
       backgroundColor: Colors.white,
       // extendBody: true,
-      body: IndexedStack(
-        index: myCurrentIndex,
-        children: pages,
+      body: SafeArea(
+        child: IndexedStack(
+          index: myCurrentIndex,
+          children: pages,
+        ),
       ),
 
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(
-              color: Colors.black.withOpacity(0.15),
-              width: 1,
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              top: BorderSide(
+                color: Colors.black.withOpacity(0.15),
+                width: 1,
+              ),
             ),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            for (int i = 0; i < 4; i++)
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => myCurrentIndex = i),
-                  child: Container(
-                    margin:
-                        const EdgeInsets.symmetric(vertical: 7, horizontal: 19),
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 7, horizontal: 2),
-                    decoration: BoxDecoration(
-                      color: myCurrentIndex == i
-                          ? Colors.orange.withOpacity(0.11)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          [
-                            OctIcons.home,
-                            FontAwesome.compass,
-                            FontAwesome.comment,
-                            OctIcons.person,
-                          ][i],
-                          size: 22,
-                          color: myCurrentIndex == i
-                              ? Colors.orange
-                              : Colors.grey[600],
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          ["Home", "Explore", "Chat", "Account"][i],
-                          style: TextStyle(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              for (int i = 0; i < 4; i++)
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => myCurrentIndex = i),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 7, horizontal: 19),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 7, horizontal: 2),
+                      decoration: BoxDecoration(
+                        color: myCurrentIndex == i
+                            ? Colors.orange.withOpacity(0.11)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            [
+                              OctIcons.home,
+                              FontAwesome.compass,
+                              FontAwesome.comment,
+                              OctIcons.person,
+                            ][i],
+                            size: 22,
                             color: myCurrentIndex == i
                                 ? Colors.orange
-                                : Colors.grey[700],
-                            fontWeight: myCurrentIndex == i
-                                ? FontWeight.bold
-                                : FontWeight.w500,
-                            fontSize: 12,
+                                : Colors.grey[600],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 3),
+                          Text(
+                            ["Home", "Explore", "Chat", "Account"][i],
+                            style: TextStyle(
+                              color: myCurrentIndex == i
+                                  ? Colors.orange
+                                  : Colors.grey[700],
+                              fontWeight: myCurrentIndex == i
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

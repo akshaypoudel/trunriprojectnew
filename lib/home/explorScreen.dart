@@ -5,7 +5,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/home/resturentItemListScreen.dart';
 import 'package:trunriproject/job/jobHomePageScreen.dart';
-import 'package:trunriproject/subscription/subscription_data.dart';
 
 import '../accommodation/accommodationOptionScreen.dart';
 import '../events/eventHomeScreen.dart';
@@ -38,23 +37,23 @@ class _ExplorScreenState extends State<ExplorScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.deepOrange.withOpacity(0.12),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 15,
+            // offset: const Offset(0, 6),
           ),
         ],
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: onTap,
-        splashColor: orangeColor.withOpacity(0.2),
+        splashColor: orangeColor.withValues(alpha: 0.2),
         child: Center(
           child: ListTile(
             minLeadingWidth: 60,
             contentPadding: const EdgeInsets.symmetric(horizontal: 20),
             leading: CircleAvatar(
               radius: 24, // smaller radius
-              backgroundColor: iconColor.withOpacity(0.2),
+              backgroundColor: iconColor.withValues(alpha: 0.2),
               child: FaIcon(
                 iconData,
                 color: iconColor,
@@ -71,7 +70,7 @@ class _ExplorScreenState extends State<ExplorScreen> {
             ),
             trailing: Icon(
               Icons.arrow_forward_ios,
-              color: orangeColor.withOpacity(0.8),
+              color: orangeColor.withValues(alpha: 0.8),
               size: 20,
             ),
           ),
@@ -95,7 +94,7 @@ class _ExplorScreenState extends State<ExplorScreen> {
             'Explore',
             style: TextStyle(
               color: Colors.black,
-              fontSize: 24,
+              fontSize: 27,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -111,7 +110,7 @@ class _ExplorScreenState extends State<ExplorScreen> {
                 context: context,
                 title: 'Restaurant',
                 iconData: FontAwesomeIcons.utensils,
-                iconColor: Colors.redAccent,
+                iconColor: Colors.lime.shade600,
                 onTap: () {
                   Get.to(
                     ResturentItemListScreen(
@@ -123,7 +122,7 @@ class _ExplorScreenState extends State<ExplorScreen> {
               buildTile(
                 context: context,
                 title: 'Grocery Stores',
-                iconData: FontAwesomeIcons.shoppingBasket,
+                iconData: FontAwesomeIcons.cartShopping,
                 iconColor: Colors.green,
                 onTap: () {
                   Get.to(
@@ -167,7 +166,7 @@ class _ExplorScreenState extends State<ExplorScreen> {
               buildTile(
                 context: context,
                 title: 'Event',
-                iconData: FontAwesomeIcons.calendarAlt,
+                iconData: FontAwesomeIcons.calendar,
                 iconColor: Colors.deepOrange,
                 onTap: () {
                   Get.to(
