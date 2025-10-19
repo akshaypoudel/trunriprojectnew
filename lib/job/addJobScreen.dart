@@ -31,7 +31,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
   TextEditingController departmentController = TextEditingController();
   TextEditingController employmentTypeController = TextEditingController();
   TextEditingController roleCategoryController = TextEditingController();
-  TextEditingController eductionController = TextEditingController();
+  TextEditingController educationController = TextEditingController();
   TextEditingController keySkillsController = TextEditingController();
   TextEditingController jobDescriptionController = TextEditingController();
   TextEditingController aboutCompanyController = TextEditingController();
@@ -137,7 +137,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
     departmentController.dispose();
     employmentTypeController.dispose();
     roleCategoryController.dispose();
-    eductionController.dispose();
+    educationController.dispose();
     keySkillsController.dispose();
     jobDescriptionController.dispose();
     aboutCompanyController.dispose();
@@ -166,7 +166,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
       'department': departmentController.text,
       'employmentType': employmentType,
       'roleCategory': roleCategoryController.text,
-      'eduction': eductionController.text,
+      'education': educationController.text,
       'keySkills': keySkillsController.text,
       'jobDescription': jobDescriptionController.text,
       'aboutCompany': aboutCompanyController.text,
@@ -178,6 +178,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
       'longitude': selectedLng,
       'status': 'pending',
       'isReported': false,
+      'reported_by': [''],
     }).then((value) {
       showSnackBar(context, 'Job Added Successfully');
       // Get.to(const JobHomePageScreen());
@@ -534,7 +535,7 @@ class _AddJobScreenState extends State<AddJobScreen> {
                 ),
                 CommonTextField(
                     hintText: 'Education',
-                    controller: eductionController,
+                    controller: educationController,
                     validator: MultiValidator([
                       RequiredValidator(errorText: 'Education is required'),
                     ]).call),

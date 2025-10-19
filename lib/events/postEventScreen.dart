@@ -214,6 +214,7 @@ class _PostEventScreenState extends State<PostEventScreen> {
         'status': 'pending',
         'isReported': false,
         'timestamp': Timestamp.now(),
+        'reported_by': [''],
       }, SetOptions(merge: true)).then((value) async {
         QuerySnapshot snapshot =
             await FirebaseFirestore.instance.collection('MakeEvent').get();

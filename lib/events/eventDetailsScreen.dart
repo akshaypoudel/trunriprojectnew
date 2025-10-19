@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -308,7 +309,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                               backgroundColor: Colors.white,
                               title: const Text('Report Content'),
                               content: const Text(
-                                  'Do you really want to report this content?'),
+                                'Do you really want to report this content?',
+                              ),
                               actions: [
                                 TextButton(
                                   child: const Text('No'),
@@ -327,13 +329,23 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                         try {
                           await FirebaseFirestore.instance
                               .collection('MakeEvent')
-                              .doc(eventId)
-                              .update({'isReported': true});
+                              .where('eventId', isEqualTo: eventId)
+                              .get()
+                              .then((querySnapshot) async {
+                            for (var doc in querySnapshot.docs) {
+                              await doc.reference.update({
+                                'isReported': true,
+                                'reported_by': FieldValue.arrayUnion(
+                                    [FirebaseAuth.instance.currentUser?.uid]),
+                              });
+                            }
+                          });
+
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Content reported successfully'),
-                                backgroundColor: Colors.red,
+                                backgroundColor: Colors.green,
                               ),
                             );
                           }
