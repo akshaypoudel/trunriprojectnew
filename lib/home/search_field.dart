@@ -185,7 +185,7 @@ class _SearchFieldState extends State<SearchField> {
       },
       child: Column(
         children: [
-          const SizedBox(height: 5),
+          const SizedBox(height: 4),
           Row(
             children: [
               const SizedBox(width: 10),
@@ -225,7 +225,7 @@ class _SearchFieldState extends State<SearchField> {
                         fontWeight: FontWeight.w400,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
-                          vertical: 20, horizontal: 14),
+                          vertical: 18, horizontal: 14),
                       disabledBorder: OutlineInputBorder(
                         borderSide:
                             const BorderSide(color: Colors.orange, width: 1),

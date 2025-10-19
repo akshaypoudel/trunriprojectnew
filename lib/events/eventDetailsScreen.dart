@@ -1281,6 +1281,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                               ticketPrice: price1,
                               eventPosterName: eventPosterName ?? 'No Name',
                               eventDetails: {
+                                'eventID': eventId,
                                 'eventName': eventName!,
                                 'eventDate': eventDate,
                                 'eventTime': eventTime,

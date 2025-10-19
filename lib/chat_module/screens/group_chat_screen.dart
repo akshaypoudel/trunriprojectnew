@@ -525,6 +525,95 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     required String time,
     required bool isMe,
   }) {
+    if (!isMe) {
+      return GestureDetector(
+        onLongPress: () async {
+          final selected = await showModalBottomSheet<String>(
+            backgroundColor: Colors.white,
+            context: context,
+            builder: (ctx) => SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.flag, color: Colors.red),
+                    title: const Text('Report this message'),
+                    onTap: () => Navigator.pop(ctx, 'report'),
+                  ),
+                ],
+              ),
+            ),
+          );
+          if (selected == 'report') {
+            bool confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    backgroundColor: Colors.white,
+                    title: const Text('Report Message'),
+                    content: const Text(
+                        'Do you really want to report this message?'),
+                    actions: [
+                      TextButton(
+                        child: const Text('No'),
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                      ),
+                      TextButton(
+                        child: const Text('Yes'),
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                      ),
+                    ],
+                  ),
+                ) ??
+                false;
+            if (confirmed) {
+              try {
+                // Compose correct chatRoomID as in your ChatServices
+
+                final query = await FirebaseFirestore.instance
+                    .collection('groups')
+                    .doc(widget.groupId)
+                    .collection("messages")
+                    .where('senderID', isNotEqualTo: userName)
+                    .get();
+
+                for (var doc in query.docs) {
+                  await doc.reference.update({'isReported': true});
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Message reported Successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to report: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          }
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          alignment: Alignment.centerLeft,
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.75,
+            ),
+            child: _buildGlassmorphicGroupMessageBubble(
+              userName: userName,
+              text: text,
+              time: time,
+              isMe: isMe,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,

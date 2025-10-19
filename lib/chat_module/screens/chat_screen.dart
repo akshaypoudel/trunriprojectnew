@@ -458,7 +458,14 @@ class MessageListView extends StatelessWidget {
             messageWidgets.add(_buildGlassmorphicDateBubble(currentDateLabel));
             lastDateLabel = currentDateLabel;
           }
-          messageWidgets.add(buildMessageItem(context, doc, senderID));
+          messageWidgets.add(
+            buildMessageItem(
+              context,
+              doc,
+              senderID,
+              receiverID,
+            ),
+          );
         }
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -534,10 +541,11 @@ class MessageListView extends StatelessWidget {
         ),
       );
 
-  Widget buildMessageItem(
+  Widget buildMessageItem11(
     BuildContext context,
     DocumentSnapshot doc,
     String senderID,
+    String receiversID,
   ) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     String formattedTime = formatTimestamp(data['timestamp']);
@@ -559,79 +567,197 @@ class MessageListView extends StatelessWidget {
     );
   }
 
+  Widget buildMessageItem(
+    BuildContext context,
+    DocumentSnapshot doc,
+    String senderID,
+    String receiverID,
+  ) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    String formattedTime = formatTimestamp(data['timestamp']);
+    bool isMe = data['senderID'] == senderID;
+
+    // Only allow reporting other user's messages
+    if (!isMe) {
+      return GestureDetector(
+        onLongPress: () async {
+          final selected = await showModalBottomSheet<String>(
+            backgroundColor: Colors.white,
+            context: context,
+            builder: (ctx) => SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.flag, color: Colors.red),
+                    title: const Text('Report this message'),
+                    onTap: () => Navigator.pop(ctx, 'report'),
+                  ),
+                ],
+              ),
+            ),
+          );
+          if (selected == 'report') {
+            bool confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    backgroundColor: Colors.white,
+                    title: const Text('Report Message'),
+                    content: const Text(
+                        'Do you really want to report this message?'),
+                    actions: [
+                      TextButton(
+                        child: const Text('No'),
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                      ),
+                      TextButton(
+                        child: const Text('Yes'),
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                      ),
+                    ],
+                  ),
+                ) ??
+                false;
+            if (confirmed) {
+              try {
+                // Compose correct chatRoomID as in your ChatServices
+                List<String> ids = [senderID, receiverID];
+                ids.sort();
+                String chatRoomId = ids.join('_');
+                await FirebaseFirestore.instance
+                    .collection('chat_rooms')
+                    .doc(chatRoomId)
+                    .collection("messages")
+                    .doc(doc.id)
+                    .update({'isReported': true});
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Message reported Successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to report: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          }
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          alignment: Alignment.centerLeft,
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.75,
+            ),
+            child: _buildGlassmorphicMessageBubble(
+              text: data['message'] ?? 'no message',
+              time: formattedTime,
+              isMe: isMe,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Original message bubble for own messages
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      alignment: Alignment.centerRight,
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
+        child: _buildGlassmorphicMessageBubble(
+          text: data['message'] ?? 'no message',
+          time: formattedTime,
+          isMe: isMe,
+        ),
+      ),
+    );
+  }
+
   Widget _buildGlassmorphicMessageBubble({
     required String text,
     required String time,
     required bool isMe,
   }) {
     return IntrinsicWidth(
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 2),
-        child: ClipRRect(
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(20),
-            topRight: const Radius.circular(20),
-            bottomLeft: Radius.circular(isMe ? 20 : 6),
-            bottomRight: Radius.circular(isMe ? 6 : 20),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isMe
-                    ? [
-                        const Color(0xFFFF6B35).withValues(alpha: 0.8),
-                        const Color.fromARGB(255, 255, 125, 44)
-                            .withValues(alpha: 0.7),
-                      ]
-                    : [
-                        Colors.white.withValues(alpha: 0.9),
-                        Colors.white.withValues(alpha: 0.8),
-                      ],
-              ),
-              borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(20),
-                topRight: const Radius.circular(20),
-                bottomLeft: Radius.circular(isMe ? 20 : 2),
-                bottomRight: Radius.circular(isMe ? 2 : 20),
-              ),
-              border: Border.all(
-                color: isMe
-                    ? const Color(0xFFFF6B35).withValues(alpha: 0.2)
-                    : Colors.orange.shade300,
-                width: 1,
-              ),
+      child: GestureDetector(
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 2),
+          child: ClipRRect(
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(20),
+              topRight: const Radius.circular(20),
+              bottomLeft: Radius.circular(isMe ? 20 : 6),
+              bottomRight: Radius.circular(isMe ? 6 : 20),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    text,
-                    softWrap: true,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: isMe ? Colors.white : const Color(0xFF333333),
-                      height: 1.4,
-                      fontWeight: isMe ? FontWeight.w400 : FontWeight.normal,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Text(
-                      time,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: isMe
+                      ? [
+                          const Color(0xFFFF6B35).withValues(alpha: 0.8),
+                          const Color.fromARGB(255, 255, 125, 44)
+                              .withValues(alpha: 0.7),
+                        ]
+                      : [
+                          Colors.white.withValues(alpha: 0.9),
+                          Colors.white.withValues(alpha: 0.8),
+                        ],
+                ),
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(20),
+                  topRight: const Radius.circular(20),
+                  bottomLeft: Radius.circular(isMe ? 20 : 2),
+                  bottomRight: Radius.circular(isMe ? 2 : 20),
+                ),
+                border: Border.all(
+                  color: isMe
+                      ? const Color(0xFFFF6B35).withValues(alpha: 0.2)
+                      : Colors.orange.shade300,
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      text,
                       softWrap: true,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 12,
-                        color: isMe ? Colors.white : Colors.grey[600],
-                        fontWeight: isMe ? FontWeight.w500 : FontWeight.normal,
+                        fontSize: 16,
+                        color: isMe ? Colors.white : const Color(0xFF333333),
+                        height: 1.4,
+                        fontWeight: isMe ? FontWeight.w400 : FontWeight.normal,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 6),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Text(
+                        time,
+                        softWrap: true,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isMe ? Colors.white : Colors.grey[600],
+                          fontWeight:
+                              isMe ? FontWeight.w500 : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

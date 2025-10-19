@@ -55,6 +55,7 @@ class ChatServices {
       message: message,
       timestamp: timeStamp,
       receiverID: receiverID,
+      isReported: false,
     );
 
     List<String> ids = [currentUserEmail, receiverID];

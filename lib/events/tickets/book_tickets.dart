@@ -1,3 +1,7 @@
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -184,7 +188,7 @@ class _BuyTicketScreenState extends State<BuyTicketScreen> {
                   child: SizedBox(
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         Uuid uid = const Uuid();
                         String ticketID = uid.v4();
                         Map<String, dynamic> newEntries = {
@@ -197,6 +201,25 @@ class _BuyTicketScreenState extends State<BuyTicketScreen> {
                           ...widget.eventDetails,
                           ...newEntries,
                         };
+                        // log('eventdetails == ${widget.eventDetails}');
+
+                        final currentUserId =
+                            FirebaseAuth.instance.currentUser?.uid;
+
+                        final querySnapshot = await FirebaseFirestore.instance
+                            .collection('MakeEvent')
+                            .where('eventId',
+                                isEqualTo: widget.eventDetails['eventID'])
+                            .get();
+
+                        // ✅ Update the matching document(s)
+                        for (var doc in querySnapshot.docs) {
+                          await doc.reference.update({
+                            'ticket_purchased':
+                                FieldValue.arrayUnion([currentUserId]),
+                          });
+                        }
+
                         Get.to(
                           () => TicketPurchasedScreen(
                             eventDetails: updatedEventDetails,

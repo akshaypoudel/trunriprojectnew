@@ -547,7 +547,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
 
         // Log final counts
-        log('Final counts - Restaurants: ${_restaurants.length}, Grocery: ${_groceryStores.length}, Temples: ${_temples.length}');
+        // log('Final counts - Restaurants: ${_restaurants.length}, Grocery: ${_groceryStores.length}, Temples: ${_temples.length}');
 
         // Update providers after state is set
         final provider = Provider.of<LocationData>(context, listen: false);
@@ -616,7 +616,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     )
                   : Positioned.fill(
-                      top: 130,
+                      top: 140,
                       left: 0,
                       right: 0,
                       bottom: 0,
