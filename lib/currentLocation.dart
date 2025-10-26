@@ -495,308 +495,315 @@ class _CurrentAddressState extends State<CurrentAddress> {
           ),
           titleSpacing: 8,
         ),
-        body: Stack(
-          children: [
-            GoogleMap(
-                zoomGesturesEnabled: true,
-                initialCameraPosition: const CameraPosition(
-                  target: LatLng(0, 0),
-                  zoom: 14.0,
-                ),
-                mapType: MapType.normal,
-                onMapCreated: (controller) {
-                  mapController = controller;
-                  googleMapController.complete(controller);
-                },
-                //markers: markers,
-                circles: circles,
-                onCameraMove: (CameraPosition cameraPositions) {
-                  cameraPosition = cameraPositions;
-                },
-                onCameraIdle: () async {
-                  if (cameraPosition == null) return;
+        body: SafeArea(
+          child: Stack(
+            children: [
+              GoogleMap(
+                  zoomGesturesEnabled: true,
+                  initialCameraPosition: const CameraPosition(
+                    target: LatLng(0, 0),
+                    zoom: 14.0,
+                  ),
+                  mapType: MapType.normal,
+                  onMapCreated: (controller) {
+                    mapController = controller;
+                    googleMapController.complete(controller);
+                  },
+                  //markers: markers,
+                  circles: circles,
+                  onCameraMove: (CameraPosition cameraPositions) {
+                    cameraPosition = cameraPositions;
+                  },
+                  onCameraIdle: () async {
+                    if (cameraPosition == null) return;
 
-                  try {
-                    final placemarks = await placemarkFromCoordinates(
-                      cameraPosition!.target.latitude,
-                      cameraPosition!.target.longitude,
-                    );
-                    setState(() {
-                      latitude1 = cameraPosition!.target.latitude.toString();
-                      longitude1 = cameraPosition!.target.longitude.toString();
-                    });
+                    try {
+                      final placemarks = await placemarkFromCoordinates(
+                        cameraPosition!.target.latitude,
+                        cameraPosition!.target.longitude,
+                      );
+                      setState(() {
+                        latitude1 = cameraPosition!.target.latitude.toString();
+                        longitude1 =
+                            cameraPosition!.target.longitude.toString();
+                      });
 
-                    if (placemarks.isEmpty) {
+                      if (placemarks.isEmpty) {
+                        setState(() {
+                          _address = "";
+                          fullAddress = "";
+                          street =
+                              city = state = country = zipcode = town = null;
+                        });
+                        return;
+                      }
+
+                      final placemark = placemarks.first;
+                      final hasPostal = placemark.postalCode != null &&
+                          placemark.postalCode!.isNotEmpty;
+                      final hasCity = placemark.locality != null &&
+                          placemark.locality!.isNotEmpty;
+                      final hasState = placemark.administrativeArea != null &&
+                          placemark.administrativeArea!.isNotEmpty;
+                      final hasCountry = placemark.country != null &&
+                          placemark.country!.isNotEmpty;
+
+                      if (!hasPostal || !hasCity || !hasState || !hasCountry) {
+                        setState(() {
+                          _address = "";
+                          fullAddress = "";
+                          street =
+                              city = state = country = zipcode = town = null;
+                        });
+                        return;
+                      }
+
+                      final localStreet = placemark.street ?? '';
+                      final localTown = placemark.subAdministrativeArea ?? '';
+                      final localCity = placemark.locality ?? '';
+                      final localState = placemark.administrativeArea ?? '';
+                      final localZip = placemark.postalCode ?? '';
+                      final localCountry = placemark.country ?? '';
+                      final composedAddress =
+                          '$localStreet, $localTown, $localCity, $localState, $localZip, $localCountry';
+
+                      setState(() {
+                        street = localStreet;
+                        city = localCity;
+                        state = localState;
+                        country = localCountry;
+                        zipcode = localZip;
+                        town = localTown;
+                        fullAddress = composedAddress;
+                        _address = composedAddress;
+                      });
+
+                      // Update circle when location changes
+                      _updateRadiusCircle(sliderValue);
+                    } catch (error) {
                       setState(() {
                         _address = "";
                         fullAddress = "";
                         street = city = state = country = zipcode = town = null;
                       });
-                      return;
                     }
-
-                    final placemark = placemarks.first;
-                    final hasPostal = placemark.postalCode != null &&
-                        placemark.postalCode!.isNotEmpty;
-                    final hasCity = placemark.locality != null &&
-                        placemark.locality!.isNotEmpty;
-                    final hasState = placemark.administrativeArea != null &&
-                        placemark.administrativeArea!.isNotEmpty;
-                    final hasCountry = placemark.country != null &&
-                        placemark.country!.isNotEmpty;
-
-                    if (!hasPostal || !hasCity || !hasState || !hasCountry) {
-                      setState(() {
-                        _address = "";
-                        fullAddress = "";
-                        street = city = state = country = zipcode = town = null;
-                      });
-                      return;
-                    }
-
-                    final localStreet = placemark.street ?? '';
-                    final localTown = placemark.subAdministrativeArea ?? '';
-                    final localCity = placemark.locality ?? '';
-                    final localState = placemark.administrativeArea ?? '';
-                    final localZip = placemark.postalCode ?? '';
-                    final localCountry = placemark.country ?? '';
-                    final composedAddress =
-                        '$localStreet, $localTown, $localCity, $localState, $localZip, $localCountry';
-
-                    setState(() {
-                      street = localStreet;
-                      city = localCity;
-                      state = localState;
-                      country = localCountry;
-                      zipcode = localZip;
-                      town = localTown;
-                      fullAddress = composedAddress;
-                      _address = composedAddress;
-                    });
-
-                    // Update circle when location changes
-                    _updateRadiusCircle(sliderValue);
-                  } catch (error) {
-                    setState(() {
-                      _address = "";
-                      fullAddress = "";
-                      street = city = state = country = zipcode = town = null;
-                    });
-                  }
-                }),
-            const Center(
-              child: Text(
-                '📍',
-                style: TextStyle(fontSize: 45),
-              ),
-            ),
-
-            // Radius Slider (moved up since search bar is now in AppBar)
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 70, // Slightly taller to accommodate ruler
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(
-                      8), // Minimal rounding for rectangle
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.orange.withValues(alpha: 0.2),
-                      spreadRadius: 0,
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    // Slider section
-                    Expanded(
-                      child: SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          activeTrackColor: Colors.orange,
-                          inactiveTrackColor:
-                              Colors.orange.withValues(alpha: 0.2),
-                          thumbColor: Colors.orange,
-                          overlayColor: Colors.orange.withValues(alpha: 0.1),
-                          trackHeight: 4,
-                          thumbShape: const RoundSliderThumbShape(
-                            enabledThumbRadius: 8,
-                          ),
-                        ),
-                        child: Slider(
-                          value: sliderValue,
-                          min: 1.0,
-                          max: 100.0,
-                          divisions: 33, // 33 divisions (1-100 range)
-                          onChanged: (double value) {
-                            setState(() {
-                              sliderValue = value;
-                              radiusFilter = value.round();
-                            });
-                            _updateMapRadius(value);
-                          },
-                        ),
-                      ),
-                    ),
-                    // const SizedBox(height: 8),
-                    // Ruler markings
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildRulerMark('1 km'),
-                          _buildRulerMark('25'),
-                          _buildRulerMark('50'),
-                          _buildRulerMark('75'),
-                          _buildRulerMark('100 km'),
-                        ],
-                      ),
-                    ),
-                  ],
+                  }),
+              const Center(
+                child: Text(
+                  '📍',
+                  style: TextStyle(fontSize: 45),
                 ),
               ),
-            ),
 
-            // Bottom Address Container
-            Positioned(
-                bottom: 0,
+              // Radius Slider (moved up since search bar is now in AppBar)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
                 child: Container(
-                  height: AddSize.size200,
-                  width: MediaQuery.of(context).size.width,
-                  decoration: const BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20))),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AddSize.padding16,
-                      vertical: AddSize.padding10,
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.only(left: 20, right: 20),
-                      height: 170,
-                      width: Get.width,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(25),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            spreadRadius: 0,
-                            blurRadius: 20,
-                            offset: const Offset(0, -5),
-                          ),
-                        ],
+                  height: 70, // Slightly taller to accommodate ruler
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(
+                        8), // Minimal rounding for rectangle
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.orange.withValues(alpha: 0.2),
+                        spreadRadius: 0,
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
-                      child: (_address!.isEmpty)
-                          ? const Center(child: CircularProgressIndicator())
-                          : Column(
-                              children: [
-                                const SizedBox(
-                                  height: 20,
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Slider section
+                      Expanded(
+                        child: SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor: Colors.orange,
+                            inactiveTrackColor:
+                                Colors.orange.withValues(alpha: 0.2),
+                            thumbColor: Colors.orange,
+                            overlayColor: Colors.orange.withValues(alpha: 0.1),
+                            trackHeight: 4,
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 8,
+                            ),
+                          ),
+                          child: Slider(
+                            value: sliderValue,
+                            min: 1.0,
+                            max: 100.0,
+                            divisions: 33, // 33 divisions (1-100 range)
+                            onChanged: (double value) {
+                              setState(() {
+                                sliderValue = value;
+                                radiusFilter = value.round();
+                              });
+                              _updateMapRadius(value);
+                            },
+                          ),
+                        ),
+                      ),
+                      // const SizedBox(height: 8),
+                      // Ruler markings
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildRulerMark('1 km'),
+                            _buildRulerMark('25'),
+                            _buildRulerMark('50'),
+                            _buildRulerMark('75'),
+                            _buildRulerMark('100 km'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Bottom Address Container
+              Positioned(
+                  bottom: 0,
+                  child: Container(
+                    height: AddSize.size200,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: const BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20))),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AddSize.padding16,
+                        vertical: AddSize.padding10,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        height: 170,
+                        width: Get.width,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(25),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              spreadRadius: 0,
+                              blurRadius: 20,
+                              offset: const Offset(0, -5),
+                            ),
+                          ],
+                        ),
+                        child: (_address!.isEmpty)
+                            ? const Center(child: CircularProgressIndicator())
+                            : Column(
+                                children: [
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.primaryColor
+                                              .withValues(alpha: 0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: const Icon(
+                                          Icons.location_on,
+                                          color: AppTheme.primaryColor,
+                                          size: 24,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: AddSize.size12,
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          _address.toString(),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 3,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineSmall!
+                                              .copyWith(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: AddSize.font16),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 30,
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      if (widget.isProfileScreen) {
+                                        updateCurrentLocation(
+                                            isInAustralia:
+                                                widget.isInAustralia ?? false);
+                                      } else {
+                                        addCurrentLocation();
+                                      }
+                                      log('full address = $fullAddress');
+                                      log('address = $_address');
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.only(
+                                          left: 25, right: 25),
+                                      width: size.width,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 15),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.primaryColor
-                                            .withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Icon(
-                                        Icons.location_on,
-                                        color: AppTheme.primaryColor,
-                                        size: 24,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: AddSize.size12,
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        _address.toString(),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 3,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineSmall!
-                                            .copyWith(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: AddSize.font16),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(
-                                  height: 30,
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    if (widget.isProfileScreen) {
-                                      updateCurrentLocation(
-                                          isInAustralia:
-                                              widget.isInAustralia ?? false);
-                                    } else {
-                                      addCurrentLocation();
-                                    }
-                                    log('full address = $fullAddress');
-                                    log('address = $_address');
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.only(
-                                        left: 25, right: 25),
-                                    width: size.width,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 15),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Color(0xffFF730A),
-                                          Color(0xffFF8A2B),
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            Color(0xffFF730A),
+                                            Color(0xffFF8A2B),
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(15),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xffFF730A)
+                                                .withValues(alpha: 0.3),
+                                            spreadRadius: 0,
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 4),
+                                          ),
                                         ],
                                       ),
-                                      borderRadius: BorderRadius.circular(15),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xffFF730A)
-                                              .withValues(alpha: 0.3),
-                                          spreadRadius: 0,
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Center(
-                                      child: Text(
-                                        "Confirm Your Address",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white,
-                                          fontSize: 18,
+                                      child: const Center(
+                                        child: Text(
+                                          "Confirm Your Address",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
+                                ],
+                              ),
+                      ),
                     ),
-                  ),
-                ))
-          ],
+                  ))
+            ],
+          ),
         ),
       ),
     );

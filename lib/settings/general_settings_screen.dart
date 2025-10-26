@@ -138,18 +138,20 @@ class _GeneralSettingsScreenState extends State<GeneralSettingsScreen> {
           ),
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        itemCount: _getSettingsSections().length,
-        itemBuilder: (context, index) {
-          final section = _getSettingsSections()[index];
-          return Column(
-            children: [
-              _buildSettingsSection(section),
-              const SizedBox(height: 20),
-            ],
-          );
-        },
+      body: SafeArea(
+        child: ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          itemCount: _getSettingsSections().length,
+          itemBuilder: (context, index) {
+            final section = _getSettingsSections()[index];
+            return Column(
+              children: [
+                _buildSettingsSection(section),
+                const SizedBox(height: 20),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

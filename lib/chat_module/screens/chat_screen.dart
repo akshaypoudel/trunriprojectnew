@@ -541,32 +541,6 @@ class MessageListView extends StatelessWidget {
         ),
       );
 
-  Widget buildMessageItem11(
-    BuildContext context,
-    DocumentSnapshot doc,
-    String senderID,
-    String receiversID,
-  ) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    String formattedTime = formatTimestamp(data['timestamp']);
-    bool isMe = data['senderID'] == senderID;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
-        ),
-        child: _buildGlassmorphicMessageBubble(
-          text: data['message'] ?? 'no message',
-          time: formattedTime,
-          isMe: isMe,
-        ),
-      ),
-    );
-  }
-
   Widget buildMessageItem(
     BuildContext context,
     DocumentSnapshot doc,
@@ -624,10 +598,16 @@ class MessageListView extends StatelessWidget {
                 List<String> ids = [senderID, receiverID];
                 ids.sort();
                 String chatRoomId = ids.join('_');
+
                 await FirebaseFirestore.instance
                     .collection('chat_rooms')
                     .doc(chatRoomId)
-                    .collection("messages")
+                    .set({'isReported': true});
+
+                await FirebaseFirestore.instance
+                    .collection('chat_rooms')
+                    .doc(chatRoomId)
+                    .collection("chat_messages")
                     .doc(doc.id)
                     .update({'isReported': true});
                 ScaffoldMessenger.of(context).showSnackBar(

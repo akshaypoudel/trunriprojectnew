@@ -65,6 +65,10 @@
 <string>Allow this to access your current location of User for showing nearby Store</string>
 <key>NSLocationWhenInUseUsageDescription</key>
 <string>Allow this to access your current location of User for showing nearby Store</string>
+<key>NSCameraUsageDescription</key>
+<string>Camera used to upload photos</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>App needs microphone for video/audio features</string>
 <key>UIMainStoryboardFile</key>
 <string>Main</string>
 <key>UISupportedInterfaceOrientations</key>

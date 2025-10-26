@@ -42,89 +42,91 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
 
-            // General Section
-            _buildSettingsSection(
-              title: 'General',
-              children: [
-                _buildSettingsTile(
-                  icon: Icons.tune_rounded,
-                  title: 'General',
-                  subtitle: 'App preferences and configurations',
-                  onTap: () => Get.to(() => const GeneralSettingsScreen()),
-                ),
-              ],
-            ),
+              // General Section
+              _buildSettingsSection(
+                title: 'General',
+                children: [
+                  _buildSettingsTile(
+                    icon: Icons.tune_rounded,
+                    title: 'General',
+                    subtitle: 'App preferences and configurations',
+                    onTap: () => Get.to(() => const GeneralSettingsScreen()),
+                  ),
+                ],
+              ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // Support Section
-            _buildSettingsSection(
-              title: 'Support & Feedback',
-              children: [
-                _buildSettingsTile(
-                  icon: Icons.feedback_rounded,
-                  title: 'Feedback',
-                  subtitle: 'Send us your thoughts and suggestions',
-                  onTap: () => _showFeedbackDialog(context),
-                ),
-                _buildSettingsTile(
-                  icon: Icons.share_rounded,
-                  title: 'Share App',
-                  subtitle: 'Share this app with friends',
-                  onTap: () => _shareApp(),
-                ),
-                _buildSettingsTile(
-                  icon: Icons.support_agent_rounded,
-                  title: 'Contact Us',
-                  subtitle: 'Get help and support',
-                  onTap: () => _showContactOptions(context),
-                ),
-              ],
-            ),
+              // Support Section
+              _buildSettingsSection(
+                title: 'Support & Feedback',
+                children: [
+                  _buildSettingsTile(
+                    icon: Icons.feedback_rounded,
+                    title: 'Feedback',
+                    subtitle: 'Send us your thoughts and suggestions',
+                    onTap: () => _showFeedbackDialog(context),
+                  ),
+                  _buildSettingsTile(
+                    icon: Icons.share_rounded,
+                    title: 'Share App',
+                    subtitle: 'Share this app with friends',
+                    onTap: () => _shareApp(),
+                  ),
+                  _buildSettingsTile(
+                    icon: Icons.support_agent_rounded,
+                    title: 'Contact Us',
+                    subtitle: 'Get help and support',
+                    onTap: () => _showContactOptions(context),
+                  ),
+                ],
+              ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // Legal Section
-            _buildSettingsSection(
-              title: 'Legal & About',
-              children: [
-                _buildSettingsTile(
-                  icon: Icons.info_rounded,
-                  title: 'About Us',
-                  subtitle: 'Learn more about our company',
-                  onTap: () =>
-                      _showFirestoreContent(context, 'about_us', 'About Us'),
-                ),
-                _buildSettingsTile(
-                  icon: Icons.privacy_tip_rounded,
-                  title: 'Privacy Policy',
-                  subtitle: 'How we handle your data',
-                  onTap: () => _showFirestoreContent(
-                      context, 'privacy_policy', 'Privacy Policy'),
-                ),
-                _buildSettingsTile(
-                  icon: Icons.description_rounded,
-                  title: 'Terms & Conditions',
-                  subtitle: 'Terms of service and usage',
-                  onTap: () => _showFirestoreContent(
-                      context, 'terms_and_condition', 'Terms & Conditions'),
-                  showDivider: false,
-                ),
-              ],
-            ),
+              // Legal Section
+              _buildSettingsSection(
+                title: 'Legal & About',
+                children: [
+                  _buildSettingsTile(
+                    icon: Icons.info_rounded,
+                    title: 'About Us',
+                    subtitle: 'Learn more about our company',
+                    onTap: () =>
+                        _showFirestoreContent(context, 'about_us', 'About Us'),
+                  ),
+                  _buildSettingsTile(
+                    icon: Icons.privacy_tip_rounded,
+                    title: 'Privacy Policy',
+                    subtitle: 'How we handle your data',
+                    onTap: () => _showFirestoreContent(
+                        context, 'privacy_policy', 'Privacy Policy'),
+                  ),
+                  _buildSettingsTile(
+                    icon: Icons.description_rounded,
+                    title: 'Terms & Conditions',
+                    subtitle: 'Terms of service and usage',
+                    onTap: () => _showFirestoreContent(
+                        context, 'terms_and_condition', 'Terms & Conditions'),
+                    showDivider: false,
+                  ),
+                ],
+              ),
 
-            const SizedBox(height: 40),
+              const SizedBox(height: 40),
 
-            // App Version
-            _buildVersionInfo(),
+              // App Version
+              _buildVersionInfo(),
 
-            const SizedBox(height: 40),
-          ],
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );

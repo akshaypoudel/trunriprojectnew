@@ -64,7 +64,7 @@ class ChatServices {
     await _firestore
         .collection('chat_rooms')
         .doc(chatRoomId)
-        .collection("messages")
+        .collection("chat_messages")
         .add(newMessage.toMap());
   }
 
@@ -77,7 +77,7 @@ class ChatServices {
     return _firestore
         .collection("chat_rooms")
         .doc(chatRoomId)
-        .collection("messages")
+        .collection("chat_messages")
         .orderBy("timestamp", descending: false)
         .snapshots();
   }
