@@ -1,12 +1,35 @@
 workflows:
   ios-release-no-shorebird:
     name: iOS Release
+
     environment:
       flutter: stable
       xcode: latest
+
     scripts:
-      - flutter build ios --simulator
-      - mkdir -p build/ios/ipa
-      - zip -r build/ios/ipa/Runner.app.zip build/ios/iphonesimulator/Runner.app
+      # 1) Ensure Flutter deps are fetched
+      - name: Flutter pub get
+        script: |
+          flutter pub get
+
+      # 2) Update CocoaPods repo & install pods
+      - name: CocoaPods repo update and install
+        script: |
+          cd ios
+          pod repo update
+          pod install
+          cd ..
+
+      # 3) Build iOS simulator app
+      - name: Build iOS simulator
+        script: |
+          flutter build ios --simulator --no-codesign
+
+      # 4) Zip Runner.app as artifact
+      - name: Package Runner.app
+        script: |
+          mkdir -p build/ios/ipa
+          zip -r build/ios/ipa/Runner.app.zip build/ios/iphonesimulator/Runner.app
+
     artifacts:
       - build/ios/ipa/Runner.app.zip
