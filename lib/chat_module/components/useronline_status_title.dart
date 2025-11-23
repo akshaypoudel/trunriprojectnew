@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_core/flutter_chat_core.dart';
+import 'package:intl/intl.dart';
 
 class UserOnlineStatusTitle extends StatelessWidget {
   final String userId;
@@ -158,8 +158,8 @@ class UserOnlineStatusTitleForGroups extends StatelessWidget {
         final data = rawData;
 
         final bool isOnline = data['isOnline'] ?? false;
-        final Timestamp? lastSeenTimestamp = data['lastSeen'];
-        final lastSeen = lastSeenTimestamp?.toDate();
+        // final Timestamp? lastSeenTimestamp = data['lastSeen'];
+        // final lastSeen = lastSeenTimestamp?.toDate();
 
         return (isOnline)
             ? const Text(
