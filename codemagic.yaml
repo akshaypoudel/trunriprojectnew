@@ -9,13 +9,11 @@ workflows:
     scripts:
       - name: Flutter pub get
         script: flutter pub get
-      - name: CocoaPods repo update and install
+      - name: Fix CocoaPods Dependencies
         script: |
+          find . -name "Podfile.lock" -delete
           cd ios
-          pod repo update
-          pod update Firebase/Firestore
-          pod install
-          cd ..
+          pod install --repo-update
       - name: Build iOS simulator
         script: flutter build ios --simulator --no-codesign
       - name: Package Runner.app
