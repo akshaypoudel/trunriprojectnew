@@ -9,20 +9,20 @@ workflows:
     scripts:
       - name: Flutter pub get
         script: flutter pub get
-      - name: Fix CocoaPods Dependencies & Deployment Target
+      - name: Force Update Podfile to iOS 14.0
         script: |
           cd ios
-          # 1. Remove the lockfile to allow upgrades
+          # 1. Remove any existing platform definition (handled robustly)
+          sed -i '' '/platform :ios/d' Podfile
+          
+          # 2. Create a new Podfile with iOS 14.0 at the top
+          echo "platform :ios, '14.0'" > Podfile.tmp
+          cat Podfile >> Podfile.tmp
+          mv Podfile.tmp Podfile
+          
+          # 3. Remove lockfile and install dependencies
           rm -f Podfile.lock
-          
-          # 2. Force Update Deployment Target to iOS 14.0 using sed
-          # This handles both uncommented "platform :ios" and commented "# platform :ios" lines
-          sed -i '' "s/^# platform :ios, .*/platform :ios, '14.0'/" Podfile
-          sed -i '' "s/^platform :ios, .*/platform :ios, '14.0'/" Podfile
-          
-          # 3. Install pods with repo update
           pod install --repo-update
-          cd ..
       - name: Build iOS simulator
         script: flutter build ios --simulator --no-codesign
       - name: Package Runner.app
