@@ -9,7 +9,6 @@ import 'package:get/route_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trunriproject/chat_module/community/components/chat_provider.dart';
 import 'package:trunriproject/chat_module/services/presence_service.dart';
@@ -20,7 +19,6 @@ import 'package:trunriproject/subscription/subscription_data.dart';
 import 'package:trunriproject/subscription/subscription_details_screen.dart';
 import 'package:trunriproject/subscription/subscription_screen.dart';
 import 'package:trunriproject/subscription/subscription_success_screen.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import '../widgets/helper.dart';
 import '../home/firestore_service.dart';
 import 'addressListScreen.dart';
@@ -54,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String profession = '';
   String imageUrl = '';
 
-  updateProfile() async {
+  Future<void> updateProfile() async {
     if (!formKey.currentState!.validate()) {
       showSnackBar(context, "Returning From Method");
       return;
@@ -657,7 +655,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _handleLogout() async {
     PresenceService.setUserOffline();
-    GoogleSignIn().signOut();
+    GoogleSignIn.instance.signOut();
     FirebaseAuth.instance.signOut().then((value) {
       Get.offAll(const SignInScreen());
       showSnackBar(

@@ -497,7 +497,7 @@ class BannerWithDotsWidget extends StatelessWidget {
 
             return Obx(() => DotsIndicator(
                   dotsCount: advertisementsCount,
-                  position: sliderIndex.value.toInt(),
+                  position: sliderIndex.value.toDouble(),
                   decorator: DotsDecorator(
                     activeColor: Colors.orange,
                     size: const Size.square(8.0),

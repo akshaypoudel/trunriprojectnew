@@ -59,11 +59,11 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
               : const LatLng(-33.8568, 151.2153),
           onNext: (result) {
             onLocationPicked(
-              result!.geometry.location.lat,
-              result.geometry.location.lng,
+              result!.geometry!.location.lat,
+              result.geometry!.location.lng,
               result.formattedAddress!,
-              getCity(result.addressComponents)!,
-              getState(result.addressComponents)!,
+              getCity(result.addressComponents!)!,
+              getState(result.addressComponents!)!,
             );
           },
         ),
@@ -73,7 +73,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
   String? getCity(List<AddressComponent> components) {
     for (final c in components) {
-      if (c.types.contains('locality')) {
+      if (c.types!.contains('locality')) {
         return c.longName;
       }
     }
@@ -82,7 +82,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
   String? getState(List<AddressComponent> components) {
     for (final c in components) {
-      if (c.types.contains('administrative_area_level_1')) {
+      if (c.types!.contains('administrative_area_level_1')) {
         return c.longName;
       }
     }

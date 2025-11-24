@@ -23,12 +23,13 @@ class CustomGoogleSignin {
     OverlayEntry loader = NewHelper.overlayLoader(context);
     Overlay.of(context).insert(loader);
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser?.authentication;
+      await GoogleSignIn.instance.initialize();
+      final GoogleSignInAccount googleUser =
+          await GoogleSignIn.instance.authenticate();
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
+        // accessToken: googleAuth?.accessToken,
+        idToken: googleAuth.idToken,
       );
       UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
@@ -50,7 +51,7 @@ class CustomGoogleSignin {
             } on FirebaseAuthException catch (e) {
               // If the user needs to reauthenticate, sign out instead
               if (e.code == 'requires-recent-login') {
-                await GoogleSignIn().signOut();
+                await GoogleSignIn.instance.signOut();
                 await FirebaseAuth.instance.signOut();
               }
             }
@@ -80,7 +81,7 @@ class CustomGoogleSignin {
             .get();
 
         if (userDoc.exists && userDoc.data()?['isBlocked'] == true) {
-          GoogleSignIn().signOut();
+          GoogleSignIn.instance.signOut();
           FirebaseAuth.instance.signOut();
           NewHelper.hideLoader(loader);
           showSnackBar(context, "User is Blocked by Admin");

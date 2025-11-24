@@ -146,13 +146,6 @@ class _UploadResumeScreenState extends State<UploadResumeScreen> {
                 Padding(
                   padding: const EdgeInsets.all(25),
                   child: DottedBorder(
-                    borderType: BorderType.RRect,
-                    radius: const Radius.circular(2),
-                    padding:
-                        const EdgeInsets.only(left: 40, right: 40, bottom: 10),
-                    color: Colors.red,
-                    dashPattern: const [6],
-                    strokeWidth: 1,
                     child: InkWell(
                       onTap: () async {
                         FilePickerResult? result =
