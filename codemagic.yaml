@@ -7,31 +7,45 @@ workflows:
       flutter: stable
       xcode: latest
     scripts:
+      - name: Verify and fix xcodeproj version
+        script: |
+          echo "Current xcodeproj version:"
+          xcodeproj --version
+          sudo gem uninstall xcodeproj --all --ignore-dependencies
+          sudo gem install xcodeproj --version=1.25.0
+          echo "Updated xcodeproj version:"
+          xcodeproj --version
+          
       - name: Clean Flutter and iOS artifacts
         script: |
           flutter clean
           rm -rf ios/Pods
           rm -rf ios/Podfile.lock
+          rm -rf ios/.symlinks
           rm -rf ~/Library/Developer/Xcode/DerivedData
           
-      - name: Fix xcodeproj gem version
+      - name: Force download Flutter framework
         script: |
-          sudo gem uninstall xcodeproj --all --ignore-dependencies
-          sudo gem install xcodeproj --version=1.25.0
+          flutter precache --force --ios --verbose
           
       - name: Get Flutter dependencies
         script: flutter pub get
         
-      - name: Clean and install CocoaPods
+      - name: Clean and reinstall CocoaPods
         script: |
           cd ios
           pod cache clean --all
           pod deintegrate || true
-          pod install --repo-update
+          pod install --repo-update --verbose
           cd ..
           
+      - name: Verify Flutter framework exists
+        script: |
+          echo "Checking for Flutter.xcframework:"
+          ls -la $FLUTTER_ROOT/bin/cache/artifacts/engine/ios/ || echo "Flutter engine artifacts not found"
+          
       - name: Build iOS simulator
-        script: flutter build ios --simulator --no-codesign
+        script: flutter build ios --simulator --no-codesign --verbose
         
       - name: Package Runner.app
         script: |
