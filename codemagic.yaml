@@ -6,26 +6,22 @@ workflows:
       xcode: latest
 
     scripts:
-      - name: Flutter precache iOS engine (fix Flutter.h not found)
+      - name: Flutter precache iOS engine
         script: flutter precache --ios
-
-      - name: Clean old Pods and Podfile.lock
-        script: |
-          rm -rf ios/Pods
-          rm -f ios/Podfile.lock
 
       - name: Get Flutter packages
         script: flutter pub get
 
-      - name: Fresh pod install with repo update
+      - name: Clean old Pods
         script: |
           cd ios
+          rm -rf Pods
+          rm -f Podfile.lock
           pod install --repo-update
           cd ..
 
-      - name: Build iOS Debug for simulator (NO codesign)
+      - name: Build iOS Debug (simulator, no signing)
         script: flutter build ios --debug --simulator --no-codesign
 
     artifacts:
       - build/ios/**/*.app
-      - build/ios/**/*.xcarchive
