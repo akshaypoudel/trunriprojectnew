@@ -2,19 +2,16 @@ platform :ios, '15.0'
 
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
-use_modular_headers!   # REQUIRED for Firebase, Razorpay, DKPhotoGallery, SDWebImage
-
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
   'Release' => :release,
 }
 
+# --- Flutter Podhelper Loader ---
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
-  unless File.exist?(generated_xcode_build_settings_path)
-    raise "#{generated_xcode_build_settings_path} must exist. Run flutter pub get first."
-  end
+  raise "#{generated_xcode_build_settings_path} must exist. Run flutter pub get first." unless File.exist?(generated_xcode_build_settings_path)
 
   File.foreach(generated_xcode_build_settings_path) do |line|
     matches = line.match(/FLUTTER_ROOT\=(.*)/)
@@ -23,19 +20,19 @@ def flutter_root
   raise "FLUTTER_ROOT not found."
 end
 
-require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper.rb'), flutter_root)
 
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  flutter_install_all_ios_pods(File.dirname(File.realpath(__FILE__)))
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 
 post_install do |installer|
-  flutter_additional_ios_build_settings(installer)
+  flutter_post_install(installer)
+
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
-      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
       config.build_settings['SWIFT_VERSION'] = '5.0'
     end
   end
