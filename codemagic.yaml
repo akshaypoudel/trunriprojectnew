@@ -22,7 +22,9 @@ workflows:
         script: |
           keychain initialize
           # We can now simply refer to the credentials managed by the integration
-          app-store-connect fetch-signing-files "$(xcode-project detect-bundle-id)" --type IOS_APP_STORE --create
+          app-store-connect fetch-signing-files "com.trunri.www" \
+            --type IOS_APP_STORE \
+            --create
           keychain add-certificates
 
       - name: Set up provisioning profile
