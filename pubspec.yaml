@@ -86,7 +86,7 @@ dev_dependencies:
 flutter_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icon/icon.png" # Path to your 1024x1024 icon
+  image_path: "assets/icons/icon.png" # Path to your 1024x1024 icon
 
 flutter:
 
