@@ -12,7 +12,7 @@ workflows:
         distribution_type: app_store
         bundle_identifier: com.trunri.www
       vars:
-        XCODE_WORKSPACE: "ios/Runner.xcworkspace"j
+        XCODE_WORKSPACE: "ios/Runner.xcworkspace"
         XCODE_SCHEME: "Runner"
 
     # vvv ADD THIS SECTION vvv
