@@ -72,6 +72,8 @@ dependencies:
   font_awesome_flutter: ^10.9.1
   icons_plus: ^5.0.0
 
+dependency_overrides:
+  retrofit: 4.4.1
 
 
 dev_dependencies:
