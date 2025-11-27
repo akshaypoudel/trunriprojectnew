@@ -4,14 +4,23 @@ workflows:
     environment:
       flutter: stable
       xcode: latest
+
     scripts:
+      - name: Clean old Podfile.lock (fix Firebase version error)
+        script: rm ios/Podfile.lock || true
+
       - name: Get Flutter packages
         script: flutter pub get
 
-      - name: Build iOS debug (simulator build, no signing)
+      - name: Install fresh CocoaPods with repo update
+        script: |
+          cd ios
+          pod install --repo-update
+          cd ..
+
+      - name: Build iOS debug (no signing)
         script: flutter build ios --debug --no-codesign
 
     artifacts:
-      - build/ios/iphoneos/**/*.app
-      - build/ios/Debug-iphoneos/**/*.app
+      - build/ios/**/*.app
       - build/ios/**/*.xcarchive
