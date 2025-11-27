@@ -24,7 +24,17 @@ workflows:
       - name: Set up keychain and certificates
         script: |
           keychain initialize
-          keychain add-certificates --certificate
+          
+          if [ -z "$Certificate 1" ]; then
+            echo "ERROR: CM_CERTIFICATE variable is empty. Check Codemagic UI reference name."
+            exit 1
+          fi
+
+          echo "$Certificate 1" | base64 --decode > /tmp/certificate.p12
+          
+          keychain add-certificates \
+            --certificate /tmp/certificate.p12 \
+            --certificate-password "$yQiwOU8X"
 
       - name: Set up provisioning profile
         script: |
