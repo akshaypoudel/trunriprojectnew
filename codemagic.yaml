@@ -24,7 +24,7 @@ workflows:
       - name: Set up keychain and certificates
         script: |
           keychain initialize
-          keychain add-certificates --certificates
+          keychain add-certificates --certificate
 
       - name: Set up provisioning profile
         script: |
