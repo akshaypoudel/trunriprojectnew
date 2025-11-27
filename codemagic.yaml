@@ -14,7 +14,7 @@ workflows:
 
     # vvv ADD THIS SECTION vvv
     integrations:
-      app_store_connect: app_store_credentials # <-- REPLACE THIS with your actual API Key Reference Name
+      app_store_connect: Trunri # <-- REPLACE THIS with your actual API Key Reference Name
     # ^^^ ADD THIS SECTION ^^^
 
     scripts:
