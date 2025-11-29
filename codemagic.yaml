@@ -29,3 +29,4 @@ workflows:
     artifacts:
       - build/ios/**/*.app
       - build/ios/**/*.xcarchive
+      - results/**/logcat.txt
