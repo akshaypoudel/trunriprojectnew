@@ -76,6 +76,8 @@
 <key>UIMainStoryboardFile</key>
 <string>Main</string>
 <key>UISupportedInterfaceOrientations</key>
+<key>FirebaseAppDelegateProxyEnabled</key>
+<true/>
 <array>
 <string>UIInterfaceOrientationPortrait</string>
 <string>UIInterfaceOrientationLandscapeLeft</string>
