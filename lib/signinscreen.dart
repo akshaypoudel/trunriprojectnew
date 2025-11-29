@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -69,6 +70,7 @@ class _SignInScreenState extends State<SignInScreen> {
     // showSnackBar(context, "User is Blocked by Admin");
     // return;
     // }
+    await FirebaseMessaging.instance.requestPermission();
 
     String completePhoneNum = '$code${phoneController.text.trim()}';
 
