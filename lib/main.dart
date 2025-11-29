@@ -14,13 +14,9 @@ import 'package:trunriproject/home/provider/location_data.dart';
 import 'package:trunriproject/subscription/subscription_data.dart';
 
 void main() async {
-  // GoogleFonts.config.allowRuntimeFetching = false;
   WidgetsFlutterBinding.ensureInitialized();
   InternetChecker().startMonitoring();
   await Firebase.initializeApp();
-  // await GoogleFonts.pendingFonts([
-  //   GoogleFonts.caveat().fontFamily,
-  // ]);
   final user = FirebaseAuth.instance.currentUser;
   if (user != null) {
     await PresenceService.setUserOnline();
