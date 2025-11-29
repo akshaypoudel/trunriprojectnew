@@ -67,6 +67,8 @@
 <string>Allow this to access your current location of User for showing nearby Store</string>
 <key>NSLocationWhenInUseUsageDescription</key>
 <string>Allow this to access your current location of User for showing nearby Store</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>This app needs background location access to provide continuous location-based features.</string>
 <key>NSCameraUsageDescription</key>
 <string>Camera used to upload photos</string>
 <key>NSMicrophoneUsageDescription</key>
