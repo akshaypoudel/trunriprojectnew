@@ -92,8 +92,6 @@
 <true/>
 <key>UIApplicationSupportsIndirectInputEvents</key>
 <true/>
-<key>FirebaseAppDelegateProxyEnabled</key>
-<true/>
 </dict>
 </plist>
 
