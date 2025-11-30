@@ -2,15 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-<key>CFBundleURLTypes</key>
-<array>
-<dict>
-<key>CFBundleURLSchemes</key>
-<array>
-<string>fb[APP_ID]</string>
-</array>
-</dict>
-</array>
 <key>FacebookAppID</key>
 <string>3689537667932014</string>
 <key>FacebookClientToken</key>
@@ -21,19 +12,6 @@
 <array>
 <string>fbapi</string>
 <string>fb-messenger-share-api</string>
-</array>
-<key>CFBundleURLTypes</key>
-<array>
-<dict>
-<key>CFBundleTypeRole</key>
-<string>Editor</string>
-<key>CFBundleURLSchemes</key>
-<array>
-<!-- TODO Replace this value: -->
-<!-- Copied from GoogleService-Info.plist key REVERSED_CLIENT_ID -->
-<string>com.googleusercontent.apps.742206392917-qm3tj29vslr71ci3roifmpkk6a9cuqbo</string>
-</array>
-</dict>
 </array>
 <key>CFBundleDevelopmentRegion</key>
 <string>$(DEVELOPMENT_LANGUAGE)</string>
@@ -94,6 +72,19 @@
 <true/>
 <key>FirebaseAppDelegateProxyEnabled</key>
 <true/>
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleTypeRole</key>
+    <string>Editor</string>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>com.googleusercontent.apps.742206392917-4qci32qchm6kgug4uj3u283g8rogn35t</string>
+    </array>
+  </dict>
+</array>
+
+
 </dict>
 </plist>
 
