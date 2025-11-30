@@ -70,7 +70,7 @@ class _SignInScreenState extends State<SignInScreen> {
     // showSnackBar(context, "User is Blocked by Admin");
     // return;
     // }
-    await FirebaseMessaging.instance.requestPermission();
+    // await FirebaseMessaging.instance.requestPermission();
 
     String completePhoneNum = '$code${phoneController.text.trim()}';
 
