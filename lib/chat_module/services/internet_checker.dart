@@ -54,7 +54,7 @@ class InternetChecker {
                 // Icon at top
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.deepOrange.withOpacity(0.1),
+                    color: Colors.deepOrange.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   padding: const EdgeInsets.all(16),

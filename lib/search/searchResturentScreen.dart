@@ -58,7 +58,7 @@ class _SearchResturentFieldState extends State<SearchResturentField> {
             },
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color(0xFF979797).withOpacity(0.1),
+              fillColor: const Color(0xFF979797).withValues(alpha: 0.1),
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               border: OutlineInputBorder(

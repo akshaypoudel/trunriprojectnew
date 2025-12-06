@@ -26,7 +26,7 @@ class NewHelper {
         top: 0,
         left: 0,
         child: Material(
-          color: Colors.deepPurpleAccent.withOpacity(0.01),
+          color: Colors.deepPurpleAccent.withValues(alpha: 0.01),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

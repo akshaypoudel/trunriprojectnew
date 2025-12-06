@@ -235,11 +235,11 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
                 leading: Container(
                   margin: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 2),
                       ),
@@ -307,7 +307,7 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.purple.withOpacity(0.3),
+            color: Colors.purple.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -376,7 +376,7 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.orange.withOpacity(0.3),
+                color: Colors.orange.withValues(alpha: 0.3),
                 blurRadius: 30,
                 spreadRadius: 10,
               ),
@@ -396,7 +396,7 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.deepOrange.withOpacity(0.4),
+                  color: Colors.deepOrange.withValues(alpha: 0.4),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -533,7 +533,7 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -633,12 +633,12 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: feature.color.withOpacity(0.1),
+                  color: feature.color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   // Add special border for special features
                   border: isSpecialFeature
                       ? Border.all(
-                          color: feature.color.withOpacity(0.3), width: 1)
+                          color: feature.color.withValues(alpha: 0.3), width: 1)
                       : null,
                 ),
                 child: Icon(
@@ -729,7 +729,7 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.deepOrange.withOpacity(0.3),
+            color: Colors.deepOrange.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -787,7 +787,7 @@ class _SubscriptionSuccessScreenState extends State<SubscriptionSuccessScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.deepOrange.withOpacity(0.3),
+            color: Colors.deepOrange.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),

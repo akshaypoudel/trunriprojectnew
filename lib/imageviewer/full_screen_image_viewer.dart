@@ -122,7 +122,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.7),
+                      Colors.black.withValues(alpha: 0.7),
                       Colors.transparent,
                     ],
                   ),
@@ -137,7 +137,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer>
                         size: 28,
                       ),
                       style: IconButton.styleFrom(
-                        backgroundColor: Colors.black.withOpacity(0.5),
+                        backgroundColor: Colors.black.withValues(alpha: 0.5),
                         padding: const EdgeInsets.all(8),
                       ),
                     ),

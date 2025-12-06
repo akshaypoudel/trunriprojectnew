@@ -1,6 +1,3 @@
-import 'dart:developer';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:trunriproject/accommodation/showFilterDataScreen.dart';
@@ -287,9 +284,9 @@ class _FilterOptionScreenState extends State<FilterOptionScreen> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
+        backgroundColor: Colors.white,
         appBar: AppBar(
           title: const Text('Filter'),
-          automaticallyImplyLeading: false,
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -311,7 +308,7 @@ class _FilterOptionScreenState extends State<FilterOptionScreen> {
                     height: 10,
                   ),
                   DropdownButtonFormField<String>(
-                    value: selectedState,
+                    initialValue: selectedState,
                     dropdownColor: Colors.white,
                     items: stateList.map((String state) {
                       return DropdownMenuItem<String>(
@@ -351,7 +348,7 @@ class _FilterOptionScreenState extends State<FilterOptionScreen> {
                     height: 10,
                   ),
                   DropdownButtonFormField<String>(
-                    value: selectedCity,
+                    initialValue: selectedCity,
                     dropdownColor: Colors.white,
                     items: cityList.map((String city) {
                       return DropdownMenuItem<String>(
@@ -1366,34 +1363,41 @@ class _FilterOptionScreenState extends State<FilterOptionScreen> {
                           style: TextStyle(color: Colors.red),
                         ),
                       const SizedBox(height: 20),
+                      // Inside FilterOptionScreen.dart
+
                       GestureDetector(
                         onTap: () {
-                          Get.to(() => ShowFilterDataScreen(
-                                propertyAmenities: propertyAmenities,
-                                homeRules: homeRules,
-                                bathrooms: bathrooms,
-                                bedroomFacing: bedroomFacing,
-                                // currentRangeValues: currentRangeValues,
-                                // doubleBadRoom: doubleBadRoom,
-                                // female: female,
-                                // isBedInRoom: isBedInRoom,
-                                // isDontMind: isDontMind,
-                                // isLiftAvailable: isLiftAvailable,
-                                // isStudying: isStudying,
-                                // isWorking: isWorking,
-                                // livingFemale: livingFemale,
-                                // livingMale: livingMale,
-                                // livingNonBinary: livingNonBinary,
-                                // male: male,
-                                // nonBinary: nonBinary,
-                                // roomAmenities: roomAmenities,
-                                selectedCity: selectedCity,
-                                // showGenderError: showGenderError,
-                                // showError: showError,
-                                // showSituationError: showSituationError,
-                                // singleBadRoom: singleBadRoom,
-                                // toilets: toilets,
-                              ));
+                          // Collect all filter data into a map
+                          Map<String, dynamic> filterData = {
+                            'state': selectedState,
+                            'city': selectedCity,
+                            'roomAmenities': roomAmenities,
+                            'propertyAmenities': propertyAmenities,
+                            'homeRules': homeRules,
+                            'singleBadRoom': singleBadRoom,
+                            'doubleBadRoom': doubleBadRoom,
+                            'bathrooms': bathrooms,
+                            'toilets': toilets,
+                            'livingFemale': livingFemale,
+                            'livingMale': livingMale,
+                            'livingNonBinary': livingNonBinary,
+                            'priceMin': currentRangeValues.start,
+                            'priceMax': currentRangeValues.end,
+                            'genderMale': male,
+                            'genderFemale': female,
+                            'genderNonBinary': nonBinary,
+                            'isLiftAvailable': isLiftAvailable,
+                            'bedroomFacing': bedroomFacing,
+                            // Living situations
+                            'isstudents': isstudents,
+                            'isemployees': isemployees,
+                            'isfamilies': isfamilies,
+                            'isSingleIndividuals': isSingleIndividuals,
+                            'isCouples': isCouples,
+                          };
+
+                          // Close the bottom sheet and return the data
+                          Navigator.pop(context, filterData);
                         },
                         child: Container(
                           width: size.width,
@@ -1404,7 +1408,7 @@ class _FilterOptionScreenState extends State<FilterOptionScreen> {
                           ),
                           child: const Center(
                             child: Text(
-                              "Click Here To Filter",
+                              "Apply Filters", // Changed text to be more accurate
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -1414,6 +1418,7 @@ class _FilterOptionScreenState extends State<FilterOptionScreen> {
                           ),
                         ),
                       ),
+
                       const SizedBox(
                         height: 20,
                       )

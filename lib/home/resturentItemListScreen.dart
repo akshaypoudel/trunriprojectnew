@@ -124,8 +124,8 @@ class ResturentItemListScreen extends StatelessWidget {
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           crossAxisSpacing: 16,
-                          mainAxisSpacing: 18,
-                          childAspectRatio: 3 / 5.4,
+                          mainAxisSpacing: 20,
+                          childAspectRatio: 3 / 6,
                         ),
                         itemBuilder: (context, index) {
                           final restaurant = restaurantsWithPhotos[index];
@@ -171,7 +171,12 @@ class ResturentItemListScreen extends StatelessWidget {
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.all(8.0),
+                                  padding: const EdgeInsets.only(
+                                    left: 8,
+                                    right: 8,
+                                    top: 8,
+                                    bottom: 15,
+                                  ),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -217,7 +222,7 @@ class ResturentItemListScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                const Spacer(),
+                                // const Spacer(),
                                 GestureDetector(
                                   onTap: () {
                                     Get.to(

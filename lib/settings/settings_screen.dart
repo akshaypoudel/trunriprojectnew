@@ -143,7 +143,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -258,7 +258,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -352,7 +352,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: Colors.orange.withValues(alpha: 0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -412,7 +412,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                                color: Colors.orange.withOpacity(0.3)),
+                                color: Colors.orange.withValues(alpha: 0.3)),
                           ),
                           child: TextFormField(
                             controller: feedbackController,
@@ -428,7 +428,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                               contentPadding: const EdgeInsets.all(16),
                               filled: true,
-                              fillColor: Colors.orange.withOpacity(0.05),
+                              fillColor: Colors.orange.withValues(alpha: 0.05),
                             ),
                           ),
                         ),
@@ -548,7 +548,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -573,7 +573,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       'Choose your preferred way to reach us',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.white.withOpacity(0.95),
+                        color: Colors.white.withValues(alpha: 0.95),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -642,10 +642,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.orange.withOpacity(0.2)),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.08),
+            color: Colors.orange.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -740,7 +740,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orange.withOpacity(0.15),
+                    color: Colors.orange.withValues(alpha: 0.15),
                     blurRadius: 25,
                     offset: const Offset(0, 15),
                   ),
@@ -917,10 +917,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Colors.orange.withOpacity(0.05),
+                                    color:
+                                        Colors.orange.withValues(alpha: 0.05),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.orange.withOpacity(0.2),
+                                      color:
+                                          Colors.orange.withValues(alpha: 0.2),
                                     ),
                                   ),
                                   child: Text(

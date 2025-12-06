@@ -91,11 +91,11 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
             leading: Container(
               margin: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -192,7 +192,7 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
               Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
                 child: PopupMenuButton<String>(
@@ -408,7 +408,7 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      Colors.black.withOpacity(0.3),
+                      Colors.black.withValues(alpha: 0.3),
                     ],
                   ),
                 ),
@@ -428,7 +428,7 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: SmoothPageIndicator(
@@ -461,7 +461,7 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -567,7 +567,7 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -578,7 +578,7 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -791,7 +791,7 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -805,7 +805,7 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.deepOrange.withOpacity(0.1),
+                  color: Colors.deepOrange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: Colors.deepOrange, size: 20),
@@ -862,9 +862,9 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        color: Colors.blue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
       ),
       child: Text(
         amenity,
@@ -881,9 +881,9 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
+        color: Colors.green.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
       child: Text(
         preference,
@@ -900,9 +900,9 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.purple.withOpacity(0.1),
+        color: Colors.purple.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.purple.withOpacity(0.3)),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.3)),
       ),
       child: Text(
         service,
@@ -932,7 +932,7 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -950,7 +950,7 @@ class _AccommodationDetailsScreenState extends State<AccommodationDetailsScreen>
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: Colors.deepOrange.withOpacity(0.4),
+                color: Colors.deepOrange.withValues(alpha: 0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),

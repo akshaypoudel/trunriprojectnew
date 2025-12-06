@@ -382,7 +382,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: Colors.orange.shade300),
       ),
@@ -438,7 +438,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.orange.withOpacity(0.1),
+          color: Colors.orange.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(15),
           border: Border.all(color: Colors.deepOrange, width: 2),
         ),
@@ -730,12 +730,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.orange.withOpacity(0.1),
+            color: Colors.orange.withValues(alpha: 0.1),
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(15),
               topRight: Radius.circular(15),
             ),
-            border: Border.all(color: Colors.orange.withOpacity(0.3)),
+            border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
@@ -804,7 +804,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             style: TextStyle(
                               fontSize: 10,
                               color: selectedBillingType == 'basic'
-                                  ? Colors.white.withOpacity(0.8)
+                                  ? Colors.white.withValues(alpha: 0.8)
                                   : Colors.grey[600],
                             ),
                           ),
@@ -870,7 +870,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                             style: TextStyle(
                               fontSize: 10,
                               color: selectedBillingType == 'premium'
-                                  ? Colors.white.withOpacity(0.8)
+                                  ? Colors.white.withValues(alpha: 0.8)
                                   : Colors.grey[600],
                             ),
                           ),
@@ -888,8 +888,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.05),
-            border: Border.all(color: Colors.blue.withOpacity(0.2)),
+            color: Colors.blue.withValues(alpha: 0.05),
+            border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -960,9 +960,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               border: Border(
-                left: BorderSide(color: Colors.orange.withOpacity(0.3)),
-                right: BorderSide(color: Colors.orange.withOpacity(0.3)),
-                bottom: BorderSide(color: Colors.orange.withOpacity(0.3)),
+                left: BorderSide(color: Colors.orange.withValues(alpha: 0.3)),
+                right: BorderSide(color: Colors.orange.withValues(alpha: 0.3)),
+                bottom: BorderSide(color: Colors.orange.withValues(alpha: 0.3)),
               ),
             ),
             child: Row(
@@ -1047,9 +1047,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.1),
+        color: Colors.orange.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -1122,7 +1122,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: labelColor.withOpacity(0.1),
+              color: labelColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -1153,7 +1153,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           color: isSelected ? Colors.deepOrange : Colors.orange,
           width: isSelected ? 3.5 : 1.5,
         ),
-        color: isSelected ? Colors.orange.withOpacity(0.1) : Colors.transparent,
+        color: isSelected
+            ? Colors.orange.withValues(alpha: 0.1)
+            : Colors.transparent,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,

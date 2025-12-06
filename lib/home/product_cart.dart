@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trunriproject/home/product.dart';
 
-
-
 class ProductCard extends StatelessWidget {
   const ProductCard({
     Key? key,
@@ -30,7 +28,7 @@ class ProductCard extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Color(0xFF979797).withOpacity(0.1),
+                  color: Color(0xFF979797).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Image.asset(product.images[0]),
@@ -50,7 +48,7 @@ class ProductCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color:Color(0xFFFF7643),
+                    color: Color(0xFFFF7643),
                   ),
                 ),
                 InkWell(
@@ -62,13 +60,12 @@ class ProductCard extends StatelessWidget {
                     width: 24,
                     decoration: BoxDecoration(
                       color: product.isFavourite
-                          ? Color(0xFFFF7643).withOpacity(0.15)
-                          : Color(0xFF979797).withOpacity(0.1),
+                          ? Color(0xFFFF7643).withValues(alpha: 0.15)
+                          : Color(0xFF979797).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Image.asset(
                       "assets/images/apple.png",
-
                     ),
                   ),
                 ),

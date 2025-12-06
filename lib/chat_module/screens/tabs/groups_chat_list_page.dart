@@ -308,7 +308,7 @@ class _GroupsChatPageState extends State<GroupsChatPage>
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(

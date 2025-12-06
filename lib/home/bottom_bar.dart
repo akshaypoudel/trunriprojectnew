@@ -161,7 +161,7 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
             color: Colors.white,
             border: Border(
               top: BorderSide(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 width: 1,
               ),
             ),
@@ -175,12 +175,12 @@ class _MyBottomNavBarState extends State<MyBottomNavBar> {
                     onTap: () => setState(() => myCurrentIndex = i),
                     child: Container(
                       margin: const EdgeInsets.symmetric(
-                          vertical: 7, horizontal: 19),
+                          vertical: 7, horizontal: 17),
                       padding: const EdgeInsets.symmetric(
                           vertical: 7, horizontal: 2),
                       decoration: BoxDecoration(
                         color: myCurrentIndex == i
-                            ? Colors.orange.withOpacity(0.11)
+                            ? Colors.orange.withValues(alpha: 0.11)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
                       ),

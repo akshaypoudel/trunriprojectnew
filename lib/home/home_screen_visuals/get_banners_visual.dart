@@ -49,17 +49,17 @@ class GetBannersVisual extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.orange.withOpacity(0.3),
+                color: Colors.orange.withValues(alpha: 0.3),
                 width: 2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.orange.withOpacity(0.15),
+                  color: Colors.orange.withValues(alpha: 0.15),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -78,7 +78,7 @@ class GetBannersVisual extends StatelessWidget {
                       borderRadius: BorderRadius.circular(40),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.orange.withOpacity(0.2),
+                          color: Colors.orange.withValues(alpha: 0.2),
                           blurRadius: 15,
                           offset: const Offset(0, 5),
                         ),
@@ -117,7 +117,7 @@ class GetBannersVisual extends StatelessWidget {
                       borderRadius: BorderRadius.circular(25),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.deepOrange.withOpacity(0.4),
+                          color: Colors.deepOrange.withValues(alpha: 0.4),
                           blurRadius: 15,
                           offset: const Offset(0, 6),
                         ),
@@ -144,7 +144,7 @@ class GetBannersVisual extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
@@ -267,7 +267,7 @@ class GetBannersVisual extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.9),
+                              color: Colors.orange.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: const [
                                 BoxShadow(
@@ -297,7 +297,7 @@ class GetBannersVisual extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.deepOrange.withOpacity(0.9),
+                              color: Colors.deepOrange.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: const [
                                 BoxShadow(
@@ -331,8 +331,8 @@ class GetBannersVisual extends StatelessWidget {
                               begin: Alignment.bottomCenter,
                               end: Alignment.topCenter,
                               colors: [
-                                Colors.black.withOpacity(0.8),
-                                Colors.black.withOpacity(0.4),
+                                Colors.black.withValues(alpha: 0.8),
+                                Colors.black.withValues(alpha: 0.4),
                                 Colors.transparent,
                               ],
                             ),
@@ -363,7 +363,7 @@ class GetBannersVisual extends StatelessWidget {
                                 Text(
                                   advertisement['description'],
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white.withValues(alpha: 0.9),
                                     fontSize: 12,
                                     shadows: const [
                                       Shadow(
@@ -384,7 +384,8 @@ class GetBannersVisual extends StatelessWidget {
                                   children: [
                                     Icon(
                                       Icons.location_on,
-                                      color: Colors.white.withOpacity(0.8),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.8),
                                       size: 12,
                                     ),
                                     const SizedBox(width: 4),
@@ -392,7 +393,8 @@ class GetBannersVisual extends StatelessWidget {
                                       child: Text(
                                         '${advertisement['location']['city'] ?? ''}, ${advertisement['location']['state'] ?? ''}',
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.8),
+                                          color: Colors.white
+                                              .withValues(alpha: 0.8),
                                           fontSize: 11,
                                         ),
                                         maxLines: 1,
@@ -417,7 +419,7 @@ class GetBannersVisual extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(

@@ -116,7 +116,7 @@ class FavouritesCategoryScreen extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.deepOrangeAccent.withOpacity(0.1),
+        color: Colors.deepOrangeAccent.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -124,7 +124,7 @@ class FavouritesCategoryScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.deepOrangeAccent.withOpacity(0.2),
+              color: Colors.deepOrangeAccent.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
@@ -149,7 +149,7 @@ class FavouritesCategoryScreen extends StatelessWidget {
                 Text(
                   'in your favorites',
                   style: TextStyle(
-                    color: Colors.deepOrangeAccent.withOpacity(0.8),
+                    color: Colors.deepOrangeAccent.withValues(alpha: 0.8),
                     fontSize: 14,
                   ),
                 ),
@@ -229,7 +229,7 @@ class FavouritesCategoryScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -273,8 +273,8 @@ class FavouritesCategoryScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         gradient: LinearGradient(
           colors: [
-            Colors.deepOrangeAccent.withOpacity(0.8),
-            Colors.orange[300]!.withOpacity(0.8),
+            Colors.deepOrangeAccent.withValues(alpha: 0.8),
+            Colors.orange[300]!.withValues(alpha: 0.8),
           ],
         ),
       ),
@@ -390,7 +390,7 @@ class FavouritesCategoryScreen extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.deepOrangeAccent.withOpacity(0.1),
+              color: Colors.deepOrangeAccent.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
@@ -434,7 +434,7 @@ class FavouritesCategoryScreen extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
-          color: Colors.deepOrangeAccent.withOpacity(0.1),
+          color: Colors.deepOrangeAccent.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Text(

@@ -82,10 +82,6 @@ class AddressListBody extends StatelessWidget {
             fontSize: 22,
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: Get.back,
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -108,7 +104,8 @@ class AddressListBody extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orange.withOpacity(0.2), // Reduced opacity
+                    color:
+                        Colors.orange.withValues(alpha: 0.2), // Reduced opacity
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   ),
@@ -210,17 +207,17 @@ class AddressListBody extends StatelessWidget {
 
             // Full Current Address Card
             _ModernAddressCard(
-              title: 'Complete Current Address',
+              title: 'Complete Address',
               icon: Icons.pin_drop_outlined,
               children: [
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.05),
+                    color: Colors.orange.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Colors.orange.withOpacity(0.2),
+                      color: Colors.orange.withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),
@@ -230,7 +227,7 @@ class AddressListBody extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.1),
+                          color: Colors.orange.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
@@ -278,7 +275,7 @@ class AddressListBody extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.2),
+                    color: Colors.blue.withValues(alpha: 0.2),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   ),
@@ -399,7 +396,7 @@ class _ModernAddressCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: cardColor.withOpacity(0.05), // Use dynamic color
+              color: cardColor.withValues(alpha: 0.05), // Use dynamic color
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
@@ -410,7 +407,8 @@ class _ModernAddressCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: cardColor.withOpacity(0.1), // Use dynamic color
+                    color:
+                        cardColor.withValues(alpha: 0.1), // Use dynamic color
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(

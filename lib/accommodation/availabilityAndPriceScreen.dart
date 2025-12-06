@@ -80,6 +80,20 @@ class _AvailabilityAndPriceScreenState
       initialDate: DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime(2101),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Colors.black, // header background color
+              onPrimary: Colors.white, // header text color
+              onSurface: Colors.black, // body text color
+            ),
+            dialogTheme: DialogThemeData(
+                backgroundColor: Colors.white), // background color
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       setState(() {
@@ -223,6 +237,7 @@ class _AvailabilityAndPriceScreenState
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
+                                  backgroundColor: Colors.white,
                                   title: const Text('Select Minimum Stay'),
                                   content: SizedBox(
                                     width: double.minPositive,
@@ -281,6 +296,7 @@ class _AvailabilityAndPriceScreenState
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
+                                  backgroundColor: Colors.white,
                                   title: const Text('Select Maximum Stay'),
                                   content: SizedBox(
                                     width: double.minPositive,

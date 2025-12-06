@@ -248,7 +248,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -293,8 +293,8 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: isSubscribed
-                  ? Colors.green.withOpacity(0.2)
-                  : Colors.red.withOpacity(0.2),
+                  ? Colors.green.withValues(alpha: 0.2)
+                  : Colors.red.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -327,7 +327,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -462,7 +462,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -510,7 +510,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),

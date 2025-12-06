@@ -49,7 +49,7 @@ class UserTiles extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
+              color: Colors.grey.withValues(alpha: 0.5),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -384,7 +384,7 @@ class UserTiles extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: actionColor!.withOpacity(0.1),
+          color: actionColor!.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
@@ -472,7 +472,8 @@ class UserTiles extends StatelessWidget {
       height: 60,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.orange.withOpacity(0.3), width: 2),
+        border:
+            Border.all(color: Colors.orange.withValues(alpha: 0.3), width: 2),
       ),
       child: ClipOval(
         child: CachedNetworkImage(

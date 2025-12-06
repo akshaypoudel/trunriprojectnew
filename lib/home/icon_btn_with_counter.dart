@@ -25,10 +25,13 @@ class IconBtnWithCounter extends StatelessWidget {
             height: 46,
             width: 46,
             decoration: BoxDecoration(
-              color: Color(0xFF979797).withOpacity(0.1),
+              color: Color(0xFF979797).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Image.asset(svgSrc,height: 40,),
+            child: Image.asset(
+              svgSrc,
+              height: 40,
+            ),
           ),
           if (numOfitem != 0)
             Positioned(

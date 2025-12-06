@@ -72,67 +72,73 @@ class _ImageWidgetState extends State<ImageWidget> {
         GestureDetector(
           onTap: pickImages,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: AddSize.padding16, vertical: AddSize.padding16),
+            padding: EdgeInsets.symmetric(
+                horizontal: AddSize.padding16, vertical: AddSize.padding16),
             width: AddSize.screenWidth,
             height: context.width * .38,
             decoration: BoxDecoration(
-                color: const Color(0xffE2E2E2).withOpacity(.4),
+                color: const Color(0xffE2E2E2).withValues(alpha: .4),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: !validation ? Colors.grey.shade300 : Colors.red,
                 )),
             child: files.isEmpty
                 ? Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Text(
-                //   "Select ${widget.title}",
-                //   style: GoogleFonts.poppins(
-                //       fontWeight: FontWeight.w500,
-                //       color: validation ? Theme.of(context).colorScheme.error : const Color(0xff463B57),
-                //       fontSize: 15),
-                // ),
-                SizedBox(
-                  height: AddSize.size10,
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: validation ? Theme.of(context).colorScheme.error : Colors.grey,
-                        width: 1.8,
-                      )),
-                  padding: const EdgeInsets.all(6),
-                  child: Icon(
-                    Icons.upload_file_outlined,
-                    size: 24,
-                    color: validation ? Theme.of(context).colorScheme.error : Colors.grey,
-                  ),
-                )
-              ],
-            )
-                : GridView.builder(
-              shrinkWrap: true,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 4.0,
-                mainAxisSpacing: 4.0,
-              ),
-              itemCount: files.length,
-              itemBuilder: (context, index) {
-                return Image.file(
-                  files[index],
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error),
-                      Text(files[index].path.split("/").last),
+                      // Text(
+                      //   "Select ${widget.title}",
+                      //   style: GoogleFonts.poppins(
+                      //       fontWeight: FontWeight.w500,
+                      //       color: validation ? Theme.of(context).colorScheme.error : const Color(0xff463B57),
+                      //       fontSize: 15),
+                      // ),
+                      SizedBox(
+                        height: AddSize.size10,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: validation
+                                  ? Theme.of(context).colorScheme.error
+                                  : Colors.grey,
+                              width: 1.8,
+                            )),
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          Icons.upload_file_outlined,
+                          size: 24,
+                          color: validation
+                              ? Theme.of(context).colorScheme.error
+                              : Colors.grey,
+                        ),
+                      )
                     ],
+                  )
+                : GridView.builder(
+                    shrinkWrap: true,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 4.0,
+                      mainAxisSpacing: 4.0,
+                    ),
+                    itemCount: files.length,
+                    itemBuilder: (context, index) {
+                      return Image.file(
+                        files[index],
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.error),
+                            Text(files[index].path.split("/").last),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ),
         const SizedBox(height: 14),

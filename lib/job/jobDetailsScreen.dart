@@ -80,11 +80,11 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
             leading: Container(
               margin: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -178,7 +178,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
               Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
                 child: PopupMenuButton<String>(
@@ -320,7 +320,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
               width: 200,
               height: 200,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(100),
               ),
             ),
@@ -332,7 +332,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(50),
               ),
             ),
@@ -353,7 +353,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -383,7 +383,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
                   data['companyName'] ?? 'Company Name',
                   style: GoogleFonts.inter(
                     fontSize: 18,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -396,7 +396,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -418,7 +418,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -455,7 +455,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -534,9 +534,9 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -573,7 +573,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -587,7 +587,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.deepOrange.withOpacity(0.1),
+                  color: Colors.deepOrange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.info_rounded,
@@ -651,10 +651,10 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.1),
+                                color: Colors.blue.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                    color: Colors.blue.withOpacity(0.3)),
+                                    color: Colors.blue.withValues(alpha: 0.3)),
                               ),
                               child: Text(
                                 skill.trim(),
@@ -693,7 +693,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -707,7 +707,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.deepOrange.withOpacity(0.1),
+                  color: Colors.deepOrange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.description_rounded,
@@ -755,7 +755,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -769,7 +769,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.deepOrange.withOpacity(0.1),
+                  color: Colors.deepOrange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.business_rounded,
@@ -824,7 +824,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -851,7 +851,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.deepOrange.withOpacity(0.4),
+            color: Colors.deepOrange.withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -955,7 +955,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen>
               borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.deepOrange.withOpacity(0.4),
+                  color: Colors.deepOrange.withValues(alpha: 0.4),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),

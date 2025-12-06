@@ -201,7 +201,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
           preferredSize: const Size.fromHeight(4.0),
           child: LinearProgressIndicator(
             value: (_currentPage + 1) / 4,
-            backgroundColor: Colors.deepOrange.withOpacity(0.3),
+            backgroundColor: Colors.deepOrange.withValues(alpha: 0.3),
             valueColor:
                 const AlwaysStoppedAnimation<Color>(Colors.deepOrangeAccent),
           ),
@@ -420,7 +420,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -485,7 +485,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -655,7 +655,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.deepOrange.withOpacity(0.1),
+            color: Colors.deepOrange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: Colors.deepOrange, size: 24),
@@ -688,7 +688,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -744,7 +744,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -795,10 +795,11 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.deepOrange.withOpacity(0.3), width: 2),
+        border: Border.all(
+            color: Colors.deepOrange.withValues(alpha: 0.3), width: 2),
       ),
       child: Material(
-        color: Colors.deepOrange.withOpacity(0.05),
+        color: Colors.deepOrange.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -920,7 +921,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -957,10 +958,11 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.deepOrange.withOpacity(0.3), width: 2),
+        border: Border.all(
+            color: Colors.deepOrange.withValues(alpha: 0.3), width: 2),
       ),
       child: Material(
-        color: Colors.deepOrange.withOpacity(0.05),
+        color: Colors.deepOrange.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -1019,7 +1021,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -1059,7 +1061,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.deepOrange.withOpacity(0.3),
+                color: Colors.deepOrange.withValues(alpha: 0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -1090,7 +1092,7 @@ class _CreateAdvertisementScreenState extends State<CreateAdvertisementScreen> {
                   borderRadius: BorderRadius.circular(25),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.orange.withOpacity(0.3),
+                      color: Colors.orange.withValues(alpha: 0.3),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),

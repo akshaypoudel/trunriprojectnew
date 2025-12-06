@@ -54,7 +54,7 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
         ),
         iconTheme: const IconThemeData(color: Colors.black87),
         elevation: 8,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withValues(alpha: 0.1),
       ),
       body: Column(
         children: [
@@ -83,7 +83,8 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
                         boxShadow: isSelected
                             ? [
                                 BoxShadow(
-                                  color: Colors.orangeAccent.withOpacity(0.3),
+                                  color: Colors.orangeAccent
+                                      .withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 )
@@ -468,12 +469,12 @@ class _EnhancedListingCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
                 BoxShadow(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   blurRadius: 8,
                   offset: const Offset(0, -2),
                 ),
@@ -504,7 +505,7 @@ class _EnhancedListingCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
+                                color: Colors.black.withValues(alpha: 0.2),
                                 blurRadius: 8,
                                 offset: const Offset(0, 3),
                               ),
@@ -530,11 +531,11 @@ class _EnhancedListingCard extends StatelessWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(15),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
@@ -765,11 +766,11 @@ class _EmptyStateWidget extends StatelessWidget {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: Colors.deepOrangeAccent.withOpacity(0.1),
+                color: Colors.deepOrangeAccent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(50),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.deepOrangeAccent.withOpacity(0.2),
+                    color: Colors.deepOrangeAccent.withValues(alpha: 0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -799,7 +800,7 @@ class _EmptyStateWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orangeAccent.withOpacity(0.3),
+                    color: Colors.orangeAccent.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
                   ),

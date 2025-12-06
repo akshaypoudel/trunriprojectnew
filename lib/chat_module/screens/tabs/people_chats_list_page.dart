@@ -681,7 +681,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                               width: 100,
                               height: 100,
                               decoration: BoxDecoration(
-                                color: Colors.orange.withOpacity(0.1),
+                                color: Colors.orange.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -747,7 +747,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.orange.withOpacity(0.3),
+                                color: Colors.orange.withValues(alpha: 0.3),
                                 blurRadius: 15,
                                 offset: const Offset(0, 8),
                               ),
@@ -945,7 +945,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                               ),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                  color: Colors.orange.withOpacity(0.3)),
+                                  color: Colors.orange.withValues(alpha: 0.3)),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(20),
@@ -956,7 +956,8 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                                       Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: Colors.orange.withOpacity(0.1),
+                                          color: Colors.orange
+                                              .withValues(alpha: 0.1),
                                           borderRadius:
                                               BorderRadius.circular(8),
                                         ),
@@ -1260,7 +1261,7 @@ class _PeopleChatsPageState extends State<PeopleChatsPage>
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.orange.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

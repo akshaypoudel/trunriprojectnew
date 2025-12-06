@@ -250,7 +250,7 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       filled: true,
-                      fillColor: const Color(0xffE2E2E2).withOpacity(.35),
+                      fillColor: const Color(0xffE2E2E2).withValues(alpha: .35),
                       contentPadding: const EdgeInsets.symmetric(
                               horizontal: 15, vertical: 10)
                           .copyWith(right: 8),
@@ -273,7 +273,8 @@ class _AddAccommodationScreenState extends State<AddAccommodationScreen> {
                         borderRadius:
                             const BorderRadius.all(Radius.circular(11)),
                         borderSide: BorderSide(
-                            color: const Color(0xffE2E2E2).withOpacity(.35)),
+                            color:
+                                const Color(0xffE2E2E2).withValues(alpha: .35)),
                       ),
                     ),
                     validator: (value) {

@@ -34,7 +34,7 @@ class CustomAppDrawer extends StatelessWidget {
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -61,7 +61,7 @@ class CustomAppDrawer extends StatelessWidget {
                 Text(
                   'Your trusted companion',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                   ),
@@ -136,7 +136,7 @@ class CustomAppDrawer extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border(
                 top: BorderSide(
-                  color: Colors.grey.withOpacity(0.2),
+                  color: Colors.grey.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -183,8 +183,8 @@ class CustomAppDrawer extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      hoverColor: Colors.orange.withOpacity(0.1),
-      splashColor: Colors.orange.withOpacity(0.2),
+      hoverColor: Colors.orange.withValues(alpha: 0.1),
+      splashColor: Colors.orange.withValues(alpha: 0.2),
     );
   }
 }

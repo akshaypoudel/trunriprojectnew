@@ -504,7 +504,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               border: Border.all(color: Colors.orange.shade300, width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.orange.withOpacity(0.2),
+                  color: Colors.orange.withValues(alpha: 0.2),
                   blurRadius: 20,
                   offset: const Offset(0, 5),
                 ),

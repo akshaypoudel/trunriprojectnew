@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:math' as Math;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
@@ -10,7 +11,6 @@ import 'package:trunriproject/accommodation/accomodationDetailsScreen.dart';
 import 'package:trunriproject/accommodation/whichYouListScreen.dart';
 import 'package:trunriproject/chat_module/services/auth_service.dart';
 import 'package:trunriproject/home/provider/location_data.dart';
-import 'package:trunriproject/subscription/subscription_data.dart';
 import 'filterOptionScreen.dart';
 
 enum ActiveFilter { none, city, radius }
@@ -26,16 +26,10 @@ class LookingForAPlaceScreen extends StatefulWidget {
 
 class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
     with TickerProviderStateMixin {
-  static const Color primaryOrange = Color(0xFFFF6B35);
-  static const Color lightOrange = Color(0xFFFF8A50);
   static const Color backgroundColor = Colors.white;
   static const Color cardColor = Colors.white;
   static const Color textPrimary = Color(0xFF2D3748);
   static const Color textSecondary = Color(0xFF718096);
-  static const Color greyBackground = Color(0xFFF8F9FA);
-
-  late AnimationController _glowController;
-  late Animation<double> _glowAnimation;
 
   final List<String> cityList = [
     'All',
@@ -74,26 +68,11 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
     super.initState();
     displayedList = widget.accommodationList;
     searchController.addListener(searchAccommodations);
-
-    // Initialize glow animation for FAB
-    _glowController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    );
-    _glowAnimation = Tween<double>(
-      begin: 0.3,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _glowController,
-      curve: Curves.easeInOut,
-    ));
-    _glowController.repeat(reverse: true);
   }
 
   @override
   void dispose() {
     searchController.dispose();
-    _glowController.dispose();
     super.dispose();
   }
 
@@ -128,21 +107,88 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
     });
   }
 
-  void _showFilterBottomSheet() {
-    showModalBottomSheet(
+  void _showFilterBottomSheet() async {
+    final result = await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
       builder: (BuildContext context) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        return FractionallySizedBox(
+          heightFactor: 0.9,
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: const FilterOptionScreen(),
           ),
-          child: const FilterOptionScreen(),
         );
       },
     );
+
+    if (result != null && result is Map<String, dynamic>) {
+      _applyAdvancedFilters(result);
+    }
+  }
+
+  void _applyAdvancedFilters(Map<String, dynamic> filters) {
+    setState(() {
+      displayedList = widget.accommodationList.where((item) {
+        if (filters['state'] != null &&
+            filters['state'].toString().isNotEmpty &&
+            item['state'] != filters['state']) {
+          return false;
+        }
+
+        if (filters['city'] != null &&
+            filters['city'].toString().isNotEmpty &&
+            item['city'] != filters['city']) {
+          return false;
+        }
+
+        if (item['price'] != null) {
+          final price = double.tryParse(item['price'].toString()) ?? 0;
+          if (price < filters['priceMin'] || price > filters['priceMax']) {
+            return false;
+          }
+        }
+
+        if (filters['singleBadRoom'] > 0 &&
+            (item['singleBadRoom'] ?? 0) < filters['singleBadRoom'])
+          return false;
+        if (filters['doubleBadRoom'] > 0 &&
+            (item['doubleBadRoom'] ?? 0) < filters['doubleBadRoom'])
+          return false;
+        if (filters['bathrooms'] > 0 &&
+            (item['bathrooms'] ?? 0) < filters['bathrooms']) return false;
+        if (filters['toilets'] > 0 &&
+            (item['toilets'] ?? 0) < filters['toilets']) return false;
+
+        bool hasAllAmenities(List<String> filterList, List<dynamic>? itemList) {
+          if (filterList.isEmpty) return true;
+          if (itemList == null || itemList.isEmpty) return false;
+          final itemStrings = itemList.map((e) => e.toString()).toList();
+          return filterList.every((element) => itemStrings.contains(element));
+        }
+
+        if (!hasAllAmenities(filters['roomAmenities'], item['roomAmenities']))
+          return false;
+        if (!hasAllAmenities(
+            filters['propertyAmenities'], item['propertyAmenities']))
+          return false;
+        if (!hasAllAmenities(filters['homeRules'], item['homeRules']))
+          return false;
+
+        if (filters['isLiftAvailable'] == true) {
+          if (item['isLiftAvailable'] != true) return false;
+        }
+
+        return true;
+      }).toList();
+
+      activeFilter = ActiveFilter.none;
+      if (displayedList.length != widget.accommodationList.length) {
+        searchController.text = "Filtered";
+      }
+    });
   }
 
   Widget _buildStyledButton({
@@ -331,7 +377,7 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -356,7 +402,7 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black.withOpacity(0.7),
+                            Colors.black.withValues(alpha: 0.7),
                           ],
                         ),
                       ),
@@ -370,7 +416,7 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
                       ),
                     Center(
                       child: Padding(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(4),
                         child: Text(
                           cityList[index],
                           style: TextStyle(
@@ -381,7 +427,7 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
                               Shadow(
                                 offset: const Offset(0, 1),
                                 blurRadius: 3,
-                                color: Colors.black.withOpacity(0.8),
+                                color: Colors.black.withValues(alpha: 0.8),
                               ),
                             ],
                           ),
@@ -545,117 +591,71 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
   }
 
   Widget _buildGlowingFAB() {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 7, right: 7),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: LinearGradient(
-              colors: [
-                Colors.deepOrange,
-                Colors.orange.shade600,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+    return Positioned(
+      bottom: 16,
+      right: 16,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            colors: [
+              Colors.deepOrange,
+              Colors.orange.shade600,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(
+            color: Colors.white,
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.deepOrange.withOpacity(0.6),
+              blurRadius: 25,
+              spreadRadius: 3,
+              offset: Offset(0, 8),
             ),
-            // Multi-layered border effect
-            border: Border.all(
-              color: Colors.white,
-              width: 1.5,
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 15,
+              spreadRadius: 1,
+              offset: Offset(0, 6),
             ),
-            boxShadow: [
-              // Outer glow effect
-              BoxShadow(
-                color: Colors.deepOrange.withValues(alpha: 0.6),
-                blurRadius: 25,
-                spreadRadius: 3,
-                offset: const Offset(0, 8),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () => Get.to(() => const WhichYouListScreen()),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(21),
+          ),
+          label: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: EdgeInsets.all(1),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  Icons.add_rounded,
+                  size: 27,
+                  color: Colors.deepOrange,
+                ),
               ),
-              // Sharp shadow for depth
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 15,
-                spreadRadius: 1,
-                offset: const Offset(0, 6),
-              ),
-              // Inner highlight
-              BoxShadow(
-                color: Colors.white.withValues(alpha: 0.2),
-                blurRadius: 5,
-                spreadRadius: -2,
-                offset: const Offset(-2, -2),
+              SizedBox(width: 12),
+              Text(
+                'Post',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
-          ),
-          // Add an inner container for additional border layers
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius:
-                  BorderRadius.circular(21), // Slightly smaller radius
-              border: Border.all(
-                color: Colors.orange.shade200.withValues(alpha: 0.8),
-                width: 1.5,
-              ),
-            ),
-            child: FloatingActionButton.extended(
-              onPressed: () {
-                Get.to(() => const WhichYouListScreen());
-              },
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              extendedPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(21),
-              ),
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(1),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      // Border for the icon container
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.add_rounded,
-                      size: 27,
-                      color: Colors.deepOrange,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  const Text(
-                    'Post',
-                    style: TextStyle(
-                      fontSize: 17,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                      shadows: [
-                        Shadow(
-                          offset: Offset(0, 1),
-                          blurRadius: 2,
-                          color: Colors.black26,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ),
       ),
@@ -704,7 +704,12 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
                 child: displayedList.isEmpty
                     ? _buildEmptyState()
                     : Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.only(
+                          left: 16,
+                          right: 16,
+                          top: 10,
+                          bottom: 50,
+                        ),
                         child: GridView.builder(
                           physics: const BouncingScrollPhysics(),
                           itemCount: displayedList.length,
@@ -723,17 +728,16 @@ class _LookingForAPlaceScreenState extends State<LookingForAPlaceScreen>
                         ),
                       ),
               ),
-              const SizedBox(height: 100),
+              // const SizedBox(height: 100),
             ],
           ),
         ),
       ),
       floatingActionButton: _buildGlowingFAB(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
-  // Keep all your existing methods for filters and location handling...
   void _applyLocationFilter(String city) {
     setState(() {
       selectedCityGlobal = city;

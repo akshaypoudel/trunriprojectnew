@@ -116,7 +116,7 @@ class GroceryStoreListScreen extends StatelessWidget {
                         crossAxisCount: 2,
                         crossAxisSpacing: 14,
                         mainAxisSpacing: 18,
-                        childAspectRatio: 3 / 5.4,
+                        childAspectRatio: 3 / 6,
                       ),
                       itemBuilder: (context, index) {
                         final store = filteredStores[index];

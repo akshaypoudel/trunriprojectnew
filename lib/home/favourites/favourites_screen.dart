@@ -138,7 +138,7 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: Colors.deepOrangeAccent.withOpacity(0.1),
+                color: Colors.deepOrangeAccent.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -229,7 +229,7 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.deepOrangeAccent.withOpacity(0.3),
+            color: Colors.deepOrangeAccent.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -240,7 +240,7 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -266,7 +266,7 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
                 Text(
                   'Across ${provider.categoriesWithItemsCount} categories',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 14,
                   ),
                 ),
@@ -276,7 +276,7 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
@@ -314,7 +314,7 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.deepOrangeAccent.withOpacity(0.1),
+                color: Colors.deepOrangeAccent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -380,7 +380,7 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -397,8 +397,8 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
                     const BorderRadius.vertical(top: Radius.circular(12)),
                 gradient: LinearGradient(
                   colors: [
-                    Colors.deepOrangeAccent.withOpacity(0.8),
-                    Colors.orange[300]!.withOpacity(0.8),
+                    Colors.deepOrangeAccent.withValues(alpha: 0.8),
+                    Colors.orange[300]!.withValues(alpha: 0.8),
                   ],
                 ),
               ),
@@ -496,8 +496,8 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
         gradient: LinearGradient(
           colors: [
-            Colors.deepOrangeAccent.withOpacity(0.8),
-            Colors.orange[300]!.withOpacity(0.8),
+            Colors.deepOrangeAccent.withValues(alpha: 0.8),
+            Colors.orange[300]!.withValues(alpha: 0.8),
           ],
         ),
       ),

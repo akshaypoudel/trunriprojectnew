@@ -36,8 +36,8 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
   bool isFormValid() {
-    return selectedFiles.length >= 3 &&
-        titleController.text.trim().isNotEmpty &&
+    return selectedFiles.isNotEmpty &&
+        // titleController.text.trim().isNotEmpty &&
         descriptionController.text.trim().isNotEmpty;
   }
 
@@ -142,9 +142,9 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
                     },
                   ),
                 ),
-                if (selectedFiles.length < 3)
+                if (selectedFiles.isEmpty)
                   const Text(
-                    'Please add at least 3 photos',
+                    'Please add at least 1 photos',
                     style: TextStyle(color: Colors.red),
                   ),
                 const SizedBox(height: 20),
@@ -157,17 +157,13 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
                 ),
                 TextFormField(
                   controller: titleController,
+                  // onChanged: (value) => setState(() {}),
                   decoration: const InputDecoration(
                     hintText: 'No deposit room in Tooley Street',
                     hintStyle:
                         TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
                   ),
                 ),
-                if (titleController.text.trim().isEmpty)
-                  const Text(
-                    'Please enter a title',
-                    style: TextStyle(color: Colors.red),
-                  ),
                 const SizedBox(height: 20),
                 const Text(
                   'Add a description',
@@ -178,6 +174,7 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
                 ),
                 TextFormField(
                   controller: descriptionController,
+                  onChanged: (value) => setState(() {}),
                   decoration: const InputDecoration(
                     hintText: 'No deposit room in Tooley Street',
                     hintStyle:
@@ -206,13 +203,12 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
                   color: const Color(0xffFF730A),
                   textColor: Colors.white,
                   onPressed: () {
+                    setState(() {});
                     if (isFormValid()) {
                       saveMediaData();
                     } else {
-                      // showToast('Please fill in all required fields');
                       showSnackBar(
                           context, 'Please fill in all required fields');
-                      setState(() {});
                     }
                   },
                 ),
