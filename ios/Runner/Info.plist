@@ -49,6 +49,8 @@
 <string>This app needs background location access to provide continuous location-based features.</string>
 <key>NSCameraUsageDescription</key>
 <string>Camera used to upload photos</string>
+<key>NSLocalNetworkUsageDescription</key>
+<string>This app checks network connectivity.</string>
 <key>NSMicrophoneUsageDescription</key>
 <string>App needs microphone for video/audio features</string>
 <key>UIMainStoryboardFile</key>
