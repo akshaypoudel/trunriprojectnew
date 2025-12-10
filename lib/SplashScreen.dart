@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
+// import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
@@ -28,10 +28,10 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   bool isCheckingUserLoginData = true;
-  bool _hasConnection = true;
-  bool _isChecking = true;
+  final bool _hasConnection = true;
+  final bool _isChecking = true;
 
-  checkLogin() async {
+  Future<void> checkLogin() async {
     await Future.delayed(const Duration(seconds: 2)); // short delay
 
     try {
@@ -86,45 +86,43 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkConnection();
+    // _checkConnection();
     if (!_hasConnection) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       checkLogin();
     });
   }
 
-  Future<void> _checkConnection() async {
-    setState(() {
-      _isChecking = true;
-    });
-
-    // First check if device is connected to Wi-Fi or Mobile data
-    var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult.contains(ConnectivityResult.none)) {
-      setState(() {
-        _hasConnection = false;
-        _isChecking = false;
-      });
-      return;
-    }
-
-    // Double-check with a ping (actual internet access)
-    try {
-      final result =
-          await http.get(Uri.parse("https://www.google.com")).timeout(
-                const Duration(seconds: 5),
-              );
-      setState(() {
-        _hasConnection = result.statusCode == 200;
-        _isChecking = false;
-      });
-    } catch (_) {
-      setState(() {
-        _hasConnection = false;
-        _isChecking = false;
-      });
-    }
-  }
+  // Future<void> _checkConnection() async {
+  //   setState(() {
+  //     _isChecking = true;
+  //   });
+  //   // First check if device is connected to Wi-Fi or Mobile data
+  //   // var connectivityResult = await Connectivity().checkConnectivity();
+  //   // if (connectivityResult.contains(ConnectivityResult.none)) {
+  //   //   setState(() {
+  //   //     _hasConnection = false;
+  //   //     _isChecking = false;
+  //   //   });
+  //   //   return;
+  //   // }
+  //   // Double-check with a ping (actual internet access)
+  //   try {
+  //     final result =
+  //         await http.get(Uri.parse("https://www.google.com")).timeout(
+  //               const Duration(seconds: 5),
+  //             );
+  //     setState(() {
+  //       _hasConnection = result.statusCode == 200;
+  //       _isChecking = false;
+  //     });
+  //   } catch (_) {
+  //     setState(() {
+  //       _hasConnection = false;
+  //       _isChecking = false;
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -138,60 +136,6 @@ class _SplashScreenState extends State<SplashScreen> {
               fontSize: 100,
               color: AppTheme.blackColor,
               fontFamily: 'Caveat',
-            ),
-          ),
-        ),
-      );
-    }
-    if (_isChecking) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (!_hasConnection) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.wifi_off_rounded,
-                  color: Colors.deepOrangeAccent,
-                  size: 60,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  "Please connect to the internet",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: _checkConnection,
-                  icon: const Icon(
-                    Icons.refresh,
-                    color: Colors.white,
-                  ),
-                  label: const Text(
-                    "Retry Connection",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepOrangeAccent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                )
-              ],
             ),
           ),
         ),

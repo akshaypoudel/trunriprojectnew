@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +14,7 @@ import 'package:trunriproject/subscription/subscription_data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  InternetChecker().startMonitoring();
+  // InternetChecker().startMonitoring();
   await Firebase.initializeApp();
   final user = FirebaseAuth.instance.currentUser;
   if (user != null) {
@@ -39,14 +38,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
   }
 
-  void monitorUserPresenceIfInternetActive() {
-    final connectivity = Connectivity();
-    connectivity.onConnectivityChanged.listen((status) {
-      if (status.contains(ConnectivityResult.none)) {
-        PresenceService.setUserOffline();
-      }
-    });
-  }
+  // void monitorUserPresenceIfInternetActive() {
+  //   final connectivity = Connectivity();
+  //   connectivity.onConnectivityChanged.listen((status) {
+  //     if (status.contains(ConnectivityResult.none)) {
+  //       PresenceService.setUserOffline();
+  //     }
+  //   });
+  // }
 
   @override
   void dispose() {
