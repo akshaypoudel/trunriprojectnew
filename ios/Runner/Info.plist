@@ -51,6 +51,8 @@
 <string>Camera used to upload photos</string>
 <key>NSLocalNetworkUsageDescription</key>
 <string>This app checks network connectivity.</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to photos to display custom stickers.</string>
 <key>NSMicrophoneUsageDescription</key>
 <string>App needs microphone for video/audio features</string>
 <key>UIMainStoryboardFile</key>

@@ -7,7 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart' hide Config;
 import 'package:image_picker/image_picker.dart';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+// import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:path/path.dart' as path;
 import 'package:trunriproject/chat_module/screens/group_chat_screen.dart';
 import 'package:trunriproject/widgets/helper.dart';
@@ -65,21 +65,21 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
     }
   }
 
-  void _onEmojiSelected(Emoji emoji) {
-    _groupNameController.text += emoji.emoji;
-  }
+  // void _onEmojiSelected(Emoji emoji) {
+  //   _groupNameController.text += emoji.emoji;
+  // }
 
-  void _toggleEmojiKeyboard() {
-    if (_showEmojiKeyboard) {
-      setState(() => _showEmojiKeyboard = false);
-      FocusScope.of(context).requestFocus(focusNode);
-    } else {
-      FocusScope.of(context).unfocus();
-      Future.delayed(const Duration(milliseconds: 200), () {
-        setState(() => _showEmojiKeyboard = true);
-      });
-    }
-  }
+  // void _toggleEmojiKeyboard() {
+  //   if (_showEmojiKeyboard) {
+  //     setState(() => _showEmojiKeyboard = false);
+  //     FocusScope.of(context).requestFocus(focusNode);
+  //   } else {
+  //     FocusScope.of(context).unfocus();
+  //     Future.delayed(const Duration(milliseconds: 200), () {
+  //       setState(() => _showEmojiKeyboard = true);
+  //     });
+  //   }
+  // }
 
   Future<void> createGroup(String groupName, Set<String> memberEmails) async {
     if (groupName.trim().isEmpty) {
@@ -217,7 +217,7 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
               const SizedBox(height: 24),
               _buildSelectedMembersSection(),
               const SizedBox(height: 20),
-              _buildEmojiPicker(),
+              // _buildEmojiPicker(),
               const SizedBox(height: 100),
             ],
           ),
@@ -397,27 +397,27 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
                             horizontal: 16,
                             vertical: 12,
                           ),
-                          suffixIcon: Container(
-                            margin: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: _showEmojiKeyboard
-                                  ? Colors.deepOrange
-                                  : Colors.orange.shade100,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: IconButton(
-                              icon: Icon(
-                                _showEmojiKeyboard
-                                    ? Icons.keyboard_rounded
-                                    : Icons.emoji_emotions_rounded,
-                                color: _showEmojiKeyboard
-                                    ? Colors.white
-                                    : Colors.deepOrange,
-                                size: 20,
-                              ),
-                              onPressed: _toggleEmojiKeyboard,
-                            ),
-                          ),
+                          // suffixIcon: Container(
+                          //   margin: const EdgeInsets.all(6),
+                          //   decoration: BoxDecoration(
+                          //     color: _showEmojiKeyboard
+                          //         ? Colors.deepOrange
+                          //         : Colors.orange.shade100,
+                          //     borderRadius: BorderRadius.circular(10),
+                          //   ),
+                          //   child: IconButton(
+                          //     icon: Icon(
+                          //       _showEmojiKeyboard
+                          //           ? Icons.keyboard_rounded
+                          //           : Icons.emoji_emotions_rounded,
+                          //       color: _showEmojiKeyboard
+                          //           ? Colors.white
+                          //           : Colors.deepOrange,
+                          //       size: 20,
+                          //     ),
+                          //     onPressed: _toggleEmojiKeyboard,
+                          //   ),
+                          // ),
                         ),
                         onChanged: (value) => setState(() {}),
                         onTap: () {
@@ -582,50 +582,50 @@ class _GroupNameScreenState extends State<GroupNameScreen> {
     );
   }
 
-  Widget _buildEmojiPicker() {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      height: _showEmojiKeyboard ? 300 : 0,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: EmojiPicker(
-            onEmojiSelected: (category, emoji) => _onEmojiSelected(emoji),
-            config: Config(
-              height: 280,
-              emojiViewConfig: const EmojiViewConfig(
-                backgroundColor: Colors.white,
-                columns: 8,
-                emojiSizeMax: 28,
-              ),
-              categoryViewConfig: const CategoryViewConfig(
-                backgroundColor: Colors.white,
-                iconColorSelected: Colors.deepOrange,
-                backspaceColor: Colors.deepOrange,
-              ),
-              bottomActionBarConfig: BottomActionBarConfig(
-                backgroundColor: Colors.grey.shade50,
-                buttonColor: Colors.orange.shade100,
-                buttonIconColor: Colors.deepOrange,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _buildEmojiPicker() {
+  //   return AnimatedContainer(
+  //     duration: const Duration(milliseconds: 300),
+  //     height: _showEmojiKeyboard ? 300 : 0,
+  //     child: Container(
+  //       margin: const EdgeInsets.symmetric(horizontal: 20),
+  //       decoration: BoxDecoration(
+  //         color: Colors.white,
+  //         borderRadius: BorderRadius.circular(20),
+  //         boxShadow: [
+  //           BoxShadow(
+  //             color: Colors.black.withValues(alpha: 0.1),
+  //             blurRadius: 20,
+  //             offset: const Offset(0, -5),
+  //           ),
+  //         ],
+  //       ),
+  //       child: ClipRRect(
+  //         borderRadius: BorderRadius.circular(20),
+  //         child: EmojiPicker(
+  //           onEmojiSelected: (category, emoji) => _onEmojiSelected(emoji),
+  //           config: Config(
+  //             height: 280,
+  //             emojiViewConfig: const EmojiViewConfig(
+  //               backgroundColor: Colors.white,
+  //               columns: 8,
+  //               emojiSizeMax: 28,
+  //             ),
+  //             categoryViewConfig: const CategoryViewConfig(
+  //               backgroundColor: Colors.white,
+  //               iconColorSelected: Colors.deepOrange,
+  //               backspaceColor: Colors.deepOrange,
+  //             ),
+  //             bottomActionBarConfig: BottomActionBarConfig(
+  //               backgroundColor: Colors.grey.shade50,
+  //               buttonColor: Colors.orange.shade100,
+  //               buttonIconColor: Colors.deepOrange,
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildCreateButton() {
     final bool canCreate = _groupNameController.text.trim().isNotEmpty;
