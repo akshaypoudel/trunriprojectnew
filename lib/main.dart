@@ -16,10 +16,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // InternetChecker().startMonitoring();
   await Firebase.initializeApp();
-  final user = FirebaseAuth.instance.currentUser;
-  if (user != null) {
-    await PresenceService.setUserOnline();
-  }
+  // final user = FirebaseAuth.instance.currentUser;
+  // if (user != null) {
+  //   await PresenceService.setUserOnline();
+  // }
 
   runApp(const MyApp());
 }
@@ -36,6 +36,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    _initPresence();
+  }
+
+  Future<void> _initPresence() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await PresenceService.setUserOnline();
+    }
   }
 
   // void monitorUserPresenceIfInternetActive() {
